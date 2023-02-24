@@ -180,7 +180,6 @@ pipeline {
         }
 
         stage ('Build RHEL8 NRF Image') {
-          when { expression {rem_rhel_host_flag} }
           agent { label rhelNode }
           steps {
             lock (rhelResource) {
