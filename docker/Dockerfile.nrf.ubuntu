@@ -35,6 +35,7 @@ ARG BASE_IMAGE=ubuntu:bionic
 FROM $BASE_IMAGE as oai-nrf-base
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/Paris
 ENV IS_DOCKERFILE=1
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes && \
@@ -48,8 +49,10 @@ RUN git config --global https.postBuffer 123289600 && \
     git config --global http.sslverify false
 
 # Copying source code
-COPY . /openair-nrf
 WORKDIR /openair-nrf
+COPY ./build/scripts /openair-nrf/build/scripts
+COPY ./build/nrf/CMakeLists.txt /openair-nrf/build/nrf/CMakeLists.txt
+COPY ./build/cmake_modules /openair-nrf/cmake_modules
 
 # Installing all the needed libraries/packages to build and run NRF
 WORKDIR /openair-nrf/build/scripts
@@ -60,6 +63,8 @@ RUN ./build_nrf --install-deps --force && \
 # BUILDER IMAGE
 #---------------------------------------------------------------------
 FROM oai-nrf-base as oai-nrf-builder
+# Copying source code
+COPY . /openair-nrf
 # Building NRF
 WORKDIR /openair-nrf/build/scripts
 RUN ldconfig && \
