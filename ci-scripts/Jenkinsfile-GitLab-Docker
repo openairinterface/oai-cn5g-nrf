@@ -97,7 +97,7 @@ pipeline {
             gitlabMergeRequestLink = gitlabMergeRequestLink.trim()
             gitCommittorEmailAddr  = env.gitlabUserEmail
 
-            shortenShaOne = sh returnStdout: true, script: 'git log -1 --pretty=format:"%h" ' + env.gitlabMergeRequestLastCommit
+            shortenShaOne = sh returnStdout: true, script: 'git log -1 --pretty=format:"%h" --abbrev=8 ' + env.gitlabMergeRequestLastCommit
             shortenShaOne = shortenShaOne.trim()
             nrf_tag       = 'ci-tmp-pr-' + env.gitlabMergeRequestIid + '-' + shortenShaOne
             nrf_branch    = env.gitlabSourceBranch
@@ -112,7 +112,7 @@ pipeline {
             gitCommittorEmailAddr = sh returnStdout: true, script: 'git log -n1 --pretty=format:%ae ${GIT_COMMIT}'
             gitCommittorEmailAddr = gitCommittorEmailAddr.trim()
 
-            shortenShaOne = sh returnStdout: true, script: 'git log -1 --pretty=format:"%h" ' + env.GIT_COMMIT
+            shortenShaOne = sh returnStdout: true, script: 'git log -1 --pretty=format:"%h" --abbrev=8 ' + env.GIT_COMMIT
             shortenShaOne = shortenShaOne.trim()
             nrf_tag       = 'develop-' + shortenShaOne
             nrf_branch    = env.GIT_COMMIT
