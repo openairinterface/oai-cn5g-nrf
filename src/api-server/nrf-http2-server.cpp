@@ -337,7 +337,14 @@ void nrf_http2_server::get_nf_instances_handler(
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {
-    profile.get()->to_json(json_data);
+    // convert URIs to Json
+    json_data["_links"]["item"] = nlohmann::json::array();
+    json_data["_links"]["self"] = "";
+    for (auto u : uris) {
+      nlohmann::json json_item = {};
+      json_item["href"]        = u;
+      json_data["_links"]["item"].push_back(json_item);
+    }
   }
 
   header_map h;
@@ -346,7 +353,7 @@ void nrf_http2_server::get_nf_instances_handler(
                                nrf_cfg.sbi_api_version + "/nf-instances/"});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
-  response.end();
+  response.end(json_data.dump().c_str());
 }
 
 void nrf_http2_server::update_instance_handler(
