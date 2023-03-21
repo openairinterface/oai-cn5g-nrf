@@ -671,6 +671,7 @@ void nrf_profile::subscribe_heartbeat_timeout_nfregistration(uint64_t ms) {
       "Subscribe to the HeartbeatTimer expire event (after NF "
       "registration): interval %d, current time %ld",
       2 * HEART_BEAT_TIMER, ms);
+  std::unique_lock lock(hb_mutex);
   first_hb_connection = m_event_sub.subscribe_task_tick(
       boost::bind(
           &nrf_profile::handle_heartbeat_timeout_nfregistration, this, _1),
@@ -694,6 +695,7 @@ void nrf_profile::subscribe_heartbeat_timeout_nfupdate(uint64_t ms) {
   if (first_update) {
     ms = ms + 2000;  // Not a realtime NF: adding 2000ms interval between the
                      // expected NF update message and HBT
+    std::unique_lock lock(hb_mutex);
     hb_update_connection = m_event_sub.subscribe_task_tick(
         boost::bind(&nrf_profile::handle_heartbeat_timeout_nfupdate, this, _1),
         interval, ms + interval);
