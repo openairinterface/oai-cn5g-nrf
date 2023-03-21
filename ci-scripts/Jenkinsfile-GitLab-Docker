@@ -115,7 +115,7 @@ pipeline {
             shortenShaOne = sh returnStdout: true, script: 'git log -1 --pretty=format:"%h" --abbrev=8 ' + env.GIT_COMMIT
             shortenShaOne = shortenShaOne.trim()
             nrf_tag       = 'develop-' + shortenShaOne
-            nrf_branch    = env.GIT_COMMIT
+            nrf_branch    = env.GIT_BRANCH
 
             echo "======== THIS IS A PUSH REQUEST ========"
             echo "Git Branch      is ${GIT_BRANCH}"
