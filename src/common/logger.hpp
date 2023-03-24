@@ -14,94 +14,53 @@
  * limitations under the License.
  */
 
-#ifndef __LOGGER_H
-#define __LOGGER_H
+#pragma once
 
 #include <cstdarg>
 #include <stdexcept>
 #include <vector>
+#include "logger_base.hpp"
 
-//#define SPDLOG_LEVEL_NAMES { "trace", "debug", "info",  "warning", "error",
-//"critical", "off" };
-#define SPDLOG_LEVEL_NAMES                                                     \
-  {"trace", "debug", "info ", "start", "warn ", "error", "off  "};
-
-#define SPDLOG_ENABLE_SYSLOG
-#include "spdlog/spdlog.h"
-
-class LoggerException : public std::runtime_error {
- public:
-  explicit LoggerException(const char* m) : std::runtime_error(m) {}
-  explicit LoggerException(const std::string& m) : std::runtime_error(m) {}
-};
-
-class _Logger {
- public:
-  _Logger(
-      const char* category, std::vector<spdlog::sink_ptr>& sinks,
-      const char* pattern);
-
-  void trace(const char* format, ...);
-  void trace(const std::string& format, ...);
-  void debug(const char* format, ...);
-  void debug(const std::string& format, ...);
-  void info(const char* format, ...);
-  void info(const std::string& format, ...);
-  void startup(const char* format, ...);
-  void startup(const std::string& format, ...);
-  void warn(const char* format, ...);
-  void warn(const std::string& format, ...);
-  void error(const char* format, ...);
-  void error(const std::string& format, ...);
-
- private:
-  _Logger();
-
-  enum _LogType { _ltTrace, _ltDebug, _ltInfo, _ltStartup, _ltWarn, _ltError };
-
-  void log(_LogType lt, const char* format, va_list& args);
-
-  spdlog::logger m_log;
-};
+static const std::string ASYNC_CMD = "async_cmd";
+static const std::string ITTI      = "itti";
+static const std::string NRF_APP   = "nrf_app";
+static const std::string SYSTEM    = "system";
+static const std::string NRF_SBI   = "nrf_sbi";
 
 class Logger {
  public:
   static void init(
-      const char* app, const bool log_stdout, const bool log_rot_file) {
-    singleton()._init(app, log_stdout, log_rot_file);
+      const std::string& name, const bool log_stdout, const bool log_rot_file) {
+    oai::logger::logger_registry::register_logger(
+        name, ASYNC_CMD, log_stdout, log_rot_file);
+    oai::logger::logger_registry::register_logger(
+        name, ITTI, log_stdout, log_rot_file);
+    oai::logger::logger_registry::register_logger(
+        name, NRF_APP, log_stdout, log_rot_file);
+    oai::logger::logger_registry::register_logger(
+        name, SYSTEM, log_stdout, log_rot_file);
+    oai::logger::logger_registry::register_logger(
+        name, NRF_SBI, log_stdout, log_rot_file);
   }
-  static void init(
-      const std::string& app, const bool log_stdout, const bool log_rot_file) {
-    init(app.c_str(), log_stdout, log_rot_file);
+  static void set_level(spdlog::level::level_enum level) {
+    oai::logger::logger_registry::set_level(level);
   }
-
-  static _Logger& async_cmd() { return *singleton().m_async_cmd; }
-  static _Logger& itti() { return *singleton().m_itti; }
-  static _Logger& nrf_app() { return *singleton().m_nrf_app; }
-  static _Logger& system() { return *singleton().m_system; }
-  static _Logger& nrf_sbi() { return *singleton().m_nrf_sbi; }
-
- private:
-  static Logger* m_singleton;
-  static Logger& singleton() {
-    if (!m_singleton) m_singleton = new Logger();
-    return *m_singleton;
+  static bool should_log(spdlog::level::level_enum level) {
+    return oai::logger::logger_registry::should_log(level);
   }
-
-  Logger() {}
-  ~Logger() {}
-
-  void _init(const char* app, const bool log_stdout, const bool log_rot_file);
-
-  std::vector<spdlog::sink_ptr> m_sinks;
-
-  std::string m_pattern;
-
-  _Logger* m_async_cmd;
-  _Logger* m_itti;
-  _Logger* m_nrf_app;
-  _Logger* m_system;
-  _Logger* m_nrf_sbi;
+  static const oai::logger::printf_logger& async_cmd() {
+    return oai::logger::logger_registry::get_logger(ASYNC_CMD);
+  }
+  static const oai::logger::printf_logger& itti() {
+    return oai::logger::logger_registry::get_logger(ITTI);
+  }
+  static const oai::logger::printf_logger& nrf_app() {
+    return oai::logger::logger_registry::get_logger(NRF_APP);
+  }
+  static const oai::logger::printf_logger& system() {
+    return oai::logger::logger_registry::get_logger(SYSTEM);
+  }
+  static const oai::logger::printf_logger& nrf_sbi() {
+    return oai::logger::logger_registry::get_logger(NRF_SBI);
+  }
 };
-
-#endif  // __LOGGER_H

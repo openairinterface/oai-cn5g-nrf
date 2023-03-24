@@ -37,6 +37,7 @@
 
 #include <mutex>
 #include <vector>
+#include "logger.hpp"
 
 #define NRF_CONFIG_STRING_NRF_CONFIG "NRF"
 #define NRF_CONFIG_STRING_PID_DIRECTORY "PID_DIRECTORY"
@@ -47,6 +48,7 @@
 #define NRF_CONFIG_STRING_PORT "PORT"
 #define NRF_CONFIG_STRING_SBI_HTTP2_PORT "HTTP2_PORT"
 #define NRF_CONFIG_STRING_API_VERSION "API_VERSION"
+#define NRF_CONFIG_STRING_LOG_LEVEL "LOG_LEVEL"
 
 namespace oai {
 namespace nrf {
@@ -70,6 +72,7 @@ class nrf_config {
   std::mutex m_rw_lock;
   std::string pid_dir;
   unsigned int instance = 0;
+  spdlog::level::level_enum log_level;
 
   interface_cfg_t sbi;
   unsigned int sbi_http2_port;
@@ -81,6 +84,7 @@ class nrf_config {
     sbi.port        = 80;
     sbi_http2_port  = 8080;
     sbi_api_version = "v1";
+    log_level       = spdlog::level::debug;
   };
   virtual ~nrf_config();
   void lock() { m_rw_lock.lock(); };

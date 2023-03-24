@@ -147,6 +147,16 @@ int nrf_config::load(const string& config_file) {
         "%s : %s, using defaults", nfex.what(), nfex.getPath());
   }
 
+  // Log Level
+  try {
+    std::string string_level;
+    nrf_cfg.lookupValue(NRF_CONFIG_STRING_LOG_LEVEL, string_level);
+    log_level = spdlog::level::from_str(string_level);
+  } catch (const SettingNotFoundException& nfex) {
+    Logger::nrf_app().error(
+        "%s : %s, using defaults", nfex.what(), nfex.getPath());
+  }
+
   try {
     const Setting& sbi_cfg = nrf_cfg[NRF_CONFIG_STRING_INTERFACE_SBI];
     load_interface(sbi_cfg, sbi);
@@ -188,6 +198,9 @@ void nrf_config::display() {
   Logger::nrf_app().info("    HTTP2 port ..........: %d", sbi_http2_port);
   Logger::nrf_app().info(
       "    API version..........: %s", sbi_api_version.c_str());
+  Logger::nrf_app().info(
+      "- Log Level will be .......: %s",
+      spdlog::level::to_string_view(log_level));
 }
 
 //------------------------------------------------------------------------------

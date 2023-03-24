@@ -91,10 +91,10 @@ unsigned char* mime_parser::format_string_as_hex(const std::string& str) {
       "[Format string as Hex] Input string (%d bytes): %s ", str_len,
       str.c_str());
   Logger::nrf_app().debug("Data (formatted):");
-#if DEBUG_IS_ON
-  for (int i = 0; i < str_len / 2; i++) printf(" %02x ", data_hex[i]);
-  printf("\n");
-#endif
+  if (Logger::should_log(spdlog::level::debug)) {
+    for (int i = 0; i < str_len / 2; i++) printf(" %02x ", data_hex[i]);
+    printf("\n");
+  }
   // free memory
   free_wrapper((void**) &data);
 
