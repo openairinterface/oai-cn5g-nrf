@@ -86,6 +86,7 @@ int main(int argc, char** argv) {
   // Config
   nrf_cfg.load(Options::getlibconfigConfig());
   nrf_cfg.display();
+  Logger::set_level(nrf_cfg.log_level);
 
   // Event subsystem
   nrf_event ev;

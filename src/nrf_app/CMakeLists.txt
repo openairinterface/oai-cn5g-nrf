@@ -19,13 +19,13 @@
 #      contact@openairinterface.org
 ################################################################################
 
-include_directories(${SRC_TOP_DIR}/../build/ext/spdlog/include)
 include_directories(${SRC_TOP_DIR}/../build/ext/cpp-jwt)
 include_directories(${SRC_TOP_DIR}/api-server/api)
 include_directories(${SRC_TOP_DIR}/api-server/impl)
 include_directories(${SRC_TOP_DIR}/api-server/model)
 include_directories(${SRC_TOP_DIR}/api-server/)
 include_directories(${SRC_TOP_DIR}/common/)
+include_directories(${SRC_TOP_DIR}/${MOUNTED_COMMON}/logger)
 
 add_library (NRF STATIC
   nrf_app.cpp

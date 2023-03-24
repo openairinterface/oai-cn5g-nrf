@@ -370,21 +370,23 @@ pipeline {
     // Temporary Images from Merge-Request Runs are kept in local private registry
     stage ('Pushing Image to Official Registry') {
       steps {
-        script {
-          // Only in case of push to target branch!
-          if ("PUSH".equals(env.gitlabActionType)) {
-            withCredentials([
-              [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.DockerHubCredentials}", usernameVariable: 'DH_Username', passwordVariable: 'DH_Password']
-            ]) {
-              sh "echo ${DH_Password} | docker login --username ${DH_Username} --password-stdin"
+        lock(ubuntuBuildResource) {
+          script {
+            // Only in case of push to target branch!
+            if ("PUSH".equals(env.gitlabActionType)) {
+              withCredentials([
+                [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.DockerHubCredentials}", usernameVariable: 'DH_Username', passwordVariable: 'DH_Password']
+              ]) {
+                sh "echo ${DH_Password} | docker login --username ${DH_Username} --password-stdin"
+              }
+              sh "docker login -u oaicicd -p oaicicd ${PrivateRegistryURL}"
+              sh "docker pull ${PrivateRegistryURL}/oai-nrf:${nrf_tag}"
+              sh "docker image tag ${PrivateRegistryURL}/oai-nrf:${nrf_tag} ${DH_Account}/oai-nrf:develop"
+              sh "docker push ${DH_Account}/oai-nrf:develop"
+              sh "docker rmi ${DH_Account}/oai-nrf:develop ${PrivateRegistryURL}/oai-nrf:${nrf_tag}"
+              sh "docker logout ${PrivateRegistryURL}"
+              sh "docker logout"
             }
-            sh "docker login -u oaicicd -p oaicicd ${PrivateRegistryURL}"
-            sh "docker pull ${PrivateRegistryURL}/oai-nrf:${nrf_tag}"
-            sh "docker image tag ${PrivateRegistryURL}/oai-nrf:${nrf_tag} ${DH_Account}/oai-nrf:develop"
-            sh "docker push ${DH_Account}/oai-nrf:develop"
-            sh "docker rmi ${DH_Account}/oai-nrf:develop ${PrivateRegistryURL}/oai-nrf:${nrf_tag}"
-            sh "docker logout ${PrivateRegistryURL}"
-            sh "docker logout"
           }
         }
       }
