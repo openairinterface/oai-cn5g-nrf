@@ -68,6 +68,8 @@ RUN ./build_nrf --install-deps --force
 RUN ./build_nrf --clean --Verbose --build-type Release --jobs && \
     ldd /openair-nrf/build/nrf/build/nrf && \
     mv /openair-nrf/build/nrf/build/nrf /openair-nrf/build/nrf/build/oai_nrf && \
+    sed -i -e "s@nf-root-folder@nrf@" -e "s@nf-config-file@nrf.conf@" \
+      ../common-build/docker-scripts/entrypoint.py && \
     # Remove entitlements and Subscription Manager configs
     rm -rf /etc/pki/entitlement && \
     rm -rf /etc/rhsm
@@ -111,7 +113,7 @@ RUN rm -f /etc/rhsm-host && \
 WORKDIR /openair-nrf/bin
 COPY --from=oai-nrf-builder \
     /openair-nrf/build/nrf/build/oai_nrf \
-    /openair-nrf/scripts/entrypoint.py \
+    /openair-nrf/build/common-build/docker-scripts/entrypoint.py \
     /openair-nrf/scripts/healthcheck.sh \
     ./
 COPY --from=oai-nrf-builder \

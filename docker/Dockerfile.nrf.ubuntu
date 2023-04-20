@@ -51,8 +51,8 @@ RUN git config --global https.postBuffer 123289600 && \
 # Copying source code
 WORKDIR /openair-nrf
 COPY ./build/scripts /openair-nrf/build/scripts
+COPY ./build/common-build /openair-nrf/build/common-build
 COPY ./build/nrf/CMakeLists.txt /openair-nrf/build/nrf/CMakeLists.txt
-COPY ./build/cmake_modules /openair-nrf/cmake_modules
 
 # Installing all the needed libraries/packages to build and run NRF
 WORKDIR /openair-nrf/build/scripts
@@ -69,7 +69,9 @@ COPY . /openair-nrf
 WORKDIR /openair-nrf/build/scripts
 RUN ./build_nrf --clean --Verbose --build-type Release --jobs && \
     ldd /openair-nrf/build/nrf/build/nrf && \
-    mv /openair-nrf/build/nrf/build/nrf /openair-nrf/build/nrf/build/oai_nrf
+    mv /openair-nrf/build/nrf/build/nrf /openair-nrf/build/nrf/build/oai_nrf && \
+    sed -i -e "s@nf-root-folder@nrf@" -e "s@nf-config-file@nrf.conf@" \
+      ../common-build/docker-scripts/entrypoint.py
 
 #---------------------------------------------------------------------
 # TARGET IMAGE
@@ -115,7 +117,7 @@ RUN apt-get update && \
 WORKDIR /openair-nrf/bin
 COPY --from=oai-nrf-builder \
     /openair-nrf/build/nrf/build/oai_nrf \
-    /openair-nrf/scripts/entrypoint.py \
+    /openair-nrf/build/common-build/docker-scripts/entrypoint.py \
     /openair-nrf/scripts/healthcheck.sh \
     ./
 COPY --from=oai-nrf-builder \
