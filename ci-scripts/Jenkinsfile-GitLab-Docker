@@ -319,8 +319,7 @@ pipeline {
                 if (localStatus.resultIsBetterOrEqualTo('SUCCESS')) {
                   echo "Tutorials Test Job is OK"
                 } else {
-                  echo "Tutorials Test Job is KO"
-                  sh "ci-scripts/fail.sh"
+                  error "Tutorials Test Job is KO"
                 }
               }
             }
@@ -349,8 +348,7 @@ pipeline {
                 if (localStatus.resultIsBetterOrEqualTo('SUCCESS')) {
                   echo "Load Testing is OK"
                 } else {
-                  echo "Load Testing is is KO"
-                  sh "ci-scripts/fail.sh"
+                  error "Load Testing is is KO"
                 }
               }
             }
@@ -380,8 +378,7 @@ pipeline {
                 if (localStatus.resultIsBetterOrEqualTo('SUCCESS')) {
                   echo "NGAP-Tester is OK"
                 } else {
-                  echo "NGAP-Tester is is KO"
-                  sh "ci-scripts/fail.sh"
+                  error "NGAP-Tester is is KO"
                 }
               }
             }
