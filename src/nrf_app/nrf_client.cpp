@@ -111,7 +111,8 @@ CURL* nrf_client::curl_create_handle(
     curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, data.length());
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
     if (http_version == 2) {
-      curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+      if (Logger::should_log(spdlog::level::debug))
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
       // curl_easy_setopt(curl, CURLOPT_PORT, 8080);
       // We use a self-signed test server, skip verification during debugging
       curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
