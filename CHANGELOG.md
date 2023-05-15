@@ -1,5 +1,16 @@
 # RELEASE NOTES: #
 
+## v1.5.1 -- May 2023 ##
+
+* Tentative fix for a failed assertion of Boost signal
+* HTTP2 fix for json response data formatting
+* Code Refactoring for:
+  * Logging mechanism (runtime log level selection)
+  * Installation / build scripts
+  * Continuous Integration scripts
+* Published image on Docker-Hub is using now Ubuntu-20 as base image
+  * We will soon obsolete the build system for Ubuntu18.04
+
 ## v1.5.0 -- January 2023 ##
 
 * Enhance UPF profile in NRF and fix bug in SBI when body is too long
