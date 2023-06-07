@@ -280,7 +280,7 @@ add_executable(nrf
   ${SRC_TOP_DIR}/oai-nrf/main.cpp
   ${SRC_TOP_DIR}/oai-nrf/options.cpp
   )
-message("Source Top dir is ${SRC_TOP_DIR}")
+
 ## Common modules
 include(${SRC_TOP_DIR}/${MOUNTED_COMMON}/logger/logger.cmake)
 include(${SRC_TOP_DIR}/${MOUNTED_COMMON}/config/config.cmake)

@@ -22,7 +22,6 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-// using namespace oai::nrf::app;
 using namespace oai::nrf::model;
 
 NFInstancesStoreApi::NFInstancesStoreApi(
