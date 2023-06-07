@@ -16,13 +16,13 @@
 #include "nrf_config.hpp"
 #include "logger.hpp"
 
-extern oai::nrf::app::nrf_config nrf_cfg;
+extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 
 namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::nrf::app;
+// using namespace oai::nrf::app;
 using namespace oai::nrf::model;
 
 NFInstancesStoreApi::NFInstancesStoreApi(
@@ -38,10 +38,12 @@ void NFInstancesStoreApi::setupRoutes() {
   using namespace Pistache::Rest;
 
   Routes::Get(
-      *router, base + nrf_cfg.sbi_api_version + "/nf-instances",
+      *router,
+      base + nrf_cfg->local().get_sbi().get_api_version() + "/nf-instances",
       Routes::bind(&NFInstancesStoreApi::get_nf_instances_handler, this));
   Routes::Options(
-      *router, base + nrf_cfg.sbi_api_version + "/nf-instances",
+      *router,
+      base + nrf_cfg->local().get_sbi().get_api_version() + "/nf-instances",
       Routes::bind(&NFInstancesStoreApi::options_nf_instances_handler, this));
 
   // Default handler, called when a route is not found

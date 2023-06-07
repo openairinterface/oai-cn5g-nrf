@@ -33,6 +33,8 @@
 #include <inttypes.h>
 #include <arpa/inet.h>
 
+#include "logger.hpp"
+
 static const char hex_to_ascii_table[16] = {
     '0', '1', '2', '3', '4', '5', '6', '7',
     '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
@@ -93,12 +95,47 @@ int conv::ascii_to_hex(uint8_t* dst, const char* h) {
   }
 }
 
+//------------------------------------------------------------------------------
+struct in_addr conv::fromString(const std::string addr4) {
+  unsigned char buf[sizeof(struct in6_addr)] = {};
+  auto ret = inet_pton(AF_INET, addr4.c_str(), buf);
+  if (ret != 1) {
+    Logger::nrf_app().error(
+        __PRETTY_FUNCTION__ + std::string{" Failed to convert "} + addr4);
+  }
+  struct in_addr* ia = (struct in_addr*) buf;
+  return *ia;
+}
+
+//------------------------------------------------------------------------------
+struct in6_addr conv::fromStringV6(const std::string& addr6) {
+  unsigned char buf[sizeof(struct in6_addr)] = {};
+  struct in6_addr ipv6_addr {};
+  if (inet_pton(AF_INET6, addr6.c_str(), buf) == 1) {
+    memcpy(&ipv6_addr, buf, sizeof(struct in6_addr));
+  }
+  return ipv6_addr;
+}
+
 std::string conv::toString(const struct in_addr& inaddr) {
   std::string s              = {};
   char str[INET6_ADDRSTRLEN] = {};
   if (inet_ntop(AF_INET, (const void*) &inaddr, str, INET6_ADDRSTRLEN) ==
       NULL) {
     s.append("Error in_addr");
+  } else {
+    s.append(str);
+  }
+  return s;
+}
+
+//------------------------------------------------------------------------------
+std::string conv::toString(const struct in6_addr& in6addr) {
+  std::string s              = {};
+  char str[INET6_ADDRSTRLEN] = {};
+  if (inet_ntop(AF_INET6, (const void*) &in6addr, str, INET6_ADDRSTRLEN) ==
+      nullptr) {
+    s.append("Error in6_addr");
   } else {
     s.append(str);
   }

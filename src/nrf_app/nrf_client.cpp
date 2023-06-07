@@ -47,7 +47,6 @@ using namespace boost::placeholders;
 using json = nlohmann::json;
 
 extern nrf_client* nrf_client_inst;
-extern nrf_config nrf_cfg;
 
 //------------------------------------------------------------------------------
 // To read content of the response from NF

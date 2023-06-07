@@ -15,7 +15,7 @@
 #include "Helpers.h"
 #include "nrf_config.hpp"
 
-extern oai::nrf::app::nrf_config nrf_cfg;
+extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 
 namespace oai {
 namespace nrf {
@@ -37,7 +37,9 @@ void StoredSearchDocumentApi::setupRoutes() {
   using namespace Pistache::Rest;
 
   Routes::Get(
-      *router, base + nrf_cfg.sbi_api_version + "/searches/:searchId",
+      *router,
+      base + nrf_cfg->local().get_sbi().get_api_version() +
+          "/searches/:searchId",
       Routes::bind(
           &StoredSearchDocumentApi::retrieve_stored_search_handler, this));
 

@@ -27,74 +27,28 @@
  \email: lionel.gauthier@eurecom.fr, tien-thinh.nguyen@eurecom.fr
  */
 
-#ifndef FILE_NRF_CONFIG_HPP_SEEN
-#define FILE_NRF_CONFIG_HPP_SEEN
+#pragma once
 
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <libconfig.h++>
+#include "config.hpp"
 
-#include <mutex>
-#include <vector>
-#include "logger.hpp"
+namespace oai::config::nrf {
 
-#define NRF_CONFIG_STRING_NRF_CONFIG "NRF"
-#define NRF_CONFIG_STRING_PID_DIRECTORY "PID_DIRECTORY"
-#define NRF_CONFIG_STRING_INSTANCE "INSTANCE"
-#define NRF_CONFIG_STRING_INTERFACE_SBI "SBI_INTERFACE"
-#define NRF_CONFIG_STRING_INTERFACE_NAME "INTERFACE_NAME"
-#define NRF_CONFIG_STRING_IPV4_ADDRESS "IPV4_ADDRESS"
-#define NRF_CONFIG_STRING_PORT "PORT"
-#define NRF_CONFIG_STRING_SBI_HTTP2_PORT "HTTP2_PORT"
-#define NRF_CONFIG_STRING_API_VERSION "API_VERSION"
-#define NRF_CONFIG_STRING_LOG_LEVEL "LOG_LEVEL"
-
-namespace oai {
-namespace nrf {
-namespace app {
-
-typedef struct interface_cfg_s {
-  std::string if_name;
-  struct in_addr addr4;
-  struct in_addr network4;
-  struct in6_addr addr6;
-  unsigned int mtu;
-  unsigned int port;
-} interface_cfg_t;
-
-class nrf_config {
- private:
-  int load_interface(const libconfig::Setting& if_cfg, interface_cfg_t& cfg);
-
+class nrf_config : public oai::config::config {
  public:
-  /* Reader/writer lock for this configuration */
-  std::mutex m_rw_lock;
-  std::string pid_dir;
+  // Stefan: we should get rid of this instance things (see PCF)
   unsigned int instance = 0;
-  spdlog::level::level_enum log_level;
+  explicit nrf_config(
+      const std::string& config_path, bool log_stdout, bool log_rot_file)
+      : config(config_path, NRF_CONFIG_NAME, log_stdout, log_rot_file) {
+    m_used_config_values = {LOG_LEVEL_CONFIG_NAME, NF_LIST_CONFIG_NAME};
+    m_used_sbi_values    = {NRF_CONFIG_NAME};
 
-  interface_cfg_t sbi;
-  unsigned int sbi_http2_port;
-  std::string sbi_api_version;
-  // Local configuration
-  bool local_configuration = false;
+    m_register_nrf_feature.unset_config();
 
-  nrf_config() : m_rw_lock(), pid_dir(), instance(0), sbi() {
-    sbi.port        = 80;
-    sbi_http2_port  = 8080;
-    sbi_api_version = "v1";
-    log_level       = spdlog::level::debug;
+    auto nrf = std::make_shared<nf>(
+        NRF_CONFIG_NAME, "oai-nrf",
+        sbi_interface("SBI", "oai-nrf", 80, 0, "v1", "eth0"));
+    add_nf(NRF_CONFIG_NAME, nrf);
   };
-  virtual ~nrf_config();
-  void lock() { m_rw_lock.lock(); };
-  void unlock() { m_rw_lock.unlock(); };
-  int load(const std::string& config_file);
-  void display();
 };
-
-}  // namespace app
-}  // namespace nrf
-}  // namespace oai
-
-#endif /* FILE_NRF_CONFIG_HPP_SEEN */
+}  // namespace oai::config::nrf

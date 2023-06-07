@@ -33,13 +33,15 @@
 #include <unistd.h>  // get_pid(), pause()
 #include <iostream>
 #include <thread>
+#include "nrf_config.hpp"
 
 using namespace oai::nrf::app;
 using namespace util;
 using namespace std;
+using namespace oai::config::nrf;
 
 nrf_app* nrf_app_inst = nullptr;
-nrf_config nrf_cfg;
+std::unique_ptr<nrf_config> nrf_cfg;
 NRFApiServer* api_server           = nullptr;
 nrf_http2_server* nrf_api_server_2 = nullptr;
 
@@ -84,9 +86,15 @@ int main(int argc, char** argv) {
   std::signal(SIGINT, my_app_signal_handler);
 
   // Config
-  nrf_cfg.load(Options::getlibconfigConfig());
-  nrf_cfg.display();
-  Logger::set_level(nrf_cfg.log_level);
+  nrf_cfg = std::make_unique<nrf_config>(
+      Options::getlibconfigConfig(), Options::getlogStdout(),
+      Options::getlogRotFilelog());
+  if (!nrf_cfg->init()) {
+    nrf_cfg->display();
+    Logger::system().error("Reading the configuration failed. Exiting");
+    return 1;
+  }
+  nrf_cfg->display();
 
   // Event subsystem
   nrf_event ev;
@@ -100,7 +108,7 @@ int main(int argc, char** argv) {
 
   // PID file
   // Currently hard-coded value. TODO: add as config option.
-  string pid_file_name = get_exe_absolute_path("/var/run", nrf_cfg.instance);
+  string pid_file_name = get_exe_absolute_path("/var/run", nrf_cfg->instance);
   if (!is_pid_file_lock_success(pid_file_name.c_str())) {
     Logger::nrf_app().error("Lock PID file %s failed\n", pid_file_name.c_str());
     exit(-EDEADLK);
@@ -108,19 +116,23 @@ int main(int argc, char** argv) {
 
   // NRF Pistache API server (HTTP1)
   Pistache::Address addr(
-      std::string(inet_ntoa(*((struct in_addr*) &nrf_cfg.sbi.addr4))),
-      Pistache::Port(nrf_cfg.sbi.port));
+      std::string(inet_ntoa(
+          *((struct in_addr*) &nrf_cfg->local().get_sbi().get_addr4()))),
+      Pistache::Port(nrf_cfg->local().get_sbi().get_port_http1()));
   api_server = new NRFApiServer(addr, nrf_app_inst);
   api_server->init(2);
   std::thread nrf_manager(&NRFApiServer::start, api_server);
 
-  // NRF NGHTTP API server (HTTP2)
-  nrf_api_server_2 = new nrf_http2_server(
-      conv::toString(nrf_cfg.sbi.addr4), nrf_cfg.sbi_http2_port, nrf_app_inst);
-  std::thread nrf_http2_manager(&nrf_http2_server::start, nrf_api_server_2);
+  if (nrf_cfg->local().get_sbi().use_http2()) {
+    // NRF NGHTTP API server (HTTP2)
+    nrf_api_server_2 = new nrf_http2_server(
+        conv::toString(nrf_cfg->local().get_sbi().get_addr4()),
+        nrf_cfg->local().get_sbi().get_port_http2(), nrf_app_inst);
+    std::thread nrf_http2_manager(&nrf_http2_server::start, nrf_api_server_2);
+    nrf_http2_manager.join();
+  }
 
   nrf_manager.join();
-  nrf_http2_manager.join();
 
   FILE* fp             = NULL;
   std::string filename = fmt::format("/tmp/nrf_{}.status", getpid());

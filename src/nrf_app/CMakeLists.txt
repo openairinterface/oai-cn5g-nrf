@@ -26,10 +26,10 @@ include_directories(${SRC_TOP_DIR}/api-server/model)
 include_directories(${SRC_TOP_DIR}/api-server/)
 include_directories(${SRC_TOP_DIR}/common/)
 include_directories(${SRC_TOP_DIR}/${MOUNTED_COMMON}/logger)
+include(${SRC_TOP_DIR}/${MOUNTED_COMMON}/config/config.cmake)
 
 add_library (NRF STATIC
   nrf_app.cpp
-  nrf_config.cpp
   nrf_profile.cpp
   nrf_subscription.cpp 
   nrf_client.cpp 
