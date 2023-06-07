@@ -68,8 +68,6 @@ RUN ./build_nrf --install-deps --force
 RUN ./build_nrf --clean --Verbose --build-type Release --jobs && \
     ldd /openair-nrf/build/nrf/build/nrf && \
     mv /openair-nrf/build/nrf/build/nrf /openair-nrf/build/nrf/build/oai_nrf && \
-    sed -i -e "s@nf-root-folder@nrf@" -e "s@nf-config-file@nrf.conf@" \
-      ../common-build/docker-scripts/entrypoint.py && \
     # Remove entitlements and Subscription Manager configs
     rm -rf /etc/pki/entitlement && \
     rm -rf /etc/rhsm
@@ -113,7 +111,6 @@ RUN rm -f /etc/rhsm-host && \
 WORKDIR /openair-nrf/bin
 COPY --from=oai-nrf-builder \
     /openair-nrf/build/nrf/build/oai_nrf \
-    /openair-nrf/build/common-build/docker-scripts/entrypoint.py \
     /openair-nrf/scripts/healthcheck.sh \
     ./
 COPY --from=oai-nrf-builder \
@@ -121,6 +118,7 @@ COPY --from=oai-nrf-builder \
     /usr/local/lib64/libpistache.so.0 \
     /usr/local/lib/libnghttp2_asio.so \
     /usr/local/lib/libnghttp2_asio.so.1 \
+    /usr/local/lib/libyaml-cpp.so.0.? \
     /usr/local/lib64/libspdlog.so \
     /usr/local/lib64/libfmt.so \
     /usr/lib64/
@@ -131,7 +129,7 @@ RUN ldconfig && \
 # Copying template configuration files
 # The configuration folder will be flat
 WORKDIR /openair-nrf/etc
-COPY --from=oai-nrf-builder /openair-nrf/etc/nrf.conf .
+COPY --from=oai-nrf-builder /openair-nrf/etc/config.yaml .
 
 WORKDIR /openair-nrf
 
@@ -143,5 +141,4 @@ HEALTHCHECK --interval=10s \
             --retries=6 \
     CMD /openair-nrf/bin/healthcheck.sh
 
-ENTRYPOINT ["python3", "/openair-nrf/bin/entrypoint.py"]
-CMD ["/openair-nrf/bin/oai_nrf", "-c", "/openair-nrf/etc/nrf.conf", "-o"]
+CMD ["/openair-nrf/bin/oai_nrf", "-c", "/openair-nrf/etc/config.yaml", "-o"]

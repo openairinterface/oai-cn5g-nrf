@@ -69,9 +69,7 @@ COPY . /openair-nrf
 WORKDIR /openair-nrf/build/scripts
 RUN ./build_nrf --clean --Verbose --build-type Release --jobs && \
     ldd /openair-nrf/build/nrf/build/nrf && \
-    mv /openair-nrf/build/nrf/build/nrf /openair-nrf/build/nrf/build/oai_nrf && \
-    sed -i -e "s@nf-root-folder@nrf@" -e "s@nf-config-file@nrf.conf@" \
-      ../common-build/docker-scripts/entrypoint.py
+    mv /openair-nrf/build/nrf/build/nrf /openair-nrf/build/nrf/build/oai_nrf
 
 #---------------------------------------------------------------------
 # TARGET IMAGE
@@ -94,7 +92,6 @@ RUN apt-get update && \
 # Ubuntu 20 --> libasan5
 # Ubuntu 22 --> libasan6
 #      libasan? \
-      libconfig++9v5 \
 # Ubuntu 18/20 --> libldap-2.4-2
 # Ubuntu 22 --> libldap-2.5-0
       libldap-2.?-? \
@@ -117,13 +114,13 @@ RUN apt-get update && \
 WORKDIR /openair-nrf/bin
 COPY --from=oai-nrf-builder \
     /openair-nrf/build/nrf/build/oai_nrf \
-    /openair-nrf/build/common-build/docker-scripts/entrypoint.py \
     /openair-nrf/scripts/healthcheck.sh \
     ./
 COPY --from=oai-nrf-builder \
 # Copying only the packages built from source
     /usr/local/lib/libnghttp2.so.14 \
     /usr/local/lib/libnghttp2_asio.so.1 \
+    /usr/local/lib/libyaml-cpp.so.0.? \
     /usr/local/lib/libpistache.so \
     /usr/local/lib/libfmt.so \
 # Ubuntu 18 --> boost 67 will be copied
@@ -135,7 +132,7 @@ RUN ldconfig && \
     ldd /openair-nrf/bin/oai_nrf
 
 # Copying template configuration files
-COPY --from=oai-nrf-builder /openair-nrf/etc/nrf.conf /openair-nrf/etc/
+COPY --from=oai-nrf-builder /openair-nrf/etc/config.yaml /openair-nrf/etc/
 
 WORKDIR /openair-nrf
 
@@ -147,5 +144,4 @@ HEALTHCHECK --interval=10s \
             --retries=6 \
     CMD /openair-nrf/bin/healthcheck.sh
 
-ENTRYPOINT ["python3","/openair-nrf/bin/entrypoint.py"]
-CMD ["/openair-nrf/bin/oai_nrf", "-c", "/openair-nrf/etc/nrf.conf", "-o"]
+CMD ["/openair-nrf/bin/oai_nrf", "-c", "/openair-nrf/etc/config.yaml", "-o"]
