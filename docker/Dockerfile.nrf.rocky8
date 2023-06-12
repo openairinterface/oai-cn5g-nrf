@@ -21,28 +21,33 @@
 #---------------------------------------------------------------------
 #
 # Dockerfile for the Open-Air-Interface NRF service
-#   Valid for Ubuntu-20.04 (focal),
-#             Ubuntu-22.04 (jammy)
-#
-# The port exposed by container are 8080/tcp , 8080/tcp change it according to your setup
+#   Valid for Rocky Linux 8.7+
 #
 #---------------------------------------------------------------------
 
 #---------------------------------------------------------------------
-# BASE IMAGE
+# BUILDER IMAGE
 #---------------------------------------------------------------------
-ARG BASE_IMAGE=ubuntu:focal
-FROM $BASE_IMAGE as oai-nrf-base
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=Europe/Paris
+FROM registry.access.redhat.com/ubi8/ubi:latest AS oai-nrf-builder
+
 ENV IS_DOCKERFILE=1
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes && \
-    DEBIAN_FRONTEND=noninteractive apt-get install --yes \
+
+RUN dnf install 'dnf-command(config-manager)' -y && \
+    dnf config-manager --set-enabled powertools && \
+    dnf install epel-release -y && crb enable && \
+    dnf update -y && \
+    # here just to display the current version
+    cat /etc/os-release && \
+    dnf install -y \
       psmisc \
       git \
-  && rm -rf /var/lib/apt/lists/*
+        diffutils \
+        libasan \
+        wget \
+        file && \
+    echo "/usr/local/lib" > /etc/ld.so.conf.d/local-lib.conf && \
+    echo "/usr/local/lib64" >> /etc/ld.so.conf.d/local-lib.conf
 
 # Some GIT configuration command quite useful
 RUN git config --global https.postBuffer 123289600 && \
@@ -50,81 +55,65 @@ RUN git config --global https.postBuffer 123289600 && \
 
 # Copying source code
 WORKDIR /openair-nrf
-COPY ./build/scripts /openair-nrf/build/scripts
-COPY ./build/common-build /openair-nrf/build/common-build
-COPY ./build/nrf/CMakeLists.txt /openair-nrf/build/nrf/CMakeLists.txt
-
-# Installing all the needed libraries/packages to build and run NRF
-WORKDIR /openair-nrf/build/scripts
-RUN ./build_nrf --install-deps --force && \
-    ldconfig
-
-#---------------------------------------------------------------------
-# BUILDER IMAGE
-#---------------------------------------------------------------------
-FROM oai-nrf-base as oai-nrf-builder
-# Copying source code
 COPY . /openair-nrf
-# Building NRF
+
+# Installing and Building nrf
 WORKDIR /openair-nrf/build/scripts
+RUN ./build_nrf --install-deps --force
 RUN ./build_nrf --clean --Verbose --build-type Release --jobs && \
     ldd /openair-nrf/build/nrf/build/nrf && \
-    mv /openair-nrf/build/nrf/build/nrf /openair-nrf/build/nrf/build/oai_nrf
+    mv /openair-nrf/build/nrf/build/nrf /openair-nrf/build/nrf/build/oai_nrf && \
+    sed -i -e "s@nf-root-folder@nrf@" -e "s@nf-config-file@nrf.conf@" \
+      ../common-build/docker-scripts/entrypoint.py
 
 #---------------------------------------------------------------------
 # TARGET IMAGE
 #---------------------------------------------------------------------
-FROM $BASE_IMAGE as oai-nrf
-ENV DEBIAN_FRONTEND=noninteractive
+FROM docker.io/rockylinux:8-minimal as oai-nrf
 ENV TZ=Europe/Paris
+
 # We install some debug tools for the moment in addition of mandatory libraries
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes && \
-    DEBIAN_FRONTEND=noninteractive apt-get install --yes \
+RUN microdnf update -y && \
+    microdnf install -y \
       python3 \
-      python3-jinja2 \
+      python3-pip \
+      tzdata \
+#      libasan \
+      procps-ng \
       psmisc \
       net-tools \
-      iputils-ping \
-      bc \
-      tzdata \
-# Ubuntu 20 --> libasan5
-# Ubuntu 22 --> libasan6
-#      libasan? \
-# Ubuntu 20 --> libldap-2.4-2
-# Ubuntu 22 --> libldap-2.5-0
-      libldap-2.?-? \
-      libkrb5-3 \
-      libgssapi-krb5-2 \
-      libcurl4-gnutls-dev \
-      librtmp1 \
-      libpsl5 \
-# Ubuntu 20 --> boost71
-# Ubuntu 22 --> boost74
-      libboost-thread1.7?.0 \
-      libboost-chrono1.7?.0 \
-  && rm -rf /var/lib/apt/lists/*
+      libicu \
+      boost \
+      libevent \
+      findutils \
+      libconfig && \
+    pip3 install jinja2 && \
+    microdnf clean all -y && \
+    rm -rf /var/cache/yum /var/cache/dnf
 
 # Copying executable and generated libraries
 WORKDIR /openair-nrf/bin
 COPY --from=oai-nrf-builder \
     /openair-nrf/build/nrf/build/oai_nrf \
+    /openair-nrf/build/common-build/docker-scripts/entrypoint.py \
     /openair-nrf/scripts/healthcheck.sh \
     ./
 COPY --from=oai-nrf-builder \
 # Copying only the packages built from source
-    /usr/local/lib/libnghttp2.so.14 \
+    /usr/local/lib64/libpistache.so.0 \
+    /usr/local/lib/libnghttp2_asio.so \
     /usr/local/lib/libnghttp2_asio.so.1 \
-    /usr/local/lib/libyaml-cpp.so.0.? \
-    /usr/local/lib/libpistache.so \
-    /usr/local/lib/libfmt.so \
-    /usr/local/lib/
+    /usr/local/lib64/libspdlog.so \
+    /usr/local/lib64/libfmt.so \
+    /usr/lib64/
 
 RUN ldconfig && \
     ldd /openair-nrf/bin/oai_nrf
 
 # Copying template configuration files
-COPY --from=oai-nrf-builder /openair-nrf/etc/config.yaml /openair-nrf/etc/
+# The configuration folder will be flat
+WORKDIR /openair-nrf/etc
+COPY --from=oai-nrf-builder /openair-nrf/etc/nrf.conf .
 
 WORKDIR /openair-nrf
 
@@ -136,4 +125,5 @@ HEALTHCHECK --interval=10s \
             --retries=6 \
     CMD /openair-nrf/bin/healthcheck.sh
 
-CMD ["/openair-nrf/bin/oai_nrf", "-c", "/openair-nrf/etc/config.yaml", "-o"]
+ENTRYPOINT ["python3", "/openair-nrf/bin/entrypoint.py"]
+CMD ["/openair-nrf/bin/oai_nrf", "-c", "/openair-nrf/etc/nrf.conf", "-o"]
