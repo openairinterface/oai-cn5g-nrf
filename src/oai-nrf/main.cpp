@@ -114,25 +114,24 @@ int main(int argc, char** argv) {
     exit(-EDEADLK);
   }
 
-  // NRF Pistache API server (HTTP1)
-  Pistache::Address addr(
-      std::string(inet_ntoa(
-          *((struct in_addr*) &nrf_cfg->local().get_sbi().get_addr4()))),
-      Pistache::Port(nrf_cfg->local().get_sbi().get_port_http1()));
-  api_server = new NRFApiServer(addr, nrf_app_inst);
-  api_server->init(2);
-  std::thread nrf_manager(&NRFApiServer::start, api_server);
-
-  if (nrf_cfg->local().get_sbi().use_http2()) {
+  if (nrf_cfg->get_http_version() == 1) {
+    // NRF Pistache API server (HTTP1)
+    Pistache::Address addr(
+        std::string(inet_ntoa(
+            *((struct in_addr*) &nrf_cfg->local().get_sbi().get_addr4()))),
+        Pistache::Port(nrf_cfg->local().get_sbi().get_port()));
+    api_server = new NRFApiServer(addr, nrf_app_inst);
+    api_server->init(2);
+    std::thread nrf_manager(&NRFApiServer::start, api_server);
+    nrf_manager.join();
+  } else if (nrf_cfg->get_http_version() == 2) {
     // NRF NGHTTP API server (HTTP2)
     nrf_api_server_2 = new nrf_http2_server(
         conv::toString(nrf_cfg->local().get_sbi().get_addr4()),
-        nrf_cfg->local().get_sbi().get_port_http2(), nrf_app_inst);
+        nrf_cfg->local().get_sbi().get_port(), nrf_app_inst);
     std::thread nrf_http2_manager(&nrf_http2_server::start, nrf_api_server_2);
     nrf_http2_manager.join();
   }
-
-  nrf_manager.join();
 
   FILE* fp             = NULL;
   std::string filename = fmt::format("/tmp/nrf_{}.status", getpid());
