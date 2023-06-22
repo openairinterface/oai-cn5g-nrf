@@ -18,7 +18,7 @@
 #include "nrf_app.hpp"
 #include "nrf_config.hpp"
 
-extern oai::nrf::app::nrf_config nrf_cfg;
+extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 
 namespace oai {
 namespace nrf {
@@ -60,8 +60,8 @@ void SubscriptionsCollectionApiImpl::create_subscription(
     json_data["subscriptionId"] = sub_id;
     // Location header
     response.headers().add<Pistache::Http::Header::Location>(
-        m_address + base + nrf_cfg.sbi_api_version + "/subscriptions/" +
-        sub_id);
+        m_address + base + nrf_cfg->local().get_sbi().get_api_version() +
+        "/subscriptions/" + sub_id);
   }
 
   // content type

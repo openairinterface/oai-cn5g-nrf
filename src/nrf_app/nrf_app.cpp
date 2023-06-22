@@ -55,7 +55,6 @@ using namespace std::chrono;
 using namespace boost::placeholders;
 
 extern nrf_app* nrf_app_inst;
-extern nrf_config nrf_cfg;
 nrf_client* nrf_client_inst = nullptr;
 nrf_jwt* nrf_jwt_inst       = nullptr;
 

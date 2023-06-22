@@ -15,8 +15,6 @@
 #include "Helpers.h"
 #include "nrf_config.hpp"
 
-extern oai::nrf::app::nrf_config nrf_cfg;
-
 namespace oai {
 namespace nrf {
 namespace api {

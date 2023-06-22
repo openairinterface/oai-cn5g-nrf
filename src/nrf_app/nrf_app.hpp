@@ -47,7 +47,6 @@ namespace nrf {
 namespace app {
 
 using namespace oai::nrf::model;
-class nrf_config;
 class nrf_app {
  public:
   explicit nrf_app(const std::string& config_file, nrf_event& ev);
@@ -469,6 +468,5 @@ class nrf_app {
 }  // namespace app
 }  // namespace nrf
 }  // namespace oai
-#include "nrf_config.hpp"
 
 #endif /* FILE_NRF_APP_HPP_SEEN */

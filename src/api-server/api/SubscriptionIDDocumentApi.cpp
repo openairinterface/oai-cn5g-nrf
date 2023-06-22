@@ -15,7 +15,7 @@
 #include "Helpers.h"
 #include "nrf_config.hpp"
 
-extern oai::nrf::app::nrf_config nrf_cfg;
+extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 
 namespace oai {
 namespace nrf {
@@ -38,12 +38,14 @@ void SubscriptionIDDocumentApi::setupRoutes() {
 
   Routes::Delete(
       *router,
-      base + nrf_cfg.sbi_api_version + "/subscriptions/:subscriptionID",
+      base + nrf_cfg->local().get_sbi().get_api_version() +
+          "/subscriptions/:subscriptionID",
       Routes::bind(
           &SubscriptionIDDocumentApi::remove_subscription_handler, this));
   Routes::Patch(
       *router,
-      base + nrf_cfg.sbi_api_version + "/subscriptions/:subscriptionID",
+      base + nrf_cfg->local().get_sbi().get_api_version() +
+          "/subscriptions/:subscriptionID",
       Routes::bind(
           &SubscriptionIDDocumentApi::update_subscription_handler, this));
 

@@ -19,7 +19,7 @@
 #include "nrf_config.hpp"
 #include "nrf_profile.hpp"
 
-extern oai::nrf::app::nrf_config nrf_cfg;
+extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 
 namespace oai {
 namespace nrf {
@@ -129,8 +129,8 @@ void NFInstanceIDDocumentApiImpl::register_nf_instance(
 
     // Location header
     response.headers().add<Pistache::Http::Header::Location>(
-        m_address + base + nrf_cfg.sbi_api_version + "/nf-instances/" +
-        nfInstanceID);
+        m_address + base + nrf_cfg->local().get_sbi().get_api_version() +
+        "/nf-instances/" + nfInstanceID);
   }
 
   // content type

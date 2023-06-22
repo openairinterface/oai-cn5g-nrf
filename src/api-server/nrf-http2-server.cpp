@@ -45,7 +45,7 @@ using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
 using namespace oai::nrf::model;
 
-extern nrf_config nrf_cfg;
+extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 
 //------------------------------------------------------------------------------
 void nrf_http2_server::start() {
@@ -58,7 +58,8 @@ void nrf_http2_server::start() {
 
   // NF Instances (Store)
   server.handle(
-      NNRF_NFM_BASE + nrf_cfg.sbi_api_version + "/nf-instances",
+      NNRF_NFM_BASE + nrf_cfg->local().get_sbi().get_api_version() +
+          "/nf-instances",
       [&](const request& request, const response& response) {
         request.on_data([&](const uint8_t* data, std::size_t len) {
           std::string msg((char*) data, len);
@@ -92,7 +93,8 @@ void nrf_http2_server::start() {
 
   // NF Instances ID (Document)
   server.handle(
-      NNRF_NFM_BASE + nrf_cfg.sbi_api_version + NNRF_NFM_NF_INSTANCES,
+      NNRF_NFM_BASE + nrf_cfg->local().get_sbi().get_api_version() +
+          NNRF_NFM_NF_INSTANCES,
       [&](const request& request, const response& response) {
         request.on_data([&](const uint8_t* data, std::size_t len) {
           std::string msg((char*) data, len);
@@ -144,7 +146,8 @@ void nrf_http2_server::start() {
 
   // Subscriptions  (Collection & ID Document)
   server.handle(
-      NNRF_NFM_BASE + nrf_cfg.sbi_api_version + NNRF_NFM_STATUS_SUBSCRIBE_URL,
+      NNRF_NFM_BASE + nrf_cfg->local().get_sbi().get_api_version() +
+          NNRF_NFM_STATUS_SUBSCRIBE_URL,
       [&](const request& request, const response& response) {
         request.on_data([&](const uint8_t* data, std::size_t len) {
           std::string msg((char*) data, len);
@@ -186,7 +189,8 @@ void nrf_http2_server::start() {
 
   // NF Discovery (Store)
   server.handle(
-      NNRF_DISC_BASE + nrf_cfg.sbi_api_version + "/nf-instances",
+      NNRF_DISC_BASE + nrf_cfg->local().get_sbi().get_api_version() +
+          "/nf-instances",
       [&](const request& request, const response& response) {
         request.on_data([&](const uint8_t* data, std::size_t len) {
           std::string msg((char*) data, len);
@@ -263,9 +267,9 @@ void nrf_http2_server::register_nf_instance_handler(
   }
   header_map h;
   h.emplace(
-      "location",
-      header_value{m_address + NNRF_NFM_BASE + nrf_cfg.sbi_api_version +
-                   "/nf-instances/" + nfInstanceID});
+      "location", header_value{m_address + NNRF_NFM_BASE +
+                               nrf_cfg->local().get_sbi().get_api_version() +
+                               "/nf-instances/" + nfInstanceID});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
   response.end(json_data.dump().c_str());
@@ -295,9 +299,9 @@ void nrf_http2_server::get_nf_instance_handler(
 
   header_map h;
   h.emplace(
-      "location",
-      header_value{m_address + NNRF_NFM_BASE + nrf_cfg.sbi_api_version +
-                   "/nf-instances/" + nfInstanceID});
+      "location", header_value{m_address + NNRF_NFM_BASE +
+                               nrf_cfg->local().get_sbi().get_api_version() +
+                               "/nf-instances/" + nfInstanceID});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
   response.end(json_data.dump().c_str());
@@ -350,7 +354,8 @@ void nrf_http2_server::get_nf_instances_handler(
   header_map h;
   h.emplace(
       "location", header_value{m_address + NNRF_NFM_BASE +
-                               nrf_cfg.sbi_api_version + "/nf-instances/"});
+                               nrf_cfg->local().get_sbi().get_api_version() +
+                               "/nf-instances/"});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
   response.end(json_data.dump().c_str());
@@ -388,9 +393,9 @@ void nrf_http2_server::update_instance_handler(
   Logger::nrf_sbi().debug("Json data: %s", json_data.dump().c_str());
   header_map h;
   h.emplace(
-      "location",
-      header_value{m_address + NNRF_NFM_BASE + nrf_cfg.sbi_api_version +
-                   "/nf-instances/" + nfInstanceID});
+      "location", header_value{m_address + NNRF_NFM_BASE +
+                               nrf_cfg->local().get_sbi().get_api_version() +
+                               "/nf-instances/" + nfInstanceID});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
   response.end(json_data.dump().c_str());
@@ -412,9 +417,9 @@ void nrf_http2_server::deregister_nf_instance_handler(
 
   header_map h;
   h.emplace(
-      "location",
-      header_value{m_address + NNRF_NFM_BASE + nrf_cfg.sbi_api_version +
-                   "/nf-instances/" + nfInstanceID});
+      "location", header_value{m_address + NNRF_NFM_BASE +
+                               nrf_cfg->local().get_sbi().get_api_version() +
+                               "/nf-instances/" + nfInstanceID});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
   response.end();
@@ -444,9 +449,9 @@ void nrf_http2_server::create_subscription_handler(
 
   header_map h;
   h.emplace(
-      "location",
-      header_value{m_address + NNRF_NFM_BASE + nrf_cfg.sbi_api_version +
-                   NNRF_NFM_STATUS_SUBSCRIBE_URL});
+      "location", header_value{m_address + NNRF_NFM_BASE +
+                               nrf_cfg->local().get_sbi().get_api_version() +
+                               NNRF_NFM_STATUS_SUBSCRIBE_URL});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
   response.end(json_data.dump().c_str());
