@@ -71,6 +71,8 @@ RUN ./build_nrf --clean --Verbose --build-type Release --jobs && \
     ldd /openair-nrf/build/nrf/build/nrf && \
     mv /openair-nrf/build/nrf/build/nrf /openair-nrf/build/nrf/build/oai_nrf
 
+FROM mikefarah/yq:latest as yq-source
+
 #---------------------------------------------------------------------
 # TARGET IMAGE
 #---------------------------------------------------------------------
@@ -81,8 +83,6 @@ ENV TZ=Europe/Paris
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes && \
     DEBIAN_FRONTEND=noninteractive apt-get install --yes \
-      python3 \
-      python3-jinja2 \
       psmisc \
       net-tools \
       iputils-ping \
@@ -111,6 +111,8 @@ COPY --from=oai-nrf-builder \
     /openair-nrf/build/nrf/build/oai_nrf \
     /openair-nrf/scripts/healthcheck.sh \
     ./
+COPY --from=yq-source /usr/bin/yq /usr/bin
+
 COPY --from=oai-nrf-builder \
 # Copying only the packages built from source
     /usr/local/lib/libnghttp2.so.14 \
