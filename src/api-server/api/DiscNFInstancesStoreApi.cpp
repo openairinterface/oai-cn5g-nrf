@@ -395,10 +395,12 @@ Pistache::Optional<T> DiscNFInstancesStoreApi::model_from_query_string(
   if (!query.isEmpty()) {
     nlohmann::json j = query.get();
     if (make_json_array) {
-      std::vector<std::string> split;
+      std::string qry_string = query.get();
+      std::vector<std::string> split_arr;
       boost::split(
-          split, query.get(), boost::is_any_of(","), boost::token_compress_on);
-      j = split;
+          split_arr, qry_string, boost::is_any_of(","),
+          boost::token_compress_on);
+      j = split_arr;
     }
 
     std::cout << "test: " << j.dump() << std::endl;
