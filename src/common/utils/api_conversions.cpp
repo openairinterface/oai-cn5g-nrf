@@ -161,8 +161,7 @@ bool api_conv::profile_api_to_nrf_profile(
         guami.plmn.mcc = g.getPlmnId().getMcc();
         guami.plmn.mnc = g.getPlmnId().getMnc();
         info.guami_list.push_back(guami);
-        Logger::nrf_app().debug(
-            "\t\tAMF GUAMI, AMF_ID:  %s", guami.amf_id.c_str());
+        Logger::nrf_app().debug("\t\tAMF GUAMI, AMF_ID:  0x%x", guami.amf_id);
         Logger::nrf_app().debug(
             "\t\tAMF GUAMI, PLMN (MCC: %s, MNC: %s)", guami.plmn.mcc.c_str(),
             guami.plmn.mnc.c_str());

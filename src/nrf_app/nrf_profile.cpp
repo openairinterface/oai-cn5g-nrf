@@ -820,7 +820,7 @@ void amf_profile::display() {
       amf_info.amf_region_id.c_str());
 
   for (auto g : amf_info.guami_list) {
-    Logger::nrf_app().debug("\t\tAMF GUAMI List, AMF_ID: %s", g.amf_id.c_str());
+    Logger::nrf_app().debug("\t\tAMF GUAMI List, AMF_ID: 0x%x", g.amf_id());
     Logger::nrf_app().debug(
         "\t\tAMF GUAMI List, PLMN (MCC: %s, MNC: %s)", g.plmn.mcc.c_str(),
         g.plmn.mnc.c_str());
