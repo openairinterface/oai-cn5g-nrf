@@ -13,9 +13,7 @@
 
 #include "ChfServiceInfo.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 ChfServiceInfo::ChfServiceInfo() {
   m_PrimaryChfServiceInstance        = "";
@@ -76,6 +74,4 @@ void ChfServiceInfo::unsetSecondaryChfServiceInstance() {
   m_SecondaryChfServiceInstanceIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

@@ -34,8 +34,6 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::nrf::model;
-
 class SubscriptionIDDocumentApi {
  public:
   SubscriptionIDDocumentApi(std::shared_ptr<Pistache::Rest::Router>);
@@ -81,7 +79,7 @@ class SubscriptionIDDocumentApi {
   /// update</param> <param name="patchItem"></param>
   virtual void update_subscription(
       const std::string& subscriptionID,
-      const std::vector<PatchItem>& patchItem,
+      const std::vector<oai::model::common::PatchItem>& patchItem,
       Pistache::Http::ResponseWriter& response) = 0;
 };
 

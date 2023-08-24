@@ -13,9 +13,7 @@
 
 #include "NFServiceVersion.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 NFServiceVersion::NFServiceVersion() {
   m_ApiVersionInUri = "";
@@ -72,6 +70,4 @@ void NFServiceVersion::unsetExpiry() {
   m_ExpiryIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

@@ -24,9 +24,7 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -45,8 +43,9 @@ class Inline_response_200 {
   /// List of the URI of NF instances. It has two members whose names are item
   /// and self. The item one contains an array of URIs.
   /// </summary>
-  std::map<std::string, LinksValueSchema>& getLinks();
-  void setLinks(std::map<std::string, LinksValueSchema> const& value);
+  std::map<std::string, oai::model::common::LinksValueSchema>& getLinks();
+  void setLinks(
+      std::map<std::string, oai::model::common::LinksValueSchema> const& value);
   bool linksIsSet() const;
   void unset_links();
 
@@ -54,12 +53,10 @@ class Inline_response_200 {
   friend void from_json(const nlohmann::json& j, Inline_response_200& o);
 
  protected:
-  std::map<std::string, LinksValueSchema> m__links;
+  std::map<std::string, oai::model::common::LinksValueSchema> m__links;
   bool m__linksIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* Inline_response_200_H_ */

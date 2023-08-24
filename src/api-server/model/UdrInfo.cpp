@@ -13,9 +13,7 @@
 
 #include "UdrInfo.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 UdrInfo::UdrInfo() {
   m_GroupId                             = "";
@@ -137,6 +135,4 @@ void UdrInfo::unsetSupportedDataSets() {
   m_SupportedDataSetsIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

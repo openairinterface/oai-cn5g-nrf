@@ -22,9 +22,7 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -69,8 +67,6 @@ class NFServiceVersion {
   bool m_ExpiryIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* NFServiceVersion_H_ */

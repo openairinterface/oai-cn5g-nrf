@@ -13,9 +13,8 @@
 
 #include "UpfInfo.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::common;
 
 UpfInfo::UpfInfo() {
   m_SmfServingAreaIsSet       = false;
@@ -163,6 +162,4 @@ void UpfInfo::unsetUeIpAddrInd() {
   m_UeIpAddrIndIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

@@ -40,7 +40,7 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::nrf::model;
+using namespace oai::model::nrf;
 using namespace oai::nrf::app;
 
 class NFInstanceIDDocumentApiImpl
@@ -62,7 +62,8 @@ class NFInstanceIDDocumentApiImpl
       const Pistache::Optional<Pistache::Http::Header::Raw>& contentEncoding,
       Pistache::Http::ResponseWriter& response);
   void update_nf_instance(
-      const std::string& nfInstanceID, const std::vector<PatchItem>& patchItem,
+      const std::string& nfInstanceID,
+      const std::vector<oai::model::common::PatchItem>& patchItem,
       Pistache::Http::ResponseWriter& response);
 
  private:

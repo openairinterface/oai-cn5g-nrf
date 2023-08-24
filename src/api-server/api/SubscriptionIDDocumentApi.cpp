@@ -21,8 +21,9 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::nrf::helpers;
-using namespace oai::nrf::model;
+using namespace oai::model::common::helpers;
+using namespace oai::model::nrf;
+using namespace oai::model::common;
 
 SubscriptionIDDocumentApi::SubscriptionIDDocumentApi(
     std::shared_ptr<Pistache::Rest::Router> rtr) {

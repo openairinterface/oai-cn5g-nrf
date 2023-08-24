@@ -23,9 +23,7 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -65,8 +63,6 @@ class NotifCondition {
   bool m_UnmonitoredAttributesIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* NotifCondition_H_ */

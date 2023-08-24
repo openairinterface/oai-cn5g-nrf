@@ -23,9 +23,7 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -53,8 +51,6 @@ class StoredSearchResult {
   std::vector<NFProfile> m_NfInstances;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* StoredSearchResult_H_ */

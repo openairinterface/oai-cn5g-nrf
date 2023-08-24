@@ -13,9 +13,7 @@
 
 #include "StoredSearchResult.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 StoredSearchResult::StoredSearchResult() {}
 
@@ -41,6 +39,4 @@ void StoredSearchResult::setNfInstances(std::vector<NFProfile> const& value) {
   m_NfInstances = value;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

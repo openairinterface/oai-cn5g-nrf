@@ -13,9 +13,7 @@
 
 #include "DefaultNotificationSubscription.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 DefaultNotificationSubscription::DefaultNotificationSubscription() {
   m_CallbackUri             = "";
@@ -94,6 +92,4 @@ void DefaultNotificationSubscription::unsetN2InformationClass() {
   m_N2InformationClassIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

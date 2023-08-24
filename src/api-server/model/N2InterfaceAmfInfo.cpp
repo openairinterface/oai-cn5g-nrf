@@ -13,9 +13,8 @@
 
 #include "N2InterfaceAmfInfo.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::common;
 
 N2InterfaceAmfInfo::N2InterfaceAmfInfo() {
   m_Ipv4EndpointAddressIsSet = false;
@@ -96,6 +95,4 @@ void N2InterfaceAmfInfo::unsetAmfName() {
   m_AmfNameIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

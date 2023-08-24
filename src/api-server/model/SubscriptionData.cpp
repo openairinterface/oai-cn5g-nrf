@@ -13,9 +13,8 @@
 
 #include "SubscriptionData.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::common;
 
 SubscriptionData::SubscriptionData() {
   m_NfStatusNotificationUri = "";
@@ -245,6 +244,4 @@ void SubscriptionData::unsetReqSnssais() {
   m_ReqSnssaisIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

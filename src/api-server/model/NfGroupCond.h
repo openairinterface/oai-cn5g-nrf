@@ -22,9 +22,7 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -59,8 +57,6 @@ class NfGroupCond {
   std::string m_NfGroupId;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* NfGroupCond_H_ */

@@ -13,9 +13,7 @@
 
 #include "Ipv4AddressRange.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 Ipv4AddressRange::Ipv4AddressRange() {
   m_Start      = "";
@@ -74,6 +72,4 @@ void Ipv4AddressRange::unsetEnd() {
   m_EndIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

@@ -13,10 +13,7 @@
 
 #include "NFServiceStatus.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
-
+namespace oai::model::nrf {
 NFServiceStatus::NFServiceStatus() {}
 
 NFServiceStatus::~NFServiceStatus() {}
@@ -31,6 +28,4 @@ void to_json(nlohmann::json& j, const NFServiceStatus& o) {
 
 void from_json(const nlohmann::json& j, NFServiceStatus& o) {}
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

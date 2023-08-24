@@ -24,9 +24,7 @@
 #include "Ipv6Addr.h"
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -51,15 +49,15 @@ class IpEndPoint {
   /// <summary>
   ///
   /// </summary>
-  Ipv6Addr getIpv6Address() const;
-  void setIpv6Address(Ipv6Addr const& value);
+  oai::model::common::Ipv6Addr getIpv6Address() const;
+  void setIpv6Address(oai::model::common::Ipv6Addr const& value);
   bool ipv6AddressIsSet() const;
   void unsetIpv6Address();
   /// <summary>
   ///
   /// </summary>
-  TransportProtocol getTransport() const;
-  void setTransport(TransportProtocol const& value);
+  oai::model::common::TransportProtocol getTransport() const;
+  void setTransport(oai::model::common::TransportProtocol const& value);
   bool transportIsSet() const;
   void unsetTransport();
   /// <summary>
@@ -76,16 +74,14 @@ class IpEndPoint {
  protected:
   std::string m_Ipv4Address;
   bool m_Ipv4AddressIsSet;
-  Ipv6Addr m_Ipv6Address;
+  oai::model::common::Ipv6Addr m_Ipv6Address;
   bool m_Ipv6AddressIsSet;
-  TransportProtocol m_Transport;
+  oai::model::common::TransportProtocol m_Transport;
   bool m_TransportIsSet;
   int32_t m_Port;
   bool m_PortIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* IpEndPoint_H_ */

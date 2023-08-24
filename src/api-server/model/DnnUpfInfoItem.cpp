@@ -13,9 +13,8 @@
 
 #include "DnnUpfInfoItem.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::common;
 
 DnnUpfInfoItem::DnnUpfInfoItem() {
   m_Dnn                  = "";
@@ -104,6 +103,4 @@ void DnnUpfInfoItem::unsetDnaiNwInstanceList() {
   m_DnaiNwInstanceListIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

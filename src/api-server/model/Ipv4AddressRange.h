@@ -22,9 +22,7 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -64,8 +62,6 @@ class Ipv4AddressRange {
   bool m_EndIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* Ipv4AddressRange_H_ */

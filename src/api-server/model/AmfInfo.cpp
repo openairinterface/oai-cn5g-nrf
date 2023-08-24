@@ -13,9 +13,8 @@
 
 #include "AmfInfo.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::common;
 
 AmfInfo::AmfInfo() {
   m_AmfSetId                  = "";
@@ -159,6 +158,4 @@ void AmfInfo::unsetN2InterfaceAmfInfo() {
   m_N2InterfaceAmfInfoIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

@@ -32,9 +32,7 @@
 #include "ChfServiceInfo.h"
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -114,8 +112,8 @@ class NFService {
   /// <summary>
   ///
   /// </summary>
-  std::vector<PlmnId>& getAllowedPlmns();
-  void setAllowedPlmns(std::vector<PlmnId> const& value);
+  std::vector<oai::model::common::PlmnId>& getAllowedPlmns();
+  void setAllowedPlmns(std::vector<oai::model::common::PlmnId> const& value);
   bool allowedPlmnsIsSet() const;
   void unsetAllowedPlmns();
   /// <summary>
@@ -135,8 +133,8 @@ class NFService {
   /// <summary>
   ///
   /// </summary>
-  std::vector<Snssai>& getAllowedNssais();
-  void setAllowedNssais(std::vector<Snssai> const& value);
+  std::vector<oai::model::common::Snssai>& getAllowedNssais();
+  void setAllowedNssais(std::vector<oai::model::common::Snssai> const& value);
   bool allowedNssaisIsSet() const;
   void unsetAllowedNssais();
   /// <summary>
@@ -208,13 +206,13 @@ class NFService {
   std::vector<DefaultNotificationSubscription>
       m_DefaultNotificationSubscriptions;
   bool m_DefaultNotificationSubscriptionsIsSet;
-  std::vector<PlmnId> m_AllowedPlmns;
+  std::vector<oai::model::common::PlmnId> m_AllowedPlmns;
   bool m_AllowedPlmnsIsSet;
   std::vector<std::string> m_AllowedNfTypes;
   bool m_AllowedNfTypesIsSet;
   std::vector<std::string> m_AllowedNfDomains;
   bool m_AllowedNfDomainsIsSet;
-  std::vector<Snssai> m_AllowedNssais;
+  std::vector<oai::model::common::Snssai> m_AllowedNssais;
   bool m_AllowedNssaisIsSet;
   int32_t m_Priority;
   bool m_PriorityIsSet;
@@ -230,8 +228,6 @@ class NFService {
   bool m_SupportedFeaturesIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* NFService_H_ */

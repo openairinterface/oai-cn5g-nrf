@@ -13,9 +13,7 @@
 
 #include "ServiceNameCond.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 ServiceNameCond::ServiceNameCond() {}
 
@@ -41,6 +39,4 @@ void ServiceNameCond::setServiceName(std::string const& value) {
   m_ServiceName = value;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

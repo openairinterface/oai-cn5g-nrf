@@ -75,7 +75,7 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::nrf::model;
+using namespace oai::model::nrf;
 using namespace oai::nrf::app;
 
 class DiscNFInstancesStoreApiImpl
@@ -92,25 +92,29 @@ class DiscNFInstancesStoreApiImpl
       const Pistache::Optional<std::string>& requesterNfInstanceId,
       const Pistache::Optional<std::vector<ServiceName>>& serviceNames,
       const Pistache::Optional<std::string>& requesterNfInstanceFqdn,
-      const Pistache::Optional<std::vector<PlmnId>>& targetPlmnList,
-      const Pistache::Optional<std::vector<PlmnId>>& requesterPlmnList,
+      const Pistache::Optional<std::vector<oai::model::common::PlmnId>>&
+          targetPlmnList,
+      const Pistache::Optional<std::vector<oai::model::common::PlmnId>>&
+          requesterPlmnList,
       const Pistache::Optional<std::string>& targetNfInstanceId,
       const Pistache::Optional<std::string>& targetNfFqdn,
       const Pistache::Optional<std::string>& hnrfUri,
-      const Pistache::Optional<std::vector<Snssai>>& snssais,
-      const Pistache::Optional<std::vector<Snssai>>& requesterSnssais,
+      const Pistache::Optional<std::vector<oai::model::common::Snssai>>&
+          snssais,
+      const Pistache::Optional<std::vector<oai::model::common::Snssai>>&
+          requesterSnssais,
       const Pistache::Optional<std::vector<PlmnSnssai>>& plmnSpecificSnssaiList,
       const Pistache::Optional<std::string>& dnn,
       const Pistache::Optional<std::vector<std::string>>& nsiList,
       const Pistache::Optional<std::string>& smfServingArea,
-      const Pistache::Optional<Tai>& tai,
+      const Pistache::Optional<oai::model::common::Tai>& tai,
       const Pistache::Optional<std::string>& amfRegionId,
       const Pistache::Optional<std::string>& amfSetId,
-      const Pistache::Optional<Guami>& guami,
+      const Pistache::Optional<oai::model::common::Guami>& guami,
       const Pistache::Optional<std::string>& supi,
       const Pistache::Optional<std::string>& ueIpv4Address,
       const Pistache::Optional<std::string>& ipDomain,
-      const Pistache::Optional<Ipv6Prefix>& ueIpv6Prefix,
+      const Pistache::Optional<oai::model::common::Ipv6Prefix>& ueIpv6Prefix,
       const Pistache::Optional<bool>& pgwInd,
       const Pistache::Optional<std::string>& pgw,
       const Pistache::Optional<std::string>& gpsi,
@@ -119,19 +123,21 @@ class DiscNFInstancesStoreApiImpl
       const Pistache::Optional<std::string>& routingIndicator,
       const Pistache::Optional<std::vector<std::string>>& groupIdList,
       const Pistache::Optional<std::vector<std::string>>& dnaiList,
-      const Pistache::Optional<std::vector<PduSessionType>>& pduSessionTypes,
+      const Pistache::Optional<std::vector<oai::model::common::PduSessionType>>&
+          pduSessionTypes,
       const Pistache::Optional<std::vector<EventId>>& eventIdList,
       const Pistache::Optional<std::vector<NwdafEvent>>& nwdafEventList,
       const Pistache::Optional<std::string>& supportedFeatures,
       const Pistache::Optional<bool>& upfIwkEpsInd,
-      const Pistache::Optional<PlmnId>& chfSupportedPlmn,
+      const Pistache::Optional<oai::model::common::PlmnId>& chfSupportedPlmn,
       const Pistache::Optional<std::string>& preferredLocality,
-      const Pistache::Optional<AccessType>& accessType,
+      const Pistache::Optional<oai::model::common::AccessType>& accessType,
       const Pistache::Optional<int32_t>& limit,
       const Pistache::Optional<std::vector<std::string>>& requiredFeatures,
-      const Pistache::Optional<ComplexQuery>& complexQuery,
+      const Pistache::Optional<oai::model::common::ComplexQuery>& complexQuery,
       const Pistache::Optional<int32_t>& maxPayloadSize,
-      const Pistache::Optional<AtsssCapability>& atsssCapability,
+      const Pistache::Optional<oai::model::common::AtsssCapability>&
+          atsssCapability,
       const Pistache::Optional<bool>& upfUeIpAddrInd,
       const Pistache::Optional<Pistache::Http::Header::Raw>& ifNoneMatch,
       Pistache::Http::ResponseWriter& response);

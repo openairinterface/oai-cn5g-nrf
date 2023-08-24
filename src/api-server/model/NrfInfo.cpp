@@ -13,9 +13,7 @@
 
 #include "NrfInfo.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 NrfInfo::NrfInfo() {
   m_ServedUdrInfoIsSet   = false;
@@ -235,6 +233,4 @@ void NrfInfo::unsetServedNwdafInfo() {
   m_ServedNwdafInfoIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

@@ -13,9 +13,8 @@
 
 #include "Inline_response_200.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::common;
 
 Inline_response_200::Inline_response_200() {
   m__linksIsSet = false;
@@ -54,6 +53,4 @@ void Inline_response_200::unset_links() {
   m__linksIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

@@ -13,9 +13,8 @@
 
 #include "IpEndPoint.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::common;
 
 IpEndPoint::IpEndPoint() {
   m_Ipv4Address      = "";
@@ -112,6 +111,4 @@ void IpEndPoint::unsetPort() {
   m_PortIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

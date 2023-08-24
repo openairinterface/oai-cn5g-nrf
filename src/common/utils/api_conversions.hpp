@@ -36,7 +36,7 @@
 #include "SubscriptionData.h"
 #include "nrf.h"
 
-using namespace oai::nrf::model;
+using namespace oai::model::nrf;
 using namespace oai::nrf::app;
 
 namespace oai {

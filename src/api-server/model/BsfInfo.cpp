@@ -13,9 +13,7 @@
 
 #include "BsfInfo.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 BsfInfo::BsfInfo() {
   m_DnnListIsSet           = false;
@@ -113,6 +111,4 @@ void BsfInfo::unsetIpv6PrefixRanges() {
   m_Ipv6PrefixRangesIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

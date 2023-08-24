@@ -13,9 +13,7 @@
 
 #include "SearchResult.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 SearchResult::SearchResult() {
   m_ValidityPeriod            = 0;
@@ -124,6 +122,4 @@ void SearchResult::unsetNrfSupportedFeatures() {
   m_NrfSupportedFeaturesIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

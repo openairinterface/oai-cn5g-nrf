@@ -13,9 +13,8 @@
 
 #include "Ipv6PrefixRange.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::common;
 
 Ipv6PrefixRange::Ipv6PrefixRange() {
   m_StartIsSet = false;
@@ -72,6 +71,4 @@ void Ipv6PrefixRange::unsetEnd() {
   m_EndIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

@@ -13,9 +13,7 @@
 
 #include "NfGroupCond.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 NfGroupCond::NfGroupCond() {
   m_NfType    = "";
@@ -52,6 +50,4 @@ void NfGroupCond::setNfGroupId(std::string const& value) {
   m_NfGroupId = value;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

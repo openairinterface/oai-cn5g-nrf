@@ -27,6 +27,7 @@ include_directories(${SRC_TOP_DIR}/api-server/)
 include_directories(${SRC_TOP_DIR}/common/)
 include_directories(${SRC_TOP_DIR}/${MOUNTED_COMMON}/logger)
 include(${SRC_TOP_DIR}/${MOUNTED_COMMON}/config/config.cmake)
+include(${BUILD_TOP_DIR}/nrf/used_common_files.cmake)
 
 add_library (NRF STATIC
   nrf_app.cpp

@@ -13,9 +13,9 @@
 
 #include "InterfaceUpfInfoItem.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::nrf;
+using namespace oai::model::common;
 
 InterfaceUpfInfoItem::InterfaceUpfInfoItem() {
   m_Ipv4EndpointAddressesIsSet = false;
@@ -124,6 +124,4 @@ void InterfaceUpfInfoItem::unsetNetworkInstance() {
   m_NetworkInstanceIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

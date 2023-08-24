@@ -48,7 +48,8 @@
 #include "string.hpp"
 #include "common_defs.h"
 
-using namespace oai::nrf::model;
+using namespace oai::model::nrf;
+using namespace oai::model::common;
 using namespace oai::nrf::app;
 using namespace oai::nrf;
 

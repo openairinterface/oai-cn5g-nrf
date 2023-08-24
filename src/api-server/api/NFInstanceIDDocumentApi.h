@@ -34,8 +34,6 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::nrf::model;
-
 class NFInstanceIDDocumentApi {
  public:
   NFInstanceIDDocumentApi(std::shared_ptr<Pistache::Rest::Router>);
@@ -99,7 +97,8 @@ class NFInstanceIDDocumentApi {
   /// name="contentEncoding">Content-Encoding, described in IETF RFC 7231
   /// (optional, default to &quot;&quot;)</param>
   virtual void register_nf_instance(
-      const std::string& nfInstanceID, const NFProfile& nFProfile,
+      const std::string& nfInstanceID,
+      const oai::model::nrf::NFProfile& nFProfile,
       const Pistache::Optional<Pistache::Http::Header::Raw>& contentEncoding,
       Pistache::Http::ResponseWriter& response) = 0;
 
@@ -112,7 +111,8 @@ class NFInstanceIDDocumentApi {
   /// <param name="nfInstanceID">Unique ID of the NF Instance to update</param>
   /// <param name="patchItem"></param>
   virtual void update_nf_instance(
-      const std::string& nfInstanceID, const std::vector<PatchItem>& patchItem,
+      const std::string& nfInstanceID,
+      const std::vector<oai::model::common::PatchItem>& patchItem,
       Pistache::Http::ResponseWriter& response) = 0;
 };
 

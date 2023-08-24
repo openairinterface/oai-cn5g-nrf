@@ -13,9 +13,8 @@
 
 #include "SnssaiUpfInfoItem.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::common;
 
 SnssaiUpfInfoItem::SnssaiUpfInfoItem() {}
 
@@ -50,6 +49,4 @@ void SnssaiUpfInfoItem::setDnnUpfInfoList(
   m_DnnUpfInfoList = value;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

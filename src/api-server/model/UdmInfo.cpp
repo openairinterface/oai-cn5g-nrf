@@ -13,9 +13,7 @@
 
 #include "UdmInfo.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 UdmInfo::UdmInfo() {
   m_GroupId                             = "";
@@ -137,6 +135,4 @@ void UdmInfo::unsetRoutingIndicators() {
   m_RoutingIndicatorsIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

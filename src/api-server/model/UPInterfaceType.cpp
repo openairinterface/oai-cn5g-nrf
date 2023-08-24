@@ -13,9 +13,7 @@
 
 #include "UPInterfaceType.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 UPInterfaceType::UPInterfaceType() {}
 
@@ -31,6 +29,4 @@ void to_json(nlohmann::json& j, const UPInterfaceType& o) {
 
 void from_json(const nlohmann::json& j, UPInterfaceType& o) {}
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

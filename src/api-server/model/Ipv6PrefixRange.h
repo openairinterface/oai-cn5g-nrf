@@ -22,9 +22,7 @@
 #include "Ipv6Prefix.h"
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -42,15 +40,15 @@ class Ipv6PrefixRange {
   /// <summary>
   ///
   /// </summary>
-  Ipv6Prefix getStart() const;
-  void setStart(Ipv6Prefix const& value);
+  oai::model::common::Ipv6Prefix getStart() const;
+  void setStart(oai::model::common::Ipv6Prefix const& value);
   bool startIsSet() const;
   void unsetStart();
   /// <summary>
   ///
   /// </summary>
-  Ipv6Prefix getEnd() const;
-  void setEnd(Ipv6Prefix const& value);
+  oai::model::common::Ipv6Prefix getEnd() const;
+  void setEnd(oai::model::common::Ipv6Prefix const& value);
   bool endIsSet() const;
   void unsetEnd();
 
@@ -58,14 +56,12 @@ class Ipv6PrefixRange {
   friend void from_json(const nlohmann::json& j, Ipv6PrefixRange& o);
 
  protected:
-  Ipv6Prefix m_Start;
+  oai::model::common::Ipv6Prefix m_Start;
   bool m_StartIsSet;
-  Ipv6Prefix m_End;
+  oai::model::common::Ipv6Prefix m_End;
   bool m_EndIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* Ipv6PrefixRange_H_ */

@@ -13,9 +13,7 @@
 
 #include "PlmnRange.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 PlmnRange::PlmnRange() {
   m_Start        = "";
@@ -94,6 +92,4 @@ void PlmnRange::unsetPattern() {
   m_PatternIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

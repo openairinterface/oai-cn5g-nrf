@@ -24,9 +24,7 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -51,8 +49,9 @@ class N2InterfaceAmfInfo {
   /// <summary>
   ///
   /// </summary>
-  std::vector<Ipv6Addr>& getIpv6EndpointAddress();
-  void setIpv6EndpointAddress(std::vector<Ipv6Addr> const& value);
+  std::vector<oai::model::common::Ipv6Addr>& getIpv6EndpointAddress();
+  void setIpv6EndpointAddress(
+      std::vector<oai::model::common::Ipv6Addr> const& value);
   bool ipv6EndpointAddressIsSet() const;
   void unsetIpv6EndpointAddress();
   /// <summary>
@@ -69,14 +68,12 @@ class N2InterfaceAmfInfo {
  protected:
   std::vector<std::string> m_Ipv4EndpointAddress;
   bool m_Ipv4EndpointAddressIsSet;
-  std::vector<Ipv6Addr> m_Ipv6EndpointAddress;
+  std::vector<oai::model::common::Ipv6Addr> m_Ipv6EndpointAddress;
   bool m_Ipv6EndpointAddressIsSet;
   std::string m_AmfName;
   bool m_AmfNameIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* N2InterfaceAmfInfo_H_ */

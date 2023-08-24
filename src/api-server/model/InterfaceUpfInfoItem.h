@@ -25,9 +25,7 @@
 #include "UPInterfaceType.h"
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -63,8 +61,9 @@ class InterfaceUpfInfoItem {
   /// <summary>
   ///
   /// </summary>
-  std::vector<Ipv6Addr>& getIpv6EndpointAddresses();
-  void setIpv6EndpointAddresses(std::vector<Ipv6Addr> const& value);
+  std::vector<oai::model::common::Ipv6Addr>& getIpv6EndpointAddresses();
+  void setIpv6EndpointAddresses(
+      std::vector<oai::model::common::Ipv6Addr> const& value);
   bool ipv6EndpointAddressesIsSet() const;
   void unsetIpv6EndpointAddresses();
   /// <summary>
@@ -91,7 +90,7 @@ class InterfaceUpfInfoItem {
 
   std::vector<std::string> m_Ipv4EndpointAddresses;
   bool m_Ipv4EndpointAddressesIsSet;
-  std::vector<Ipv6Addr> m_Ipv6EndpointAddresses;
+  std::vector<oai::model::common::Ipv6Addr> m_Ipv6EndpointAddresses;
   bool m_Ipv6EndpointAddressesIsSet;
   std::string m_EndpointFqdn;
   bool m_EndpointFqdnIsSet;
@@ -99,8 +98,6 @@ class InterfaceUpfInfoItem {
   bool m_NetworkInstanceIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* InterfaceUpfInfoItem_H_ */

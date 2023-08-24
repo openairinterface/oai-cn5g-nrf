@@ -13,9 +13,7 @@
 
 #include "NotifCondition.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 NotifCondition::NotifCondition() {
   m_MonitoredAttributesIsSet   = false;
@@ -76,6 +74,4 @@ void NotifCondition::unsetUnmonitoredAttributes() {
   m_UnmonitoredAttributesIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

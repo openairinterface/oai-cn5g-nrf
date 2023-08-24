@@ -22,7 +22,8 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::nrf::model;
+using namespace oai::model::nrf;
+using namespace oai::model::common;
 
 NFInstancesStoreApi::NFInstancesStoreApi(
     std::shared_ptr<Pistache::Rest::Router> rtr) {

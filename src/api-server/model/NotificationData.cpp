@@ -13,9 +13,8 @@
 
 #include "NotificationData.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::common;
 
 NotificationData::NotificationData() {
   m_NfInstanceUri       = "";
@@ -90,6 +89,4 @@ void NotificationData::unsetProfileChanges() {
   m_ProfileChangesIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

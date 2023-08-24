@@ -50,7 +50,8 @@
 #include "nrf_search_result.hpp"
 
 using namespace oai::nrf::app;
-using namespace oai::nrf::model;
+using namespace oai::model::nrf;
+using namespace oai::model::common;
 using namespace std::chrono;
 using namespace boost::placeholders;
 
@@ -98,10 +99,9 @@ void nrf_app::generate_uuid() {
 
 //------------------------------------------------------------------------------
 void nrf_app::handle_register_nf_instance(
-    const std::string& nf_instance_id,
-    const oai::nrf::model::NFProfile& nf_profile, int& http_code,
-    const uint8_t http_version,
-    oai::nrf::model::ProblemDetails& problem_details) {
+    const std::string& nf_instance_id, const NFProfile& nf_profile,
+    int& http_code, const uint8_t http_version,
+    ProblemDetails& problem_details) {
   Logger::nrf_app().info(
       "Handle Register NF Instance/Update NF Instance (HTTP version %d)",
       http_version);
@@ -207,7 +207,7 @@ void nrf_app::handle_register_nf_instance(
 void nrf_app::handle_update_nf_instance(
     const std::string& nf_instance_id, const std::vector<PatchItem>& patchItem,
     int& http_code, const uint8_t http_version,
-    oai::nrf::model::ProblemDetails& problem_details) {
+    ProblemDetails& problem_details) {
   Logger::nrf_app().info(
       "Handle Update NF Instance request (HTTP version %d)", http_version);
 
@@ -220,7 +220,8 @@ void nrf_app::handle_update_nf_instance(
 
   if (sn.get() != nullptr) {
     for (auto p : patchItem) {
-      patch_op_type_t op = api_conv::string_to_patch_operation(p.getOp());
+      patch_op_type_t op =
+          api_conv::string_to_patch_operation(p.getOp().getEnumString());
       // Verify Path
       if ((p.getPath().substr(0, 1).compare("/") != 0) or
           (p.getPath().length() < 2)) {
@@ -335,7 +336,7 @@ void nrf_app::handle_update_nf_instance(
 void nrf_app::handle_get_nf_instances(
     const std::string& nf_type, std::vector<std::string>& uris,
     const uint32_t& limit_item, int& http_code, const uint8_t http_version,
-    oai::nrf::model::ProblemDetails& problem_details) {
+    ProblemDetails& problem_details) {
   Logger::nrf_app().info(
       "Handle Retrieve a collection of NF Instances (HTTP version %d)",
       http_version);
@@ -554,7 +555,8 @@ void nrf_app::handle_update_subscription(
   if (ss.get() != nullptr) {
     // patchItem should contain only 1 element
     for (auto p : patchItem) {
-      patch_op_type_t op = api_conv::string_to_patch_operation(p.getOp());
+      patch_op_type_t op =
+          api_conv::string_to_patch_operation(p.getOp().getEnumString());
       // Verify Path
       if ((p.getPath().substr(0, 1).compare("/") != 0) or
           (p.getPath().length() < 2)) {
@@ -582,7 +584,7 @@ void nrf_app::handle_update_subscription(
                   boost::posix_time::from_iso_string(p.getValue()));
               ss.get()->set_validity_time(pt);
               Logger::nrf_app().debug(
-                  "New validity time: %s", p.getValue().c_str());
+                  "New validity time: %s", p.getValue().dump());
               Logger::nrf_app().debug("Updated a subscription to the DB");
               // display the info
               ss.get()->display();

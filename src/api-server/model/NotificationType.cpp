@@ -13,9 +13,7 @@
 
 #include "NotificationType.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 NotificationType::NotificationType() {}
 
@@ -31,6 +29,4 @@ void to_json(nlohmann::json& j, const NotificationType& o) {
 
 void from_json(const nlohmann::json& j, NotificationType& o) {}
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

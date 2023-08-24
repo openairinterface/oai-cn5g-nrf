@@ -23,9 +23,7 @@
 #include "Guami.h"
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -43,18 +41,16 @@ class GuamiListCond {
   /// <summary>
   ///
   /// </summary>
-  std::vector<Guami>& getGuamiList();
-  void setGuamiList(std::vector<Guami> const& value);
+  std::vector<oai::model::common::Guami>& getGuamiList();
+  void setGuamiList(std::vector<oai::model::common::Guami> const& value);
 
   friend void to_json(nlohmann::json& j, const GuamiListCond& o);
   friend void from_json(const nlohmann::json& j, GuamiListCond& o);
 
  protected:
-  std::vector<Guami> m_GuamiList;
+  std::vector<oai::model::common::Guami> m_GuamiList;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* GuamiListCond_H_ */

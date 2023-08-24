@@ -13,9 +13,7 @@
 
 #include "AccessTokenRsp.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 AccessTokenRsp::AccessTokenRsp() {
   m_Access_token    = "";
@@ -92,6 +90,4 @@ void AccessTokenRsp::unsetScope() {
   m_ScopeIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
