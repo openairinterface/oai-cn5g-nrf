@@ -838,7 +838,7 @@ void nrf_app::find_nf_profiles(
   std::shared_lock lock(m_instance_id2nrf_profile);
   for (auto profile : instance_id2nrf_profile) {
     if ((profile.second.get()->get_nf_type() == nf_type) and
-        (profile.second.get()->get_nf_status() == "REGISTERED")) {
+        profile.second->is_nf_active()) {
       profiles.push_back(profile.second);
     }
   }
