@@ -31,7 +31,8 @@ nrf_config_type::nrf_config_type(
     const std::string& name, const std::string& host, const sbi_interface& sbi)
     : nf(name, host, sbi) {
   m_config_name = "NRF Config";
-  m_heartbeat   = int_config_value(NRF_CONFIG_HEARTBEAT, 10); //Default value: 10 seconds
+  m_heartbeat =
+      int_config_value(NRF_CONFIG_HEARTBEAT, 10);  // Default value: 10 seconds
   m_heartbeat.set_validation_interval(1, 65535);
 }
 
@@ -44,7 +45,7 @@ void nrf_config_type::from_yaml(const YAML::Node& node) {
     auto key = elem.first.as<std::string>();
 
     if (key == NRF_CONFIG_HEARTBEAT) {
-    	m_heartbeat.from_yaml(elem.second);
+      m_heartbeat.from_yaml(elem.second);
     }
   }
 }
@@ -75,7 +76,7 @@ bool nrf_config_type::from_json(const nlohmann::json& json_data) {
 
 //------------------------------------------------------------------------------
 std::string nrf_config_type::to_string(const std::string& indent) const {
-  std::string out = {};
+  std::string out          = {};
   std::string inner_indent = indent + indent;
   unsigned int inner_width = get_inner_width(inner_indent.length());
   out.append(nf::to_string(indent));

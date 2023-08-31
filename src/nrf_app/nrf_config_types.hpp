@@ -24,7 +24,7 @@
 #include "config.hpp"
 
 constexpr auto NRF_CONFIG_HEARTBEAT       = "heartbeat";
-constexpr auto NRF_CONFIG_HEARTBEAT_LABEL       = "Heartbeat";
+constexpr auto NRF_CONFIG_HEARTBEAT_LABEL = "Heartbeat";
 
 namespace oai::config::nrf {
 
