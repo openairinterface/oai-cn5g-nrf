@@ -55,6 +55,7 @@ using namespace std::chrono;
 using namespace boost::placeholders;
 
 extern nrf_app* nrf_app_inst;
+extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 nrf_client* nrf_client_inst = nullptr;
 nrf_jwt* nrf_jwt_inst       = nullptr;
 
@@ -160,7 +161,7 @@ void nrf_app::handle_register_nf_instance(
   // convert to nrf_profile
   if (api_conv::profile_api_to_nrf_profile(nf_profile, sn)) {
     // set default value for hearbeattimer
-    sn.get()->set_nf_heartBeat_timer(HEART_BEAT_TIMER);
+    sn.get()->set_nf_heartBeat_timer(nrf_cfg->nrf()->get_heartbeat());
     if (is_profile_exist(nf_instance_id))
       http_code = HTTP_STATUS_CODE_200_OK;
     else

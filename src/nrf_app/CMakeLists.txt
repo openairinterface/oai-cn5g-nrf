@@ -30,6 +30,7 @@ include(${SRC_TOP_DIR}/${MOUNTED_COMMON}/config/config.cmake)
 
 add_library (NRF STATIC
   nrf_app.cpp
+  nrf_config_types.cpp
   nrf_profile.cpp
   nrf_subscription.cpp 
   nrf_client.cpp 
