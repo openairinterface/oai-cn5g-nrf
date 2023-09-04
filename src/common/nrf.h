@@ -22,8 +22,6 @@
 #ifndef FILE_NRF_SEEN
 #define FILE_NRF_SEEN
 
-//#define HEART_BEAT_TIMER 10
-
 #define _unused(x) ((void) (x))
 
 typedef enum nf_type_s {
