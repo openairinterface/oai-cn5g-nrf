@@ -36,11 +36,14 @@
 
 #include "api_conversions.hpp"
 #include "logger.hpp"
+#include "nrf_config.hpp"
 #include "string.hpp"
 
 using namespace std;
 using namespace oai::nrf::app;
 using namespace boost::placeholders;
+
+extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_nf_instance_id(const std::string& instance_id) {
@@ -661,8 +664,8 @@ void nrf_profile::to_json(nlohmann::json& data) const {
 void nrf_profile::subscribe_heartbeat_timeout_nfregistration(uint64_t ms) {
   // For the first timeout, we use 2*HEART_BEAT_TIMER as interval
   struct itimerspec its;
-  its.it_value.tv_sec  = 2 * HEART_BEAT_TIMER;  // seconds
-  its.it_value.tv_nsec = 0;                     // 100 * 1000 * 1000; //100ms
+  its.it_value.tv_sec  = 2 * nrf_cfg->nrf()->get_heartbeat();  // seconds
+  its.it_value.tv_nsec = 0;  // 100 * 1000 * 1000; //100ms
   const uint64_t interval =
       its.it_value.tv_sec * 1000 +
       its.it_value.tv_nsec / 1000000;  // convert sec, nsec to msec
@@ -670,7 +673,7 @@ void nrf_profile::subscribe_heartbeat_timeout_nfregistration(uint64_t ms) {
   Logger::nrf_app().debug(
       "Subscribe to the HeartbeatTimer expire event (after NF "
       "registration): interval %d, current time %ld",
-      2 * HEART_BEAT_TIMER, ms);
+      2 * nrf_cfg->nrf()->get_heartbeat(), ms);
   std::unique_lock lock(hb_mutex);
   first_hb_connection = m_event_sub.subscribe_task_tick(
       boost::bind(
@@ -681,8 +684,8 @@ void nrf_profile::subscribe_heartbeat_timeout_nfregistration(uint64_t ms) {
 //------------------------------------------------------------------------------
 void nrf_profile::subscribe_heartbeat_timeout_nfupdate(uint64_t ms) {
   struct itimerspec its;
-  its.it_value.tv_sec  = HEART_BEAT_TIMER;  // Second
-  its.it_value.tv_nsec = 0;                 // 100 * 1000 * 1000; //100ms
+  its.it_value.tv_sec  = nrf_cfg->nrf()->get_heartbeat();  // Second
+  its.it_value.tv_nsec = 0;  // 100 * 1000 * 1000; //100ms
   const uint64_t interval =
       its.it_value.tv_sec * 1000 +
       its.it_value.tv_nsec / 1000000;  // convert sec, nsec to msec
@@ -690,7 +693,7 @@ void nrf_profile::subscribe_heartbeat_timeout_nfupdate(uint64_t ms) {
   Logger::nrf_app().debug(
       "Subscribe to HeartbeatTimer expire event (after NF update): interval "
       "%d, current time %ld",
-      HEART_BEAT_TIMER, ms);
+      nrf_cfg->nrf()->get_heartbeat(), ms);
 
   if (first_update) {
     ms = ms + 2000;  // Not a realtime NF: adding 2000ms interval between the

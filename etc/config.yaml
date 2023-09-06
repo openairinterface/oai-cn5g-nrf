@@ -204,7 +204,8 @@ dnns:
   - dnn: "ims"
     pdu_session_type: "IPV4V6"
     ipv4_pool: "14.1.1.2 - 14.1.1.253"
-
+nrf:
+  heartbeat: 10 # in seconds
 pcf:
   local_policy:
     policy_decisions_path: /openair-pcf/policies/policy_decisions

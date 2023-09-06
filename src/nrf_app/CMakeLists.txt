@@ -31,6 +31,7 @@ include(${BUILD_TOP_DIR}/nrf/used_common_files.cmake)
 
 add_library (NRF STATIC
   nrf_app.cpp
+  nrf_config_types.cpp
   nrf_profile.cpp
   nrf_subscription.cpp 
   nrf_client.cpp 

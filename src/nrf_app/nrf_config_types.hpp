@@ -19,42 +19,35 @@
  *      contact@openairinterface.org
  */
 
-/*! \file nrf_config.hpp
- * \brief
- \author  Lionel GAUTHIER, Tien-Thinh NGUYEN
- \company Eurecom
- \date 2020
- \email: lionel.gauthier@eurecom.fr, tien-thinh.nguyen@eurecom.fr
- */
-
 #pragma once
 
 #include "config.hpp"
-#include "nrf_config_types.hpp"
+
+constexpr auto NRF_CONFIG_HEARTBEAT       = "heartbeat";
+constexpr auto NRF_CONFIG_HEARTBEAT_LABEL = "Heartbeat";
 
 namespace oai::config::nrf {
 
-class nrf_config : public oai::config::config {
+class nrf_config_type : public oai::config::nf {
+  friend class nrf_config;
+
+ private:
+  int_config_value m_heartbeat;
+
  public:
-  // Stefan: we should get rid of this instance things (see PCF)
-  unsigned int instance = 0;
-  explicit nrf_config(
-      const std::string& config_path, bool log_stdout, bool log_rot_file)
-      : config(config_path, NRF_CONFIG_NAME, log_stdout, log_rot_file) {
-    m_used_config_values = {LOG_LEVEL_CONFIG_NAME, NF_LIST_CONFIG_NAME,
-                            NF_CONFIG_HTTP_NAME, NRF_CONFIG_NAME};
-    m_used_sbi_values    = {NRF_CONFIG_NAME};
+  explicit nrf_config_type(
+      const std::string& name, const std::string& host,
+      const sbi_interface& sbi);
+  void from_yaml(const YAML::Node& node) override;
+  nlohmann::json to_json() override;
+  bool from_json(const nlohmann::json& json_data) override;
 
-    m_register_nrf_feature.unset_config();
+  [[nodiscard]] std::string to_string(const std::string& indent) const override;
 
-    auto nrf = std::make_shared<nrf_config_type>(
-        NRF_CONFIG_NAME, "oai-nrf",
-        sbi_interface("SBI", "oai-nrf", 80, "v1", "eth0"));
-    add_nf(NRF_CONFIG_NAME, nrf);
-  };
+  void validate() override;
 
-  std::shared_ptr<nrf_config_type> nrf() const {
-    return std::static_pointer_cast<nrf_config_type>(get_local());
-  };
+  [[nodiscard]] uint16_t get_heartbeat() const;
+  void set_heartbeat(uint16_t);
 };
+
 }  // namespace oai::config::nrf
