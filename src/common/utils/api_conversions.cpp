@@ -227,7 +227,7 @@ bool api_conv::profile_api_to_nrf_profile(
         for (auto s : upf_info_api.getInterfaceUpfInfoList()) {
           interface_upf_info_item_t interface = {};
           nf_up_interface_type_t up_interface_type =
-              string_to_up_interface_type(s.getInterfaceType());
+              string_to_up_interface_type(s.getInterfaceType().getEnumString());
           switch (up_interface_type) {
             case N3: {
               interface.interface_type = "N3";
