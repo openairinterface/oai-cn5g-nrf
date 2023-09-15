@@ -25,9 +25,7 @@
 #include "NotificationType.h"
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -83,8 +81,6 @@ class DefaultNotificationSubscription {
   bool m_N2InformationClassIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* DefaultNotificationSubscription_H_ */

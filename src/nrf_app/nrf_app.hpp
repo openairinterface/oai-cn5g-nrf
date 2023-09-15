@@ -46,7 +46,6 @@ namespace oai {
 namespace nrf {
 namespace app {
 
-using namespace oai::nrf::model;
 class nrf_app {
  public:
   explicit nrf_app(const std::string& config_file, nrf_event& ev);
@@ -72,9 +71,10 @@ class nrf_app {
    * @return void
    */
   void handle_register_nf_instance(
-      const std::string& nf_instance_id, const NFProfile& nf_profile,
-      int& http_code, const uint8_t http_version,
-      ProblemDetails& problem_details);
+      const std::string& nf_instance_id,
+      const oai::model::nrf::NFProfile& nf_profile, int& http_code,
+      const uint8_t http_version,
+      oai::model::common::ProblemDetails& problem_details);
 
   /*
    * Handle a Get NF Instance Information
@@ -91,7 +91,7 @@ class nrf_app {
   void handle_get_nf_instances(
       const std::string& nf_type, std::vector<std::string>& uris,
       const uint32_t& limit_item, int& http_code, const uint8_t http_version,
-      oai::nrf::model::ProblemDetails& problem_details);
+      oai::model::common::ProblemDetails& problem_details);
 
   /*
    * Handle a Update NF Instance request
@@ -105,8 +105,9 @@ class nrf_app {
    */
   void handle_update_nf_instance(
       const std::string& nf_instance_id,
-      const std::vector<PatchItem>& patchItem, int& http_code,
-      const uint8_t http_version, ProblemDetails& problem_details);
+      const std::vector<oai::model::common::PatchItem>& patchItem,
+      int& http_code, const uint8_t http_version,
+      oai::model::common::ProblemDetails& problem_details);
 
   /*
    * Handle a Get NF Instance request
@@ -120,7 +121,7 @@ class nrf_app {
   void handle_get_nf_instance(
       const std::string& nf_instance_id, std::shared_ptr<nrf_profile>& profile,
       int& http_code, const uint8_t http_version,
-      ProblemDetails& problem_details);
+      oai::model::common::ProblemDetails& problem_details);
 
   /*
    * Handle De-register a given NF Instance
@@ -132,7 +133,8 @@ class nrf_app {
    */
   void handle_deregister_nf_instance(
       const std::string& nf_instance_id, int& http_code,
-      const uint8_t http_version, ProblemDetails& problem_details);
+      const uint8_t http_version,
+      oai::model::common::ProblemDetails& problem_details);
 
   /*
    * Handle a Register NF Instance request
@@ -144,9 +146,9 @@ class nrf_app {
    * @return void
    */
   void handle_create_subscription(
-      const SubscriptionData& subscription_data, std::string& sub_id,
-      int& http_code, const uint8_t http_version,
-      ProblemDetails& problem_details);
+      const oai::model::nrf::SubscriptionData& subscription_data,
+      std::string& sub_id, int& http_code, const uint8_t http_version,
+      oai::model::common::ProblemDetails& problem_details);
 
   /*
    * Handle a NFStatusUnSubscribe request (removes an existing subscription)
@@ -158,7 +160,7 @@ class nrf_app {
    */
   void handle_remove_subscription(
       const std::string& sub_id, int& http_code, const uint8_t http_version,
-      ProblemDetails& problem_details);
+      oai::model::common::ProblemDetails& problem_details);
 
   /*
    * Handle a Update of Subscription to NF Instances
@@ -171,9 +173,10 @@ class nrf_app {
    * @return void
    */
   void handle_update_subscription(
-      const std::string& sub_id, const std::vector<PatchItem>& patchItem,
+      const std::string& sub_id,
+      const std::vector<oai::model::common::PatchItem>& patchItem,
       int& http_code, const uint8_t http_version,
-      ProblemDetails& problem_details);
+      oai::model::common::ProblemDetails& problem_details);
 
   /*
    * Handle NFDiscover to discover the set of NF Instances
@@ -193,7 +196,7 @@ class nrf_app {
       const std::string& target_nf_type, const std::string& requester_nf_type,
       const std::string& requester_nf_instance_id, uint32_t& limit_nfs,
       std::string& search_id, int& http_code, const uint8_t http_version,
-      ProblemDetails& problem_details);
+      oai::model::common::ProblemDetails& problem_details);
 
   /*
    * Handle a Register NF Instance request
@@ -205,9 +208,10 @@ class nrf_app {
    * @return void
    */
   void handle_access_token_request(
-      const std::string& request_body, AccessTokenRsp& access_token_rsp,
-      int& http_code, const uint8_t http_version,
-      ProblemDetails& problem_details);
+      const std::string& request_body,
+      oai::model::nrf::AccessTokenRsp& access_token_rsp, int& http_code,
+      const uint8_t http_version,
+      oai::model::common::ProblemDetails& problem_details);
 
   /*
    * Insert a nrf profile

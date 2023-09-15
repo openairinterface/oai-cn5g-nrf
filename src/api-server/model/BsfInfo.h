@@ -25,9 +25,7 @@
 #include "Ipv6PrefixRange.h"
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -85,8 +83,6 @@ class BsfInfo {
   bool m_Ipv6PrefixRangesIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* BsfInfo_H_ */

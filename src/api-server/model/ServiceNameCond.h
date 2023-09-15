@@ -22,9 +22,7 @@
 #include "ServiceName.h"
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -52,8 +50,6 @@ class ServiceNameCond {
   std::string m_ServiceName;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* ServiceNameCond_H_ */

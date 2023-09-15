@@ -23,9 +23,7 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -53,8 +51,6 @@ class NfTypeCond {
   std::string m_NfType;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* NfTypeCond_H_ */

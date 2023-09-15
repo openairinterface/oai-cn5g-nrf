@@ -13,9 +13,7 @@
 
 #include "N2InformationClass.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 N2InformationClass::N2InformationClass() {}
 
@@ -31,6 +29,4 @@ void to_json(nlohmann::json& j, const N2InformationClass& o) {
 
 void from_json(const nlohmann::json& j, N2InformationClass& o) {}
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

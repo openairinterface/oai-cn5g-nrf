@@ -13,9 +13,7 @@
 
 #include "N1MessageClass.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 N1MessageClass::N1MessageClass() {}
 
@@ -31,6 +29,4 @@ void to_json(nlohmann::json& j, const N1MessageClass& o) {
 
 void from_json(const nlohmann::json& j, N1MessageClass& o) {}
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

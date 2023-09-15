@@ -13,9 +13,8 @@
 
 #include "NwdafInfo.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::common;
 
 NwdafInfo::NwdafInfo() {
   m_EventIdsIsSet     = false;
@@ -112,6 +111,4 @@ void NwdafInfo::unsetTaiRangeList() {
   m_TaiRangeListIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

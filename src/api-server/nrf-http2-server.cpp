@@ -43,7 +43,8 @@
 
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
-using namespace oai::nrf::model;
+using namespace oai::model::nrf;
+using namespace oai::model::common;
 
 extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 

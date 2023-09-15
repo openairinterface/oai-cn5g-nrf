@@ -42,9 +42,9 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::nrf::model;
+using namespace oai::model::nrf;
+using namespace oai::model::common;
 using namespace oai::nrf::app;
-using namespace oai::nrf::helpers;
 
 AccessTokenRequestApiImpl::AccessTokenRequestApiImpl(
     std::shared_ptr<Pistache::Rest::Router> rtr, nrf_app* nrf_app_inst,

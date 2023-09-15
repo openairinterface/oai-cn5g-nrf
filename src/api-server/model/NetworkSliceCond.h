@@ -24,9 +24,7 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -44,8 +42,8 @@ class NetworkSliceCond {
   /// <summary>
   ///
   /// </summary>
-  std::vector<Snssai>& getSnssaiList();
-  void setSnssaiList(std::vector<Snssai> const& value);
+  std::vector<oai::model::common::Snssai>& getSnssaiList();
+  void setSnssaiList(std::vector<oai::model::common::Snssai> const& value);
   /// <summary>
   ///
   /// </summary>
@@ -58,14 +56,12 @@ class NetworkSliceCond {
   friend void from_json(const nlohmann::json& j, NetworkSliceCond& o);
 
  protected:
-  std::vector<Snssai> m_SnssaiList;
+  std::vector<oai::model::common::Snssai> m_SnssaiList;
 
   std::vector<std::string> m_NsiList;
   bool m_NsiListIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* NetworkSliceCond_H_ */

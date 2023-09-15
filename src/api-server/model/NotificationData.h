@@ -26,9 +26,7 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -63,8 +61,9 @@ class NotificationData {
   /// <summary>
   ///
   /// </summary>
-  std::vector<ChangeItem>& getProfileChanges();
-  void setProfileChanges(std::vector<ChangeItem> const& value);
+  std::vector<oai::model::common::ChangeItem>& getProfileChanges();
+  void setProfileChanges(
+      std::vector<oai::model::common::ChangeItem> const& value);
   bool profileChangesIsSet() const;
   void unsetProfileChanges();
 
@@ -78,12 +77,10 @@ class NotificationData {
 
   NFProfile m_NfProfile;
   bool m_NfProfileIsSet;
-  std::vector<ChangeItem> m_ProfileChanges;
+  std::vector<oai::model::common::ChangeItem> m_ProfileChanges;
   bool m_ProfileChangesIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* NotificationData_H_ */

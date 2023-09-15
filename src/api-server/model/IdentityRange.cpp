@@ -13,9 +13,7 @@
 
 #include "IdentityRange.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 IdentityRange::IdentityRange() {
   m_Start        = "";
@@ -94,6 +92,4 @@ void IdentityRange::unsetPattern() {
   m_PatternIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

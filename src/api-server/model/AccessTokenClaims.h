@@ -24,9 +24,7 @@
 #include "PlmnId.h"
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -146,15 +144,15 @@ class AccessTokenClaims {
   /// <summary>
   ///
   /// </summary>
-  PlmnId getConsumerPlmnId() const;
-  void setConsumerPlmnId(PlmnId const& value);
+  oai::model::common::PlmnId getConsumerPlmnId() const;
+  void setConsumerPlmnId(common::PlmnId const& value);
   bool consumerPlmnIdIsSet() const;
   void unsetConsumerPlmnId();
   /// <summary>
   ///
   /// </summary>
-  PlmnId getProducerPlmnId() const;
-  void setProducerPlmnId(PlmnId const& value);
+  oai::model::common::PlmnId getProducerPlmnId() const;
+  void setProducerPlmnId(common::PlmnId const& value);
   bool producerPlmnIdIsSet() const;
   void unsetProducerPlmnId();
 
@@ -172,14 +170,12 @@ class AccessTokenClaims {
 
   int32_t m_Exp;
 
-  PlmnId m_ConsumerPlmnId;
+  oai::model::common::PlmnId m_ConsumerPlmnId;
   bool m_ConsumerPlmnIdIsSet;
-  PlmnId m_ProducerPlmnId;
+  oai::model::common::PlmnId m_ProducerPlmnId;
   bool m_ProducerPlmnIdIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* AccessTokenClaims_H_ */

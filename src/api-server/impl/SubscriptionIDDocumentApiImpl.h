@@ -40,7 +40,7 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::nrf::model;
+using namespace oai::model::nrf;
 using namespace oai::nrf::app;
 
 class SubscriptionIDDocumentApiImpl
@@ -56,7 +56,7 @@ class SubscriptionIDDocumentApiImpl
       Pistache::Http::ResponseWriter& response);
   void update_subscription(
       const std::string& subscriptionID,
-      const std::vector<PatchItem>& patchItem,
+      const std::vector<oai::model::common::PatchItem>& patchItem,
       Pistache::Http::ResponseWriter& response);
 
  private:

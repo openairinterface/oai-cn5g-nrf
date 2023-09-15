@@ -11,6 +11,8 @@
  * the class manually.
  */
 
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include "DiscNFInstancesStoreApi.h"
 #include "Helpers.h"
 #include "nrf_config.hpp"
@@ -22,8 +24,9 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::nrf::helpers;
-using namespace oai::nrf::model;
+using namespace oai::model::common::helpers;
+using namespace oai::model::nrf;
+using namespace oai::model::common;
 
 DiscNFInstancesStoreApi::DiscNFInstancesStoreApi(
     std::shared_ptr<Pistache::Rest::Router> rtr) {
@@ -52,6 +55,8 @@ void DiscNFInstancesStoreApi::search_nf_instances_handler(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response) {
   // Getting the query params
+  // TODO Stefan: We should use the model values everywhere and then to_json,
+  // e.g. NFType, so we can use the enum and we are typesafe
   auto targetNfTypeQuery = request.query().get("target-nf-type");
   Pistache::Optional<std::string> targetNfType;
   if (!targetNfTypeQuery.isEmpty()) {
@@ -78,14 +83,10 @@ void DiscNFInstancesStoreApi::search_nf_instances_handler(
       requesterNfInstanceId = Pistache::Some(valueQuery_instance);
     }
   }
-  auto serviceNamesQuery = request.query().get("service-names");
-  Pistache::Optional<std::vector<ServiceName>> serviceNames;
-  if (!serviceNamesQuery.isEmpty()) {
-    std::vector<ServiceName> valueQuery_instance;
-    if (fromStringValue(serviceNamesQuery.get(), valueQuery_instance)) {
-      serviceNames = Pistache::Some(valueQuery_instance);
-    }
-  }
+  Pistache::Optional<std::vector<ServiceName>> serviceNames =
+      model_from_query_string<std::vector<ServiceName>>(
+          request, "service-names", true);
+
   auto requesterNfInstanceFqdnQuery =
       request.query().get("requester-nf-instance-fqdn");
   Pistache::Optional<std::string> requesterNfInstanceFqdn;
@@ -96,22 +97,14 @@ void DiscNFInstancesStoreApi::search_nf_instances_handler(
       requesterNfInstanceFqdn = Pistache::Some(valueQuery_instance);
     }
   }
-  auto targetPlmnListQuery = request.query().get("target-plmn-list");
-  Pistache::Optional<std::vector<PlmnId>> targetPlmnList;
-  if (!targetPlmnListQuery.isEmpty()) {
-    std::vector<PlmnId> valueQuery_instance;
-    if (fromStringValue(targetPlmnListQuery.get(), valueQuery_instance)) {
-      targetPlmnList = Pistache::Some(valueQuery_instance);
-    }
-  }
-  auto requesterPlmnListQuery = request.query().get("requester-plmn-list");
-  Pistache::Optional<std::vector<PlmnId>> requesterPlmnList;
-  if (!requesterPlmnListQuery.isEmpty()) {
-    std::vector<PlmnId> valueQuery_instance;
-    if (fromStringValue(requesterPlmnListQuery.get(), valueQuery_instance)) {
-      requesterPlmnList = Pistache::Some(valueQuery_instance);
-    }
-  }
+  Pistache::Optional<std::vector<PlmnId>> targetPlmnList =
+      model_from_query_string<std::vector<PlmnId>>(
+          request, "target-plmn-list", true);
+
+  Pistache::Optional<std::vector<PlmnId>> requesterPlmnList =
+      model_from_query_string<std::vector<PlmnId>>(
+          request, "requester-plmn-list", true);
+
   auto targetNfInstanceIdQuery = request.query().get("target-nf-instance-id");
   Pistache::Optional<std::string> targetNfInstanceId;
   if (!targetNfInstanceIdQuery.isEmpty()) {
@@ -136,32 +129,16 @@ void DiscNFInstancesStoreApi::search_nf_instances_handler(
       hnrfUri = Pistache::Some(valueQuery_instance);
     }
   }
-  auto snssaisQuery = request.query().get("snssais");
-  Pistache::Optional<std::vector<Snssai>> snssais;
-  if (!snssaisQuery.isEmpty()) {
-    std::vector<Snssai> valueQuery_instance;
-    if (fromStringValue(snssaisQuery.get(), valueQuery_instance)) {
-      snssais = Pistache::Some(valueQuery_instance);
-    }
-  }
-  auto requesterSnssaisQuery = request.query().get("requester-snssais");
-  Pistache::Optional<std::vector<Snssai>> requesterSnssais;
-  if (!requesterSnssaisQuery.isEmpty()) {
-    std::vector<Snssai> valueQuery_instance;
-    if (fromStringValue(requesterSnssaisQuery.get(), valueQuery_instance)) {
-      requesterSnssais = Pistache::Some(valueQuery_instance);
-    }
-  }
-  auto plmnSpecificSnssaiListQuery =
-      request.query().get("plmn-specific-snssai-list");
-  Pistache::Optional<std::vector<PlmnSnssai>> plmnSpecificSnssaiList;
-  if (!plmnSpecificSnssaiListQuery.isEmpty()) {
-    std::vector<PlmnSnssai> valueQuery_instance;
-    if (fromStringValue(
-            plmnSpecificSnssaiListQuery.get(), valueQuery_instance)) {
-      plmnSpecificSnssaiList = Pistache::Some(valueQuery_instance);
-    }
-  }
+
+  Pistache::Optional<std::vector<Snssai>> snssais =
+      model_from_query_string<std::vector<Snssai>>(request, "snssais", true);
+  Pistache::Optional<std::vector<Snssai>> requesterSnssais =
+      model_from_query_string<std::vector<Snssai>>(
+          request, "requester-snssais", true);
+  Pistache::Optional<std::vector<PlmnSnssai>> plmnSpecificSnssaiList =
+      model_from_query_string<std::vector<PlmnSnssai>>(
+          request, "plmn-specific-snssai-list", true);
+
   auto dnnQuery = request.query().get("dnn");
   Pistache::Optional<std::string> dnn;
   if (!dnnQuery.isEmpty()) {
@@ -186,15 +163,8 @@ void DiscNFInstancesStoreApi::search_nf_instances_handler(
       smfServingArea = Pistache::Some(valueQuery_instance);
     }
   }
-  auto taiQuery = request.query().get("tai");
-  Pistache::Optional<Tai> tai;
-  if (!taiQuery.isEmpty()) {
-    Tai valueQuery_instance;
-    if (fromStringValue(taiQuery.get(), valueQuery_instance)) {
-      tai = Pistache::Some(valueQuery_instance);
-    }
-  }
-  auto amfRegionIdQuery = request.query().get("amf-region-id");
+  Pistache::Optional<Tai> tai = model_from_query_string<Tai>(request, "tai");
+  auto amfRegionIdQuery       = request.query().get("amf-region-id");
   Pistache::Optional<std::string> amfRegionId;
   if (!amfRegionIdQuery.isEmpty()) {
     std::string valueQuery_instance;
@@ -210,14 +180,8 @@ void DiscNFInstancesStoreApi::search_nf_instances_handler(
       amfSetId = Pistache::Some(valueQuery_instance);
     }
   }
-  auto guamiQuery = request.query().get("guami");
-  Pistache::Optional<Guami> guami;
-  if (!guamiQuery.isEmpty()) {
-    Guami valueQuery_instance;
-    if (fromStringValue(guamiQuery.get(), valueQuery_instance)) {
-      guami = Pistache::Some(valueQuery_instance);
-    }
-  }
+  Pistache::Optional<Guami> guami =
+      model_from_query_string<Guami>(request, "guami");
   auto supiQuery = request.query().get("supi");
   Pistache::Optional<std::string> supi;
   if (!supiQuery.isEmpty()) {
@@ -242,14 +206,9 @@ void DiscNFInstancesStoreApi::search_nf_instances_handler(
       ipDomain = Pistache::Some(valueQuery_instance);
     }
   }
-  auto ueIpv6PrefixQuery = request.query().get("ue-ipv6-prefix");
-  Pistache::Optional<Ipv6Prefix> ueIpv6Prefix;
-  if (!ueIpv6PrefixQuery.isEmpty()) {
-    Ipv6Prefix valueQuery_instance;
-    if (fromStringValue(ueIpv6PrefixQuery.get(), valueQuery_instance)) {
-      ueIpv6Prefix = Pistache::Some(valueQuery_instance);
-    }
-  }
+  Pistache::Optional<Ipv6Prefix> ueIpv6Prefix =
+      model_from_query_string<Ipv6Prefix>(request, "ue-ipv6-prefix");
+
   auto pgwIndQuery = request.query().get("pgw-ind");
   Pistache::Optional<bool> pgwInd;
   if (!pgwIndQuery.isEmpty()) {
@@ -284,14 +243,9 @@ void DiscNFInstancesStoreApi::search_nf_instances_handler(
       externalGroupIdentity = Pistache::Some(valueQuery_instance);
     }
   }
-  auto dataSetQuery = request.query().get("data-set");
-  Pistache::Optional<DataSetId> dataSet;
-  if (!dataSetQuery.isEmpty()) {
-    DataSetId valueQuery_instance;
-    if (fromStringValue(dataSetQuery.get(), valueQuery_instance)) {
-      dataSet = Pistache::Some(valueQuery_instance);
-    }
-  }
+  Pistache::Optional<DataSetId> dataSet =
+      model_from_query_string<DataSetId>(request, "data-set");
+
   auto routingIndicatorQuery = request.query().get("routing-indicator");
   Pistache::Optional<std::string> routingIndicator;
   if (!routingIndicatorQuery.isEmpty()) {
@@ -316,30 +270,18 @@ void DiscNFInstancesStoreApi::search_nf_instances_handler(
       dnaiList = Pistache::Some(valueQuery_instance);
     }
   }
-  auto pduSessionTypesQuery = request.query().get("pdu-session-types");
-  Pistache::Optional<std::vector<PduSessionType>> pduSessionTypes;
-  if (!pduSessionTypesQuery.isEmpty()) {
-    std::vector<PduSessionType> valueQuery_instance;
-    if (fromStringValue(pduSessionTypesQuery.get(), valueQuery_instance)) {
-      pduSessionTypes = Pistache::Some(valueQuery_instance);
-    }
-  }
-  auto eventIdListQuery = request.query().get("event-id-list");
-  Pistache::Optional<std::vector<EventId>> eventIdList;
-  if (!eventIdListQuery.isEmpty()) {
-    std::vector<EventId> valueQuery_instance;
-    if (fromStringValue(eventIdListQuery.get(), valueQuery_instance)) {
-      eventIdList = Pistache::Some(valueQuery_instance);
-    }
-  }
-  auto nwdafEventListQuery = request.query().get("nwdaf-event-list");
-  Pistache::Optional<std::vector<NwdafEvent>> nwdafEventList;
-  if (!nwdafEventListQuery.isEmpty()) {
-    std::vector<NwdafEvent> valueQuery_instance;
-    if (fromStringValue(nwdafEventListQuery.get(), valueQuery_instance)) {
-      nwdafEventList = Pistache::Some(valueQuery_instance);
-    }
-  }
+  Pistache::Optional<std::vector<PduSessionType>> pduSessionTypes =
+      model_from_query_string<std::vector<PduSessionType>>(
+          request, "pdu-session-types", true);
+
+  Pistache::Optional<std::vector<EventId>> eventIdList =
+      model_from_query_string<std::vector<EventId>>(
+          request, "event-id-list", true);
+
+  Pistache::Optional<std::vector<NwdafEvent>> nwdafEventList =
+      model_from_query_string<std::vector<NwdafEvent>>(
+          request, "nwdaf-event-list", true);
+
   auto supportedFeaturesQuery = request.query().get("supported-features");
   Pistache::Optional<std::string> supportedFeatures;
   if (!supportedFeaturesQuery.isEmpty()) {
@@ -356,14 +298,9 @@ void DiscNFInstancesStoreApi::search_nf_instances_handler(
       upfIwkEpsInd = Pistache::Some(valueQuery_instance);
     }
   }
-  auto chfSupportedPlmnQuery = request.query().get("chf-supported-plmn");
-  Pistache::Optional<PlmnId> chfSupportedPlmn;
-  if (!chfSupportedPlmnQuery.isEmpty()) {
-    PlmnId valueQuery_instance;
-    if (fromStringValue(chfSupportedPlmnQuery.get(), valueQuery_instance)) {
-      chfSupportedPlmn = Pistache::Some(valueQuery_instance);
-    }
-  }
+  Pistache::Optional<PlmnId> chfSupportedPlmn =
+      model_from_query_string<PlmnId>(request, "chf-supported-plmn");
+
   auto preferredLocalityQuery = request.query().get("preferred-locality");
   Pistache::Optional<std::string> preferredLocality;
   if (!preferredLocalityQuery.isEmpty()) {
@@ -372,14 +309,9 @@ void DiscNFInstancesStoreApi::search_nf_instances_handler(
       preferredLocality = Pistache::Some(valueQuery_instance);
     }
   }
-  auto accessTypeQuery = request.query().get("access-type");
-  Pistache::Optional<AccessType> accessType;
-  if (!accessTypeQuery.isEmpty()) {
-    AccessType valueQuery_instance;
-    if (fromStringValue(accessTypeQuery.get(), valueQuery_instance)) {
-      accessType = Pistache::Some(valueQuery_instance);
-    }
-  }
+  Pistache::Optional<AccessType> accessType =
+      model_from_query_string<AccessType>(request, "access-type");
+
   auto limitQuery = request.query().get("limit");
   Pistache::Optional<int32_t> limit;
   if (!limitQuery.isEmpty()) {
@@ -396,14 +328,9 @@ void DiscNFInstancesStoreApi::search_nf_instances_handler(
       requiredFeatures = Pistache::Some(valueQuery_instance);
     }
   }
-  auto complexQueryQuery = request.query().get("complex-query");
-  Pistache::Optional<ComplexQuery> complexQuery;
-  if (!complexQueryQuery.isEmpty()) {
-    ComplexQuery valueQuery_instance;
-    if (fromStringValue(complexQueryQuery.get(), valueQuery_instance)) {
-      complexQuery = Pistache::Some(valueQuery_instance);
-    }
-  }
+  Pistache::Optional<ComplexQuery> complexQuery =
+      model_from_query_string<ComplexQuery>(request, "complex-query");
+
   auto maxPayloadSizeQuery = request.query().get("max-payload-size");
   Pistache::Optional<int32_t> maxPayloadSize;
   if (!maxPayloadSizeQuery.isEmpty()) {
@@ -412,14 +339,9 @@ void DiscNFInstancesStoreApi::search_nf_instances_handler(
       maxPayloadSize = Pistache::Some(valueQuery_instance);
     }
   }
-  auto atsssCapabilityQuery = request.query().get("atsss-capability");
-  Pistache::Optional<AtsssCapability> atsssCapability;
-  if (!atsssCapabilityQuery.isEmpty()) {
-    AtsssCapability valueQuery_instance;
-    if (fromStringValue(atsssCapabilityQuery.get(), valueQuery_instance)) {
-      atsssCapability = Pistache::Some(valueQuery_instance);
-    }
-  }
+  Pistache::Optional<AtsssCapability> atsssCapability =
+      model_from_query_string<AtsssCapability>(request, "atsss-capability");
+
   auto upfUeIpAddrIndQuery = request.query().get("upf-ue-ip-addr-ind");
   Pistache::Optional<bool> upfUeIpAddrInd;
   if (!upfUeIpAddrIndQuery.isEmpty()) {
@@ -462,6 +384,32 @@ void DiscNFInstancesStoreApi::nf_instances_store_api_default_handler(
     const Pistache::Rest::Request&, Pistache::Http::ResponseWriter response) {
   response.send(
       Pistache::Http::Code::Not_Found, "The requested method does not exist");
+}
+
+template<class T>
+Pistache::Optional<T> DiscNFInstancesStoreApi::model_from_query_string(
+    const Pistache::Rest::Request& request, const std::string& query_param,
+    bool make_json_array) {
+  auto query = request.query().get(query_param);
+  Pistache::Optional<T> ret_optional;
+  if (!query.isEmpty()) {
+    nlohmann::json j = query.get();
+    if (make_json_array) {
+      std::string qry_string = query.get();
+      std::vector<std::string> split_arr;
+      boost::split(
+          split_arr, qry_string, boost::is_any_of(","),
+          boost::token_compress_on);
+      j = split_arr;
+    }
+
+    std::cout << "test: " << j.dump() << std::endl;
+
+    T valueQuery_instance;
+    nlohmann::from_json(j, valueQuery_instance);
+    ret_optional = Pistache::Some(valueQuery_instance);
+  }
+  return ret_optional;
 }
 
 }  // namespace api

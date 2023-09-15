@@ -13,9 +13,7 @@
 
 #include "PcfInfo.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 PcfInfo::PcfInfo() {
   m_GroupId          = "";
@@ -153,6 +151,4 @@ void PcfInfo::unsetRxDiamRealm() {
   m_RxDiamRealmIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

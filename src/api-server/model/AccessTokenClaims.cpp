@@ -13,9 +13,9 @@
 
 #include "AccessTokenClaims.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+
+using namespace oai::model::common;
 
 AccessTokenClaims::AccessTokenClaims() {
   m_Iss                 = "";
@@ -116,6 +116,4 @@ void AccessTokenClaims::unsetProducerPlmnId() {
   m_ProducerPlmnIdIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

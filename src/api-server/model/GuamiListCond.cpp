@@ -13,9 +13,8 @@
 
 #include "GuamiListCond.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::common;
 
 GuamiListCond::GuamiListCond() {}
 
@@ -41,6 +40,4 @@ void GuamiListCond::setGuamiList(std::vector<Guami> const& value) {
   m_GuamiList = value;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

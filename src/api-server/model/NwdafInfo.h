@@ -26,9 +26,7 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -60,8 +58,8 @@ class NwdafInfo {
   /// <summary>
   ///
   /// </summary>
-  std::vector<Tai>& getTaiList();
-  void setTaiList(std::vector<Tai> const& value);
+  std::vector<oai::model::common::Tai>& getTaiList();
+  void setTaiList(std::vector<oai::model::common::Tai> const& value);
   bool taiListIsSet() const;
   void unsetTaiList();
   /// <summary>
@@ -80,14 +78,12 @@ class NwdafInfo {
   bool m_EventIdsIsSet;
   std::vector<NwdafEvent> m_NwdafEvents;
   bool m_NwdafEventsIsSet;
-  std::vector<Tai> m_TaiList;
+  std::vector<oai::model::common::Tai> m_TaiList;
   bool m_TaiListIsSet;
   std::vector<TaiRange> m_TaiRangeList;
   bool m_TaiRangeListIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* NwdafInfo_H_ */

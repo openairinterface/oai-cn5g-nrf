@@ -14,9 +14,7 @@
 #include "NfTypeCond.h"
 #include <iostream>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 NfTypeCond::NfTypeCond() {}
 
@@ -42,6 +40,4 @@ void NfTypeCond::setNfType(std::string const& value) {
   m_NfType = value;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

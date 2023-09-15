@@ -13,9 +13,7 @@
 
 #include "NfInstanceIdCond.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 NfInstanceIdCond::NfInstanceIdCond() {
   m_NfInstanceId = "";
@@ -43,6 +41,4 @@ void NfInstanceIdCond::setNfInstanceId(std::string const& value) {
   m_NfInstanceId = value;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

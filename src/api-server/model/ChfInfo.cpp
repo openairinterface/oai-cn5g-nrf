@@ -13,9 +13,7 @@
 
 #include "ChfInfo.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 ChfInfo::ChfInfo() {
   m_SupiRangeListIsSet = false;
@@ -94,6 +92,4 @@ void ChfInfo::unsetPlmnRangeList() {
   m_PlmnRangeListIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

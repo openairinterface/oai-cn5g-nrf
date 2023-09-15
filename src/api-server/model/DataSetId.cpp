@@ -13,9 +13,7 @@
 
 #include "DataSetId.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 DataSetId::DataSetId() {}
 
@@ -31,6 +29,4 @@ void to_json(nlohmann::json& j, const DataSetId& o) {
 
 void from_json(const nlohmann::json& j, DataSetId& o) {}
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

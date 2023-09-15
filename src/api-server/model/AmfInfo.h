@@ -27,9 +27,7 @@
 #include "Guami.h"
 #include <nlohmann/json.hpp>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 /// <summary>
 ///
@@ -57,13 +55,13 @@ class AmfInfo {
   /// <summary>
   ///
   /// </summary>
-  std::vector<Guami>& getGuamiList();
-  void setGuamiList(std::vector<Guami> const& value);
+  std::vector<oai::model::common::Guami>& getGuamiList();
+  void setGuamiList(std::vector<oai::model::common::Guami> const& value);
   /// <summary>
   ///
   /// </summary>
-  std::vector<Tai>& getTaiList();
-  void setTaiList(std::vector<Tai> const& value);
+  std::vector<oai::model::common::Tai>& getTaiList();
+  void setTaiList(std::vector<oai::model::common::Tai> const& value);
   bool taiListIsSet() const;
   void unsetTaiList();
   /// <summary>
@@ -76,15 +74,17 @@ class AmfInfo {
   /// <summary>
   ///
   /// </summary>
-  std::vector<Guami>& getBackupInfoAmfFailure();
-  void setBackupInfoAmfFailure(std::vector<Guami> const& value);
+  std::vector<oai::model::common::Guami>& getBackupInfoAmfFailure();
+  void setBackupInfoAmfFailure(
+      std::vector<oai::model::common::Guami> const& value);
   bool backupInfoAmfFailureIsSet() const;
   void unsetBackupInfoAmfFailure();
   /// <summary>
   ///
   /// </summary>
-  std::vector<Guami>& getBackupInfoAmfRemoval();
-  void setBackupInfoAmfRemoval(std::vector<Guami> const& value);
+  std::vector<oai::model::common::Guami>& getBackupInfoAmfRemoval();
+  void setBackupInfoAmfRemoval(
+      std::vector<oai::model::common::Guami> const& value);
   bool backupInfoAmfRemovalIsSet() const;
   void unsetBackupInfoAmfRemoval();
   /// <summary>
@@ -103,22 +103,20 @@ class AmfInfo {
 
   std::string m_AmfRegionId;
 
-  std::vector<Guami> m_GuamiList;
+  std::vector<oai::model::common::Guami> m_GuamiList;
 
-  std::vector<Tai> m_TaiList;
+  std::vector<oai::model::common::Tai> m_TaiList;
   bool m_TaiListIsSet;
   std::vector<TaiRange> m_TaiRangeList;
   bool m_TaiRangeListIsSet;
-  std::vector<Guami> m_BackupInfoAmfFailure;
+  std::vector<oai::model::common::Guami> m_BackupInfoAmfFailure;
   bool m_BackupInfoAmfFailureIsSet;
-  std::vector<Guami> m_BackupInfoAmfRemoval;
+  std::vector<oai::model::common::Guami> m_BackupInfoAmfRemoval;
   bool m_BackupInfoAmfRemovalIsSet;
   N2InterfaceAmfInfo m_N2InterfaceAmfInfo;
   bool m_N2InterfaceAmfInfoIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* AmfInfo_H_ */

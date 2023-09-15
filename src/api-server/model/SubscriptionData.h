@@ -38,9 +38,7 @@
 #include "NfTypeCond.h"
 #include "ServiceNameCond.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 typedef struct subscription_condition_api_s {
   uint8_t type;
@@ -220,8 +218,8 @@ class SubscriptionData {
   /// <summary>
   ///
   /// </summary>
-  PlmnId getPlmnId() const;
-  void setPlmnId(PlmnId const& value);
+  oai::model::common::PlmnId getPlmnId() const;
+  void setPlmnId(oai::model::common::PlmnId const& value);
   bool plmnIdIsSet() const;
   void unsetPlmnId();
   /// <summary>
@@ -248,8 +246,8 @@ class SubscriptionData {
   /// <summary>
   ///
   /// </summary>
-  std::vector<Snssai>& getReqSnssais();
-  void setReqSnssais(std::vector<Snssai> const& value);
+  std::vector<oai::model::common::Snssai>& getReqSnssais();
+  void setReqSnssais(std::vector<oai::model::common::Snssai> const& value);
   bool reqSnssaisIsSet() const;
   void unsetReqSnssais();
 
@@ -271,7 +269,7 @@ class SubscriptionData {
   bool m_ValidityTimeIsSet;
   std::vector<std::string> m_ReqNotifEvents;
   bool m_ReqNotifEventsIsSet;
-  PlmnId m_PlmnId;
+  oai::model::common::PlmnId m_PlmnId;
   bool m_PlmnIdIsSet;
   NotifCondition m_NotifCondition;
   bool m_NotifConditionIsSet;
@@ -279,12 +277,10 @@ class SubscriptionData {
   bool m_ReqNfTypeIsSet;
   std::string m_ReqNfFqdn;
   bool m_ReqNfFqdnIsSet;
-  std::vector<Snssai> m_ReqSnssais;
+  std::vector<oai::model::common::Snssai> m_ReqSnssais;
   bool m_ReqSnssaisIsSet;
 };
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
 
 #endif /* SubscriptionData_H_ */

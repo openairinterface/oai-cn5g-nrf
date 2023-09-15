@@ -39,7 +39,7 @@
 
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
-using namespace oai::nrf::model;
+using namespace oai::model::nrf;
 using namespace oai::nrf::app;
 
 class nrf_http2_server {
@@ -58,13 +58,15 @@ class nrf_http2_server {
       const std::string& nf_type, const std::string& limit_nfs,
       const response& response);
   void update_instance_handler(
-      const std::string& nfInstanceID, const std::vector<PatchItem>& patchItem,
+      const std::string& nfInstanceID,
+      const std::vector<oai::model::common::PatchItem>& patchItem,
       const response& response);
   void create_subscription_handler(
       const SubscriptionData& subscriptionData, const response& response);
   void update_subscription_handler(
       const std::string& subscriptionID,
-      const std::vector<PatchItem>& patchItem, const response& response);
+      const std::vector<oai::model::common::PatchItem>& patchItem,
+      const response& response);
   void remove_subscription_handler(
       const std::string& subscriptionID, const response& response);
   void search_nf_instances_handler(

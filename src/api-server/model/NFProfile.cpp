@@ -14,9 +14,8 @@
 #include "NFProfile.h"
 #include <iostream>
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
+using namespace oai::model::common;
 
 NFProfile::NFProfile() {
   m_NfInstanceId                          = "";
@@ -965,6 +964,4 @@ void NFProfile::unsetDefaultNotificationSubscriptions() {
   m_DefaultNotificationSubscriptionsIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf

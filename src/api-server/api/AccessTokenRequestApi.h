@@ -35,7 +35,7 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::nrf::model;
+using namespace oai::model::nrf;
 
 class AccessTokenRequestApi {
  public:

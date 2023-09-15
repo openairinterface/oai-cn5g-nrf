@@ -13,9 +13,7 @@
 
 #include "AmfCond.h"
 
-namespace oai {
-namespace nrf {
-namespace model {
+namespace oai::model::nrf {
 
 AmfCond::AmfCond() {
   m_AmfSetId         = "";
@@ -74,6 +72,4 @@ void AmfCond::unsetAmfRegionId() {
   m_AmfRegionIdIsSet = false;
 }
 
-}  // namespace model
-}  // namespace nrf
-}  // namespace oai
+}  // namespace oai::model::nrf
