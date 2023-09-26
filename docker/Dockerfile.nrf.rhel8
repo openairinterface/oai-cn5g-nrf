@@ -92,11 +92,15 @@ COPY ./rhsm-ca /etc/rhsm/ca
 RUN rm -f /etc/rhsm-host && \
     microdnf update -y && \
     microdnf install -y \
+# Debug Tools that are not mandatory
       tzdata \
-#      libasan \
       procps-ng \
       psmisc \
       net-tools \
+      iputils \
+      tcpdump \
+# Mandatory packages for the NF to run
+#      libasan \
       libicu \
       boost \
       libevent \

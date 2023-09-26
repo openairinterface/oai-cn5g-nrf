@@ -75,11 +75,15 @@ ENV TZ=Europe/Paris
 # We install some debug tools for the moment in addition of mandatory libraries
 RUN microdnf update -y && \
     microdnf install -y \
+# Debug Tools that are not mandatory
       tzdata \
-#      libasan \
       procps-ng \
       psmisc \
       net-tools \
+      iputils \
+      tcpdump \
+# Mandatory packages for the NF to run
+#      libasan \
       libicu \
       boost \
       libevent \
