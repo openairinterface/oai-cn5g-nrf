@@ -44,13 +44,15 @@ bool nrf_jwt::generate_signature(
   get_secret_key(scope, nf_type, target_nf_type, key);
   // Create JWT object
   // TODO
-  jwt::jwt_object obj{jwt::params::algorithm("HS256"),
-                      jwt::params::payload({{"iss", nrf_instance_id},
-                                            {"sub", nf_consumer_id},
-                                            {"aud", target_nf_type},
-                                            {"scope", scope},
-                                            {"exp", "1000"}}),  // in second
-                      jwt::params::secret(key)};
+  jwt::jwt_object obj{
+      jwt::params::algorithm("HS256"),
+      jwt::params::payload(
+          {{"iss", nrf_instance_id},
+           {"sub", nf_consumer_id},
+           {"aud", target_nf_type},
+           {"scope", scope},
+           {"exp", "1000"}}),  // in second
+      jwt::params::secret(key)};
 
   // Get the encoded string/assertion
   signature = obj.signature();
@@ -66,13 +68,15 @@ bool nrf_jwt::generate_signature(
   get_secret_key(scope, target_nf_instance_Id, key);
   // Create JWT object
   // TODO
-  jwt::jwt_object obj{jwt::params::algorithm("HS256"),
-                      jwt::params::payload({{"iss", nrf_instance_id},
-                                            {"sub", nf_consumer_id},
-                                            {"aud", target_nf_instance_Id},
-                                            {"scope", scope},
-                                            {"exp", "1000"}}),  // in second
-                      jwt::params::secret(key)};
+  jwt::jwt_object obj{
+      jwt::params::algorithm("HS256"),
+      jwt::params::payload(
+          {{"iss", nrf_instance_id},
+           {"sub", nf_consumer_id},
+           {"aud", target_nf_instance_Id},
+           {"scope", scope},
+           {"exp", "1000"}}),  // in second
+      jwt::params::secret(key)};
 
   // Get the encoded string/assertion
   signature = obj.signature();
@@ -103,8 +107,8 @@ void nrf_jwt::test_jwt() {
 
   auto key = "secret";  // Secret to use for the algorithm
   // Create JWT object
-  jwt::jwt_object obj{algorithm("HS256"), payload({{"some", "payload"}}),
-                      secret(key)};
+  jwt::jwt_object obj{
+      algorithm("HS256"), payload({{"some", "payload"}}), secret(key)};
 
   // Get the encoded string/assertion
   auto enc_str = obj.signature();
