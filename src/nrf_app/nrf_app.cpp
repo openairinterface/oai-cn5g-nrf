@@ -79,6 +79,13 @@ nrf_app::nrf_app(const std::string& config_file, nrf_event& ev)
   // subscribe to NF status
   subscribe_nf_status();
 
+  // Manage suspended NFs
+  // get current time
+  uint64_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch())
+                    .count();
+  subscribe_task_tick(ms);
+
   Logger::nrf_app().startup("Started");
 }
 
@@ -316,10 +323,12 @@ void nrf_app::handle_update_nf_instance(
         sn.get()->subscribe_heartbeat_timeout_nfupdate(ms);
       }
 
-      // update NF status
+      // update NF status (REGISTERED), TODO: with different status
       if (sn.get()->set_nf_status(heartbeat_value)) {
         // update NF updated flag
         sn.get()->set_status_updated(true);
+        // Remove from suspended list if necessary
+        remove_from_suspended_list(nf_instance_id);
       }
       return;
     }
@@ -993,17 +1002,91 @@ std::shared_ptr<nrf_subscription> nrf_app::find_subscription(
 //------------------------------------------------------------------------------
 void nrf_app::subscribe_task_tick(uint64_t ms) {
   struct itimerspec its;
-  its.it_value.tv_sec  = 20;  // seconds
-  its.it_value.tv_nsec = 0;   // 100 * 1000 * 1000; //100ms
+  its.it_value.tv_sec = nrf_cfg->nrf()->get_suspended_nf_interval();  // seconds
+  its.it_value.tv_nsec = 0;
 
   const uint64_t interval =
       its.it_value.tv_sec * 1000 +
       its.it_value.tv_nsec / 1000000;  // convert sec, nsec to msec
 
-  Logger::nrf_app().debug("subscribe task_tick: %d", ms);
+  Logger::nrf_app().debug(
+      "Subscribe to the remove_suspended_nf expire event: interval %d "
+      "(seconds)",
+      nrf_cfg->nrf()->get_suspended_nf_interval());
+
   m_event_sub.subscribe_task_tick(
-      boost::bind(&nrf_app::handle_heartbeat_timeout, this, _1), interval,
-      ms % 20000);
+      boost::bind(&nrf_app::handle_remove_suspended_nf, this, _1), interval,
+      ms + interval);
+}
+
+//------------------------------------------------------------------------------
+void nrf_app::handle_remove_suspended_nf(uint64_t ms) {
+  _unused(ms);
+  uint64_t s = std::chrono::duration_cast<std::chrono::seconds>(
+                   std::chrono::system_clock::now().time_since_epoch())
+                   .count();
+
+  if ((s / nrf_cfg->nrf()->get_suspended_nf_interval()) % 2 == 0) {
+    if (!suspended_nf[1].empty()) {
+      for (auto i : suspended_nf[1]) {
+        remove_nf_profile(i);
+      }
+      std::unique_lock lock(m_suspended_nf);
+      suspended_nf[1].clear();
+      Logger::nrf_app().debug(
+          "Removed the second part of the suspended NF set, current time %d "
+          "(seconds)",
+          s);
+    }
+  } else {
+    if (!suspended_nf[0].empty()) {
+      for (auto i : suspended_nf[0]) {
+        remove_nf_profile(i);
+      }
+      std::unique_lock lock(m_suspended_nf);
+      suspended_nf[0].clear();
+      Logger::nrf_app().debug(
+          "Remove the first part of the suspended NF set,  current time %d "
+          "(seconds)",
+          s);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+void nrf_app::add_to_suspended_list(const std::string& nf_instance_id) {
+  uint64_t s = std::chrono::duration_cast<std::chrono::seconds>(
+                   std::chrono::system_clock::now().time_since_epoch())
+                   .count();
+  if ((s / nrf_cfg->nrf()->get_suspended_nf_interval()) % 2 == 0) {
+    std::unique_lock lock(m_suspended_nf);
+    // add to suspended_nfs[0]
+    suspended_nf[0].insert(nf_instance_id);
+    Logger::nrf_app().debug(
+        "Added profile (Id %s) to the first part of the suspended NF set, "
+        "current time %d "
+        "(second)",
+        nf_instance_id.c_str(), s);
+  } else {
+    std::unique_lock lock(m_suspended_nf);
+    // add to suspended_nfs[1]
+    suspended_nf[1].insert(nf_instance_id);
+    Logger::nrf_app().debug(
+        "Added profile (Id %s) to the second part of the suspended NF set, "
+        "current time %d "
+        "(second)",
+        nf_instance_id.c_str(), s);
+  }
+}
+
+//------------------------------------------------------------------------------
+void nrf_app::remove_from_suspended_list(const std::string& nf_instance_id) {
+  std::unique_lock lock(m_suspended_nf);
+  if ((suspended_nf[0].erase(nf_instance_id) > 0) or
+      (suspended_nf[1].erase(nf_instance_id))) {
+    Logger::nrf_app().debug(
+        "Removed profile (Id %s) from the list of suspended NFs");
+  }
 }
 
 //------------------------------------------------------------------------------

@@ -331,6 +331,28 @@ class nrf_app {
   void handle_heartbeat_timeout(uint64_t ms);
 
   /*
+   * Handle the event triggered each suspended interval to remove suspended NFs
+   * from the list
+   * @param [uint64_t] ms: current time in milliseconds
+   * @return void
+   */
+  void handle_remove_suspended_nf(uint64_t ms);
+
+  /*
+   * Add a suspended NF from the list
+   * @param [const std::string&] nf_instance_id: NF instance Id
+   * @return void
+   */
+  void add_to_suspended_list(const std::string& nf_instance_id);
+
+  /*
+   * Remove a suspended NF from the list
+   * @param [const std::string&] nf_instance_id: NF instance Id
+   * @return void
+   */
+  void remove_from_suspended_list(const std::string& nf_instance_id);
+
+  /*
    * Verify whether a subscription is authorized
    * @param [std::shared_ptr<nrf_subscription> &] s: shared_pointer to the
    * subscription
@@ -468,6 +490,9 @@ class nrf_app {
   std::map<std::string, std::shared_ptr<nrf_search_result>>
       search_id2search_result;
   mutable std::shared_mutex m_search_id2search_result;
+
+  mutable std::shared_mutex m_suspended_nf;
+  std::array<std::set<std::string>, 2> suspended_nf;
 };
 }  // namespace app
 }  // namespace nrf

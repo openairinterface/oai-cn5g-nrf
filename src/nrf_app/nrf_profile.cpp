@@ -36,6 +36,7 @@
 
 #include "api_conversions.hpp"
 #include "logger.hpp"
+#include "nrf_app.hpp"
 #include "nrf_config.hpp"
 #include "string.hpp"
 
@@ -44,6 +45,7 @@ using namespace oai::nrf::app;
 using namespace boost::placeholders;
 
 extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
+extern nrf_app* nrf_app_inst;
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_nf_instance_id(const std::string& instance_id) {
@@ -760,6 +762,7 @@ void nrf_profile::handle_heartbeat_timeout_nfregistration(uint64_t ms) {
   // Set status to SUSPENDED and unsubscribe to the HBT
   if (!get_status_updated()) {
     set_nf_status("SUSPENDED");
+    nrf_app_inst->add_to_suspended_list(nf_instance_id);
   }
 
   set_status_updated(false);
@@ -782,6 +785,7 @@ void nrf_profile::handle_heartbeat_timeout_nfupdate(uint64_t ms) {
     // notifCondition with ["monitoredAttributes": [ "/nfStatus""]
     m_event_sub.nf_status_profile_changed(nf_instance_id);
     unsubscribe_heartbeat_timeout_nfupdate();
+    nrf_app_inst->add_to_suspended_list(nf_instance_id);
   }
   set_status_updated(false);
 }
