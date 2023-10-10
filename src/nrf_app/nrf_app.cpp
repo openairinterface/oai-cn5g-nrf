@@ -84,7 +84,7 @@ nrf_app::nrf_app(const std::string& config_file, nrf_event& ev)
   uint64_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch())
                     .count();
-  subscribe_task_tick(ms);
+  subscribe_suspended_nf_management(ms);
 
   Logger::nrf_app().startup("Started");
 }
@@ -1000,7 +1000,7 @@ std::shared_ptr<nrf_subscription> nrf_app::find_subscription(
 }
 
 //------------------------------------------------------------------------------
-void nrf_app::subscribe_task_tick(uint64_t ms) {
+void nrf_app::subscribe_suspended_nf_management(uint64_t ms) {
   struct itimerspec its;
   its.it_value.tv_sec = nrf_cfg->nrf()->get_suspended_nf_interval();  // seconds
   its.it_value.tv_nsec = 0;
@@ -1009,10 +1009,7 @@ void nrf_app::subscribe_task_tick(uint64_t ms) {
       its.it_value.tv_sec * 1000 +
       its.it_value.tv_nsec / 1000000;  // convert sec, nsec to msec
 
-  Logger::nrf_app().debug(
-      "Subscribe to the remove_suspended_nf expire event: interval %d "
-      "(seconds)",
-      nrf_cfg->nrf()->get_suspended_nf_interval());
+  Logger::nrf_app().debug("Subscribe to the remove_suspended_nf expire event");
 
   m_event_sub.subscribe_task_tick(
       boost::bind(&nrf_app::handle_remove_suspended_nf, this, _1), interval,

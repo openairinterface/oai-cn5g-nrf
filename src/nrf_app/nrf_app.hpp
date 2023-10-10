@@ -317,11 +317,11 @@ class nrf_app {
       const std::string& sub_id) const;
 
   /*
-   * Subscribe to the task tick event
+   * Subscribe to the task to remove suspended NFs
    * @param [uint64_t &] ms: Current time in ms
    * @return void
    */
-  void subscribe_task_tick(uint64_t ms);
+  void subscribe_suspended_nf_management(uint64_t ms);
 
   /*
    * Handle when hearbeart timer expires
