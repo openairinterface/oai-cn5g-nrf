@@ -492,6 +492,11 @@ class nrf_app {
   mutable std::shared_mutex m_search_id2search_result;
 
   mutable std::shared_mutex m_suspended_nf;
+  // Separating the suspended NFs in 2 sets, the first set is to store the NFs
+  // which becomes suspended between Tn and Tn+1 period (Tn - nth time the
+  // suspended_nf_interval expires). All NFs in the first set will be removed at
+  // Tn+2. Similarly for the second set is for the NFs changing to suspended
+  // between Tn+1 and Tn+2 and will be removed at Tn+3
   std::array<std::set<std::string>, 2> suspended_nf;
 };
 }  // namespace app
