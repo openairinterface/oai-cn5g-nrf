@@ -23,8 +23,10 @@
 
 #include "config.hpp"
 
-constexpr auto NRF_CONFIG_HEARTBEAT       = "heartbeat";
-constexpr auto NRF_CONFIG_HEARTBEAT_LABEL = "Heartbeat";
+constexpr auto NRF_CONFIG_HEARTBEAT                   = "heartbeat";
+constexpr auto NRF_CONFIG_HEARTBEAT_LABEL             = "Heartbeat";
+constexpr auto NRF_CONFIG_SUSPENDED_NF_INTERVAL       = "suspended_nf_interval";
+constexpr auto NRF_CONFIG_SUSPENDED_NF_INTERVAL_LABEL = "Suspended NF Interval";
 
 namespace oai::config::nrf {
 
@@ -33,6 +35,7 @@ class nrf_config_type : public oai::config::nf {
 
  private:
   int_config_value m_heartbeat;
+  int_config_value m_suspended_nf_interval;
 
  public:
   explicit nrf_config_type(
@@ -48,6 +51,9 @@ class nrf_config_type : public oai::config::nf {
 
   [[nodiscard]] uint16_t get_heartbeat() const;
   void set_heartbeat(uint16_t);
+
+  [[nodiscard]] uint16_t get_suspended_nf_interval() const;
+  void set_suspended_nf_interval(uint16_t);
 };
 
 }  // namespace oai::config::nrf

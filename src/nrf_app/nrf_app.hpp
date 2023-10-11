@@ -317,11 +317,11 @@ class nrf_app {
       const std::string& sub_id) const;
 
   /*
-   * Subscribe to the task tick event
+   * Subscribe to the task to remove suspended NFs
    * @param [uint64_t &] ms: Current time in ms
    * @return void
    */
-  void subscribe_task_tick(uint64_t ms);
+  void subscribe_suspended_nf_management(uint64_t ms);
 
   /*
    * Handle when hearbeart timer expires
@@ -329,6 +329,28 @@ class nrf_app {
    * @return void
    */
   void handle_heartbeat_timeout(uint64_t ms);
+
+  /*
+   * Handle the event triggered each suspended interval to remove suspended NFs
+   * from the list
+   * @param [uint64_t] ms: current time in milliseconds
+   * @return void
+   */
+  void handle_remove_suspended_nf(uint64_t ms);
+
+  /*
+   * Add a suspended NF from the list
+   * @param [const std::string&] nf_instance_id: NF instance Id
+   * @return void
+   */
+  void add_to_suspended_list(const std::string& nf_instance_id);
+
+  /*
+   * Remove a suspended NF from the list
+   * @param [const std::string&] nf_instance_id: NF instance Id
+   * @return void
+   */
+  void remove_from_suspended_list(const std::string& nf_instance_id);
 
   /*
    * Verify whether a subscription is authorized
@@ -468,6 +490,14 @@ class nrf_app {
   std::map<std::string, std::shared_ptr<nrf_search_result>>
       search_id2search_result;
   mutable std::shared_mutex m_search_id2search_result;
+
+  mutable std::shared_mutex m_suspended_nf;
+  // Separating the suspended NFs in 2 sets, the first set is to store the NFs
+  // which becomes suspended between Tn and Tn+1 period (Tn - nth time the
+  // suspended_nf_interval expires). All NFs in the first set will be removed at
+  // Tn+2. Similarly for the second set is for the NFs changing to suspended
+  // between Tn+1 and Tn+2 and will be removed at Tn+3
+  std::array<std::set<std::string>, 2> suspended_nf;
 };
 }  // namespace app
 }  // namespace nrf
