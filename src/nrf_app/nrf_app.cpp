@@ -593,8 +593,7 @@ void nrf_app::handle_update_subscription(
               boost::posix_time::ptime pt(
                   boost::posix_time::from_iso_string(p.getValue()));
               ss.get()->set_validity_time(pt);
-              Logger::nrf_app().debug(
-                  "New validity time: %s", p.getValue().dump());
+              Logger::nrf_app().debug("New validity time: %s", p.getValue());
               Logger::nrf_app().debug("Updated a subscription to the DB");
               // display the info
               ss.get()->display();
