@@ -21,7 +21,7 @@
 #---------------------------------------------------------------------
 #
 # Dockerfile for the Open-Air-Interface NRF service
-#   Valid for UBI 8.6 | RHEL 8.6
+#   Valid for Rocky Linux 9.+
 #
 #---------------------------------------------------------------------
 
@@ -29,23 +29,16 @@
 # BUILDER IMAGE
 #---------------------------------------------------------------------
 
-FROM registry.access.redhat.com/ubi8/ubi:latest AS oai-nrf-builder
+FROM docker.io/rockylinux:9 AS oai-nrf-builder
 
 ENV IS_DOCKERFILE=1
 
-# Copy the entitlements
-COPY ./etc-pki-entitlement /etc/pki/entitlement
-
-# Copy the subscription manager configurations
-COPY ./rhsm-conf /etc/rhsm
-COPY ./rhsm-ca /etc/rhsm/ca
-
-RUN rm -f /etc/rhsm-host && \
-    yum repolist --disablerepo=* && \
-    subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms && \
-    yum update -y && \
+RUN dnf install 'dnf-command(config-manager)' -y && \
+    dnf install epel-release -y && crb enable && \
+    dnf update -y && \
+    # here just to display the current version
     cat /etc/os-release && \
-    yum install -y \
+    dnf install -y \
       psmisc \
       git \
         diffutils \
@@ -68,29 +61,18 @@ WORKDIR /openair-nrf/build/scripts
 RUN ./build_nrf --install-deps --force
 RUN ./build_nrf --clean --Verbose --build-type Release --jobs && \
     ldd /openair-nrf/build/nrf/build/nrf && \
-    mv /openair-nrf/build/nrf/build/nrf /openair-nrf/build/nrf/build/oai_nrf && \
-    # Remove entitlements and Subscription Manager configs
-    rm -rf /etc/pki/entitlement && \
-    rm -rf /etc/rhsm
+    mv /openair-nrf/build/nrf/build/nrf /openair-nrf/build/nrf/build/oai_nrf
 
 FROM mikefarah/yq:latest as yq-source
 
 #---------------------------------------------------------------------
 # TARGET IMAGE
 #---------------------------------------------------------------------
-FROM registry.access.redhat.com/ubi8/ubi-minimal:latest as oai-nrf
+FROM docker.io/rockylinux:9-minimal as oai-nrf
 ENV TZ=Europe/Paris
 
-# Copy the entitlements
-COPY ./etc-pki-entitlement /etc/pki/entitlement
-
-# Copy the subscription manager configurations
-COPY ./rhsm-conf /etc/rhsm
-COPY ./rhsm-ca /etc/rhsm/ca
-
 # We install some debug tools for the moment in addition of mandatory libraries
-RUN rm -f /etc/rhsm-host && \
-    microdnf update -y && \
+RUN microdnf update -y && \
     microdnf install -y \
 # Debug Tools that are not mandatory
       tzdata \
@@ -107,10 +89,7 @@ RUN rm -f /etc/rhsm-host && \
       findutils \
       libconfig && \
     microdnf clean all -y && \
-    rm -rf /var/cache/yum /var/cache/dnf && \
-    # Remove entitlements and Subscription Manager configs
-    rm -rf /etc/pki/entitlement && \
-    rm -rf /etc/rhsm
+    rm -rf /var/cache/yum /var/cache/dnf
 
 # Copying executable and generated libraries
 WORKDIR /openair-nrf/bin

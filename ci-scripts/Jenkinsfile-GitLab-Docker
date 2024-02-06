@@ -204,7 +204,7 @@ pipeline {
                   sh "oc delete -f openshift/build-config.yaml || true"
                   sh "sed -i -e 's@oai-nrf:latest@oai-nrf:${nrf_tag}@g' openshift/build-config.yaml"
                   sh "oc create -f openshift/build-config.yaml"
-                  sh "oc start-build nrf-build-cfg  --from-file=./"
+                  sh 'oc start-build nrf-build-cfg  --from-dir=./ --exclude=""'
                   // need python to wait for pod nrf-build-cfg-1-build to be Completed or Error
                   // it fails if it detects error or timeout at 20 minutes
                   sh "./ci-scripts/common/python/check_build_pod_status.py --pod-name nrf-build-cfg-1-build --log-file archives/nrf_rhel_image_build.log"
