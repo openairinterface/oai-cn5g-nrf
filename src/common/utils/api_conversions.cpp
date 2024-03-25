@@ -19,14 +19,6 @@
  *      contact@openairinterface.org
  */
 
-/*! \file api_conversions.cpp
- \brief
- \author  Tien-Thinh NGUYEN
- \company Eurecom
- \date 2020
- \email: tien-thinh.nguyen@eurecom.fr
- */
-
 #include <ctype.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -708,6 +700,78 @@ nf_type_t api_conv::string_to_nf_type(const std::string& str) {
   return NF_TYPE_UNKNOWN;
 }
 
+//------------------------------------------------------------------------------
+std::string api_conv::nf_type_to_string(const nf_type_t& nf_type) {
+  switch (nf_type) {
+    case NF_TYPE_NRF: {
+      return "NRF";
+    } break;
+    case NF_TYPE_AMF: {
+      return "AMF";
+    } break;
+    case NF_TYPE_AUSF: {
+      return "AUSF";
+    } break;
+    case NF_TYPE_NEF: {
+      return "NEF";
+    } break;
+    case NF_TYPE_NWDAF: {
+      return "NWDAF";
+    } break;
+    case NF_TYPE_PCF: {
+      return "PCF";
+    } break;
+    case NF_TYPE_NSSF: {
+      return "NSSF";
+    } break;
+    case NF_TYPE_SMF: {
+      return "SMF";
+    } break;
+    case NF_TYPE_UDM: {
+      return "UDM";
+    } break;
+    case NF_TYPE_UDR: {
+      return "UDR";
+    } break;
+    case NF_TYPE_UDSF: {
+      return "UDSF";
+    } break;
+    case NF_TYPE_UPF: {
+      return "UPF";
+    } break;
+    case NF_TYPE_LMF: {
+      return "LMF";
+    } break;
+    case NF_TYPE_SMSF: {
+      return "SMSF";
+    } break;
+    case NF_TYPE_GMLC: {
+      return "GMLC";
+    } break;
+    case NF_TYPE_5G_EIR: {
+      return "5G_EIR";
+    } break;
+    case NF_TYPE_SEPP: {
+      return "SEPP";
+    } break;
+    case NF_TYPE_N3IWF: {
+      return "N3IWF";
+    } break;
+    case NF_TYPE_AF: {
+      return "AF";
+    } break;
+    case NF_TYPE_BSF: {
+      return "BSF";
+    } break;
+    case NF_TYPE_CHF: {
+      return "CHF";
+    } break;
+    default:
+      return "NF TYPE UNKNOWN";
+  }
+
+  return "NF TYPE UNKNOWN";
+}
 //------------------------------------------------------------------------------
 nf_up_interface_type_t api_conv::string_to_up_interface_type(
     const std::string& str) {

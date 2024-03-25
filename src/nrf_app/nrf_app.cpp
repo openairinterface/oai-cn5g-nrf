@@ -19,14 +19,6 @@
  *      contact@openairinterface.org
  */
 
-/*! \file nrf_app.cpp
- \brief
- \author  Tien-Thinh NGUYEN
- \company Eurecom
- \date 2020
- \email: Tien-Thinh.Nguyen@eurecom.fr
- */
-
 #include "nrf_app.hpp"
 
 #include <unistd.h>
@@ -110,7 +102,7 @@ void nrf_app::handle_register_nf_instance(
     const std::string& nf_instance_id, const NFProfile& nf_profile,
     int& http_code, const uint8_t http_version,
     ProblemDetails& problem_details) {
-  Logger::nrf_app().info(
+  Logger::nrf_app().debug(
       "Handle Register NF Instance/Update NF Instance (HTTP version %d)",
       http_version);
 
@@ -216,9 +208,6 @@ void nrf_app::handle_update_nf_instance(
     const std::string& nf_instance_id, const std::vector<PatchItem>& patchItem,
     int& http_code, const uint8_t http_version,
     ProblemDetails& problem_details) {
-  Logger::nrf_app().info(
-      "Handle Update NF Instance request (HTTP version %d)", http_version);
-
   // Find the profile corresponding to the instance ID
   std::shared_ptr<nrf_profile> sn = {};
   sn                              = find_nf_profile(nf_instance_id);
@@ -227,6 +216,9 @@ void nrf_app::handle_update_nf_instance(
   std::string heartbeat_value     = {};
 
   if (sn.get() != nullptr) {
+    Logger::nrf_app().info(
+        "Handle Update NF Instance request, NF type %s (HTTP version %d)",
+        api_conv::nf_type_to_string(sn->get_nf_type()), http_version);
     for (auto p : patchItem) {
       patch_op_type_t op =
           api_conv::string_to_patch_operation(p.getOp().getEnumString());
@@ -335,7 +327,9 @@ void nrf_app::handle_update_nf_instance(
 
   } else {
     Logger::nrf_app().debug(
-        "NF Profile with ID %s does not exit", nf_instance_id.c_str());
+        "Handle Update NF Instance request, NF Profile with ID %s does not "
+        "exit",
+        nf_instance_id.c_str());
     http_code = HTTP_STATUS_CODE_404_NOT_FOUND;
     problem_details.setCause(
         protocol_application_error_e2str[RESOURCE_URI_STRUCTURE_NOT_FOUND]);
@@ -417,13 +411,14 @@ void nrf_app::handle_get_nf_instance(
 void nrf_app::handle_deregister_nf_instance(
     const std::string& nf_instance_id, int& http_code,
     const uint8_t http_version, ProblemDetails& problem_details) {
-  Logger::nrf_app().info(
-      "Handle Deregister an NF Instance (HTTP version %d)", http_version);
-
   std::shared_ptr<nrf_profile> profile = {};
   profile                              = find_nf_profile(nf_instance_id);
 
   if (profile.get() != nullptr) {
+    Logger::nrf_app().info(
+        "Handle Deregister NF Instance request, NF type %s (HTTP version %d)",
+        api_conv::nf_type_to_string(profile->get_nf_type()), http_version);
+
     // TODO: notify NF status changed event
     // Notify NF status deregistered event
     m_event_sub.nf_status_deregistered(profile);  // from nrf_app
@@ -441,7 +436,9 @@ void nrf_app::handle_deregister_nf_instance(
     }
   } else {
     Logger::nrf_app().info(
-        "Profile with profile ID %s not found", nf_instance_id.c_str());
+        "Handle Deregister NF Instance request, Profile with profile ID %s not "
+        "found",
+        nf_instance_id.c_str());
     http_code = HTTP_STATUS_CODE_404_NOT_FOUND;
     problem_details.setCause(
         protocol_application_error_e2str[RESOURCE_URI_STRUCTURE_NOT_FOUND]);
@@ -905,14 +902,14 @@ void nrf_app::find_nf_profiles(
 
 //------------------------------------------------------------------------------
 bool nrf_app::is_profile_exist(const std::string& profile_id) const {
-  Logger::nrf_app().info(
+  Logger::nrf_app().debug(
       "Check if a profile with this ID %s exist", profile_id.c_str());
 
   std::shared_lock lock(m_instance_id2nrf_profile);
   if (instance_id2nrf_profile.count(profile_id) > 0) {
     return true;
   } else {
-    Logger::nrf_app().info("NF profile (ID %s) not found", profile_id.c_str());
+    Logger::nrf_app().debug("NF profile (ID %s) not found", profile_id.c_str());
     return false;
   }
 }
@@ -1277,7 +1274,8 @@ void nrf_app::get_subscription_list(
 
       } break;
       case NF_TYPE_COND: {
-        std::string nf_type = nf_type_e2str[profile.get()->get_nf_type()];
+        std::string nf_type =
+            api_conv::nf_type_to_string(profile.get()->get_nf_type());
         if (nf_type.compare(condition.nf_type) == 0) {
           uris.push_back(uri);
           Logger::nrf_app().info(
@@ -1296,7 +1294,8 @@ void nrf_app::get_subscription_list(
 
       } break;
       case AMF_COND: {
-        std::string nf_type = nf_type_e2str[profile.get()->get_nf_type()];
+        std::string nf_type =
+            api_conv::nf_type_to_string(profile.get()->get_nf_type());
         if (nf_type.compare("AMF") == 0) {
           amf_info_t info = {};
           std::static_pointer_cast<amf_profile>(profile).get()->get_amf_info(
