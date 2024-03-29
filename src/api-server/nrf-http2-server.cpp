@@ -88,6 +88,12 @@ void nrf_http2_server::start() {
                 http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
             response.end();
             return;
+          } catch (std::exception& e) {
+            Logger::nrf_sbi().warn("error: %s!", e.what());
+            response.write_head(
+                http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
+            response.end();
+            return;
           }
         });
       });
@@ -141,6 +147,12 @@ void nrf_http2_server::start() {
                 http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
             response.end();
             return;
+          } catch (std::exception& e) {
+            Logger::nrf_sbi().warn("error: %s!", e.what());
+            response.write_head(
+                http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
+            response.end();
+            return;
           }
         });
       });
@@ -180,6 +192,12 @@ void nrf_http2_server::start() {
           } catch (nlohmann::detail::exception& e) {
             Logger::nrf_sbi().warn(
                 "Can not parse the json data (error: %s)!", e.what());
+            response.write_head(
+                http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
+            response.end();
+            return;
+          } catch (std::exception& e) {
+            Logger::nrf_sbi().warn("error: %s!", e.what());
             response.write_head(
                 http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
             response.end();
@@ -224,6 +242,12 @@ void nrf_http2_server::start() {
           } catch (nlohmann::detail::exception& e) {
             Logger::nrf_sbi().warn(
                 "Can not parse the json data (error: %s)!", e.what());
+            response.write_head(
+                http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
+            response.end();
+            return;
+          } catch (std::exception& e) {
+            Logger::nrf_sbi().warn("error: %s!", e.what());
             response.write_head(
                 http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
             response.end();
