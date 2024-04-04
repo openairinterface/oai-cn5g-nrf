@@ -368,7 +368,6 @@ void nrf_http2_server::get_nf_instances_handler(
 void nrf_http2_server::update_instance_handler(
     const std::string& nfInstanceID, const std::vector<PatchItem>& patchItem,
     const response& response) {
-  Logger::nrf_sbi().info("");
   Logger::nrf_sbi().info(
       "Got a request to update an NF instance, Instance ID: %s",
       nfInstanceID.c_str());
@@ -388,13 +387,14 @@ void nrf_http2_server::update_instance_handler(
       (http_code != HTTP_STATUS_CODE_204_NO_CONTENT)) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
+    Logger::nrf_sbi().debug("Json data: %s", json_data.dump().c_str());
   } else if (http_code == HTTP_STATUS_CODE_200_OK) {
     if (profile.get() != nullptr)
       // convert the profile to Json
       profile.get()->to_json(json_data);
+    Logger::nrf_sbi().debug("Json data: %s", json_data.dump().c_str());
   }
 
-  Logger::nrf_sbi().debug("Json data: %s", json_data.dump().c_str());
   header_map h;
   h.emplace(
       "location", header_value{
@@ -402,8 +402,11 @@ void nrf_http2_server::update_instance_handler(
                       nrf_cfg->local().get_sbi().get_api_version() +
                       "/nf-instances/" + nfInstanceID});
   h.emplace("content-type", header_value{content_type});
+
   response.write_head(http_code, h);
-  response.end(json_data.dump().c_str());
+  if (http_code != HTTP_STATUS_CODE_204_NO_CONTENT) {
+    response.end(json_data.dump().c_str());
+  }
 }
 
 void nrf_http2_server::deregister_nf_instance_handler(

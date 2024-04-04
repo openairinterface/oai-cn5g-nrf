@@ -19,14 +19,6 @@
  *      contact@openairinterface.org
  */
 
-/*! \file nrf_search_result.hpp
- \brief
- \author  Tien-Thinh NGUYEN
- \company Eurecom
- \date 2020
- \email: Tien-Thinh.Nguyen@eurecom.fr
- */
-
 #ifndef FILE_NRF_SEARCH_RESULT_HPP_SEEN
 #define FILE_NRF_SEARCH_RESULT_HPP_SEEN
 

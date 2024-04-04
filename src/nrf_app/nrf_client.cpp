@@ -19,14 +19,6 @@
  *      contact@openairinterface.org
  */
 
-/*! \file nrf_client.cpp
- \brief
- \author  Tien-Thinh NGUYEN
- \company Eurecom
- \date 2020
- \email: Tien-Thinh.Nguyen@eurecom.fr
- */
-
 #include "nrf_client.hpp"
 
 #include <curl/curl.h>

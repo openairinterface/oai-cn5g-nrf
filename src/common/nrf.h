@@ -49,11 +49,6 @@ typedef enum nf_type_s {
   NF_TYPE_UNKNOWN = 21
 } nf_type_t;
 
-static const std::vector<std::string> nf_type_e2str = {
-    "NRF",  "UDM",  "AMF", "SMF",  "AUSF",   "NEF",    "PCF", "SMSF",
-    "NSSF", "UDR",  "LMF", "GMLC", "5G_EIR", "SEPP",   "UPF", "N3IWF",
-    "AF",   "UDSF", "BSF", "CHF",  "NWDAF",  "UNKNOWN"};
-
 typedef enum patch_op_type_s {
   PATCH_OP_ADD     = 0,
   PATCH_OP_REMOVE  = 1,
@@ -64,9 +59,6 @@ typedef enum patch_op_type_s {
   PATCH_OP_UNKNOWN = 6
 
 } patch_op_type_t;
-
-static const std::vector<std::string> patch_op_type_e2str = {
-    "ADD", "REMOVE", "REPLACE", "MOVE", "COPY", "TEST", "UNKNOWN"};
 
 // Event Subscription IDs)
 typedef uint32_t evsub_id_t;

@@ -19,13 +19,6 @@
  *      contact@openairinterface.org
  */
 
-/*! \file pid_file.cpp
- \brief
- \author  Lionel GAUTHIER
- \date 2016
- \email: lionel.gauthier@eurecom.fr
- */
-
 #include "logger.hpp"
 #include "pid_file.hpp"
 

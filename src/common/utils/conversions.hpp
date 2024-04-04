@@ -19,13 +19,6 @@
  *      contact@openairinterface.org
  */
 
-/*! \file conversions.hpp
- \brief
- \author Sebastien ROUX, Lionel Gauthier
- \company Eurecom
- \email: lionel.gauthier@eurecom.fr
- */
-
 #ifndef FILE_CONVERSIONS_HPP_SEEN
 #define FILE_CONVERSIONS_HPP_SEEN
 #include <stdint.h>
