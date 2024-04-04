@@ -19,14 +19,6 @@
  *      contact@openairinterface.org
  */
 
-/*! \file api_conversions.hpp
- \brief
- \author  Tien-Thinh NGUYEN
- \company Eurecom
- \date 2020
- \email: tien-thinh.nguyen@eurecom.fr
- */
-
 #ifndef FILE_API_CONVERSIONS_HPP_SEEN
 #define FILE_API_CONVERSIONS_HPP_SEEN
 
@@ -63,14 +55,21 @@ bool subscription_api_to_nrf_subscription(
     const SubscriptionData& api_sub, std::shared_ptr<nrf_subscription>& sub);
 
 /*
- * Convert a string to nf type
+ * Convert a string to NF type
  * @param [const std::string &] str: string input
  * @return the corresponding nf_type
  */
 nf_type_t string_to_nf_type(const std::string& str);
 
 /*
- * Convert a string to nf type
+ * Convert NF type to string
+ * @param [const nf_type_t &] nf_type: NF type
+ * @return the corresponding string
+ */
+std::string nf_type_to_string(const nf_type_t& nf_type);
+
+/*
+ * Convert a string to UP interface type
  * @param [const std::string &] str: string input
  * @return the corresponding up_interface_type
  */

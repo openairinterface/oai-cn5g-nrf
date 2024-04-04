@@ -19,13 +19,6 @@
  *      contact@openairinterface.org
  */
 
-/*! \file dynamic_memory_check.h
- \brief
- \author Lionel Gauthier
- \company Eurecom
- \email: lionel.gauthier@eurecom.fr
- */
-
 #ifndef FILE_DYNAMIC_MEMORY_CHECK_SEEN
 #define FILE_DYNAMIC_MEMORY_CHECK_SEEN
 

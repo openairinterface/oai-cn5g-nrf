@@ -270,7 +270,7 @@ void nrf_profile::display() {
   Logger::nrf_app().debug("\tInstance ID: %s", nf_instance_id.c_str());
   Logger::nrf_app().debug("\tInstance name: %s", nf_instance_name.c_str());
   Logger::nrf_app().debug(
-      "\tInstance type: %s", nf_type_e2str[nf_type].c_str());
+      "\tInstance type: %s", api_conv::nf_type_to_string(nf_type).c_str());
   Logger::nrf_app().debug("\tStatus: %s", nf_status.c_str());
   Logger::nrf_app().debug("\tHeartBeat timer: %d", heartBeat_timer);
   Logger::nrf_app().debug("\tPriority: %d", priority);
@@ -590,7 +590,7 @@ bool nrf_profile::remove_profile_info(const std::string& path) {
 void nrf_profile::to_json(nlohmann::json& data) const {
   data["nfInstanceId"]   = nf_instance_id;
   data["nfInstanceName"] = nf_instance_name;
-  data["nfType"]         = nf_type_e2str[nf_type];
+  data["nfType"]         = api_conv::nf_type_to_string(nf_type);
   data["nfStatus"]       = nf_status;
   data["heartBeatTimer"] = heartBeat_timer;
   // SNSSAIs
