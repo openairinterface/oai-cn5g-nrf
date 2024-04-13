@@ -437,13 +437,14 @@ void nrf_http2_server::create_subscription_handler(
   int http_code                  = 0;
   ProblemDetails problem_details = {};
   std::string sub_id;
+  std::string validity_time;
   nlohmann::json json_sub  = {};
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
   Logger::nrf_sbi().debug("Subscription data %s", json_sub.dump().c_str());
   m_nrf_app->handle_create_subscription(
-      subscriptionData, sub_id, http_code, 2, problem_details);
+      subscriptionData, sub_id, validity_time, http_code, 2, problem_details);
 
   if (http_code != HTTP_STATUS_CODE_201_CREATED) {
     to_json(json_data, problem_details);
@@ -451,6 +452,7 @@ void nrf_http2_server::create_subscription_handler(
   } else {
     to_json(json_data, subscriptionData);
     json_data["subscriptionId"] = sub_id;
+    json_data["validityTime"] = validity_time;
   }
 
   header_map h;

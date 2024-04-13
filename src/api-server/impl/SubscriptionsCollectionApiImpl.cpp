@@ -43,12 +43,13 @@ void SubscriptionsCollectionApiImpl::create_subscription(
   int http_code                  = 0;
   ProblemDetails problem_details = {};
   std::string sub_id;
+  std::string validity_time;
   nlohmann::json json_sub = {};
   to_json(json_sub, subscriptionData);
   Logger::nrf_sbi().debug("Subscription data %s", json_sub.dump().c_str());
 
   m_nrf_app->handle_create_subscription(
-      subscriptionData, sub_id, http_code, 1, problem_details);
+      subscriptionData, sub_id, validity_time, http_code, 1, problem_details);
 
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
@@ -59,6 +60,7 @@ void SubscriptionsCollectionApiImpl::create_subscription(
   } else {
     to_json(json_data, subscriptionData);
     json_data["subscriptionId"] = sub_id;
+    json_data["validityTime"] = validity_time;
     // Location header
     response.headers().add<Pistache::Http::Header::Location>(
         m_address + base + nrf_cfg->local().get_sbi().get_api_version() +
