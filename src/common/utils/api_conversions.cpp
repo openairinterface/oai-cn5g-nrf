@@ -670,9 +670,9 @@ bool api_conv::subscription_api_to_nrf_subscription(
       }
     }
   } else {
-    sub.get()->set_notif_events({ NOTIFICATION_TYPE_NF_REGISTERED,
-                                  NOTIFICATION_TYPE_NF_DEREGISTERED,
-                                  NOTIFICATION_TYPE_NF_PROFILE_CHANGED });
+    sub.get()->set_notif_events(
+        {NOTIFICATION_TYPE_NF_REGISTERED, NOTIFICATION_TYPE_NF_DEREGISTERED,
+         NOTIFICATION_TYPE_NF_PROFILE_CHANGED});
   }
 
   if (api_sub.validityTimeIsSet()) {
@@ -681,8 +681,8 @@ bool api_conv::subscription_api_to_nrf_subscription(
       boost::posix_time::ptime p(boost::posix_time::from_iso_string(str));
       sub.get()->set_validity_time(p);
     } catch (std::exception& exp) {
-      Logger::nrf_app().error("error validityTime conversion: %s.\n",
-         exp.what());
+      Logger::nrf_app().error(
+          "error validityTime conversion: %s.\n", exp.what());
       // return error or should assign NRF determined validityTime ?
       // for now returning error
       return false;
