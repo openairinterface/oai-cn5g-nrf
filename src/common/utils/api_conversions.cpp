@@ -677,8 +677,16 @@ bool api_conv::subscription_api_to_nrf_subscription(
 
   if (api_sub.validityTimeIsSet()) {
     std::string str = api_sub.getValidityTime();
-    boost::posix_time::ptime p(boost::posix_time::from_iso_string(str));
-    sub.get()->set_validity_time(p);
+    try {
+      boost::posix_time::ptime p(boost::posix_time::from_iso_string(str));
+      sub.get()->set_validity_time(p);
+    } catch (std::exception& exp) {
+      Logger::nrf_app().error("error validityTime conversion: %s.\n",
+         exp.what());
+      // return error or should assign NRF determined validityTime ?
+      // for now returning error
+      return false;
+    }
     Logger::nrf_app().debug("Validity Time: %s", str.c_str());
   }
   // TODO:
