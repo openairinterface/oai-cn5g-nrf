@@ -669,6 +669,10 @@ bool api_conv::subscription_api_to_nrf_subscription(
         sub.get()->add_notif_event(NOTIFICATION_TYPE_UNKNOWN_EVENT);
       }
     }
+  } else {
+    sub.get()->set_notif_events({ NOTIFICATION_TYPE_NF_REGISTERED,
+                                  NOTIFICATION_TYPE_NF_DEREGISTERED,
+                                  NOTIFICATION_TYPE_NF_PROFILE_CHANGED });
   }
 
   if (api_sub.validityTimeIsSet()) {
