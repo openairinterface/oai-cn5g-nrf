@@ -76,6 +76,7 @@ class nrf_http2_server {
   uint32_t m_port;
   http2 server;
   nrf_app* m_nrf_app;
+  bool running_server;
 
  protected:
   static uint64_t generate_promise_id() {
