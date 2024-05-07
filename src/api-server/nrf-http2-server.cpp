@@ -52,7 +52,7 @@ extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 void nrf_http2_server::start() {
   boost::system::error_code ec;
 
-  Logger::nrf_app().info("HTTP2 server started");
+  Logger::nrf_app().info("HTTP2 server being started");
   std::string nfInstanceID          = {};
   std::string subscriptionID        = {};
   SubscriptionData subscriptionData = {};
@@ -256,9 +256,12 @@ void nrf_http2_server::start() {
         });
       });
 
+  running_server = true;
   if (server.listen_and_serve(ec, m_address, std::to_string(m_port))) {
-    std::cerr << "HTTP Server error: " << ec.message() << std::endl;
+    Logger::nrf_app().debug("HTTP2 server status: %s", ec.message());
   }
+  running_server = false;
+  Logger::nrf_app().info("HTTP2 server fully stopped");
 }
 
 void nrf_http2_server::register_nf_instance_handler(
@@ -629,4 +632,9 @@ void nrf_http2_server::access_token_request_handler(
 //------------------------------------------------------------------------------
 void nrf_http2_server::stop() {
   server.stop();
+  while (running_server) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+  Logger::nrf_app().info("HTTP2 server should be fully stopped");
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }

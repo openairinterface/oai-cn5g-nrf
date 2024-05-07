@@ -37,6 +37,7 @@ class nrf_event;
 class task_manager {
  public:
   task_manager(nrf_event& ev);
+  ~task_manager();
 
   /*
    * Manage the tasks
@@ -62,6 +63,8 @@ class task_manager {
 
   nrf_event& event_sub_;
   int sfd;
+  bool terminate;
+  bool terminated;
 };
 }  // namespace app
 }  // namespace nrf
