@@ -30,6 +30,7 @@
 #include "nrf_profile.hpp"
 
 #include <unistd.h>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -452,11 +453,13 @@ bool nrf_profile::add_profile_info(
     std::string address  = value;
     struct in_addr addr4 = {};
     unsigned char buf_in_addr[sizeof(struct in_addr)];
-    if (inet_pton(AF_INET, util::trim(address).c_str(), buf_in_addr) == 1) {
+    if (inet_pton(AF_INET, oai::utils::trim(address).c_str(), buf_in_addr) ==
+        1) {
       memcpy(&addr4, buf_in_addr, sizeof(struct in_addr));
     } else {
       Logger::nrf_app().warn(
-          "Address conversion: Bad value %s", util::trim(address).c_str());
+          "Address conversion: Bad value %s",
+          oai::utils::trim(address).c_str());
       return false;
     }
     Logger::nrf_app().debug("Added IPv4 Addr: %s", address.c_str());
@@ -469,11 +472,13 @@ bool nrf_profile::add_profile_info(
     std::string address   = value;
     struct in6_addr addr6 = {};
     unsigned char buf_in_addr[sizeof(struct in6_addr)];
-    if (inet_pton(AF_INET6, util::trim(address).c_str(), buf_in_addr) == 1) {
+    if (inet_pton(AF_INET6, oai::utils::trim(address).c_str(), buf_in_addr) ==
+        1) {
       memcpy(&addr6, buf_in_addr, sizeof(struct in6_addr));
     } else {
       Logger::nrf_app().warn(
-          "Address conversion: Bad value %s", util::trim(address).c_str());
+          "Address conversion: Bad value %s",
+          oai::utils::trim(address).c_str());
       return false;
     }
     Logger::nrf_app().debug("Added IPv6 Addr: %s", address.c_str());

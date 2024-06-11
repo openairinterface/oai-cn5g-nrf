@@ -23,10 +23,10 @@
 #define FILE_API_CONVERSIONS_HPP_SEEN
 
 #include "NFProfile.h"
-#include "nrf_profile.hpp"
-#include "nrf_subscription.hpp"
 #include "SubscriptionData.h"
 #include "nrf.h"
+#include "nrf_profile.hpp"
+#include "nrf_subscription.hpp"
 
 using namespace oai::model::nrf;
 using namespace oai::nrf::app;

@@ -28,18 +28,18 @@
  */
 
 #include "nrf-http2-server.h"
+
 #include <boost/algorithm/string.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/future.hpp>
-#include <regex>
 #include <nlohmann/json.hpp>
+#include <regex>
 #include <string>
-#include "string.hpp"
 
+#include "3gpp_29.500.h"
 #include "logger.hpp"
 #include "nrf_config.hpp"
-#include "3gpp_29.500.h"
-#include "mime_parser.hpp"
+#include "string.hpp"
 
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
@@ -71,9 +71,9 @@ void nrf_http2_server::start() {
 
               // Parse query paramaters
               std::string nfType =
-                  util::get_query_param(split_query, "nf-type");
+                  oai::utils::get_query_param(split_query, "nf-type");
               std::string limit_nfs =
-                  util::get_query_param(split_query.c_str(), "limit");
+                  oai::utils::get_query_param(split_query.c_str(), "limit");
 
               Logger::nrf_sbi().debug(
                   "/nnrf-nfm/ query params - nfType: %s, limit_nfs: %s, ",
@@ -220,13 +220,14 @@ void nrf_http2_server::start() {
 
               // Parse query paramaters
               std::string nfTypeTarget =
-                  util::get_query_param(split_query, "target-nf-type");
-              std::string nfTypeReq = util::get_query_param(
+                  oai::utils::get_query_param(split_query, "target-nf-type");
+              std::string nfTypeReq = oai::utils::get_query_param(
                   split_query.c_str(), "requester-nf-type");
-              std::string requester_nf_instance_id = util::get_query_param(
-                  split_query.c_str(), "requester-nf-instance-id");
+              std::string requester_nf_instance_id =
+                  oai::utils::get_query_param(
+                      split_query.c_str(), "requester-nf-instance-id");
               std::string limit_nfs =
-                  util::get_query_param(split_query.c_str(), "limit");
+                  oai::utils::get_query_param(split_query.c_str(), "limit");
               // TODO: other query parameters
 
               Logger::nrf_sbi().debug(

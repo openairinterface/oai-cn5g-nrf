@@ -23,6 +23,7 @@
 #define FILE_NRF_APP_HPP_SEEN
 
 #include <string>
+
 #include "AccessTokenRsp.h"
 #include "NFProfile.h"
 #include "PatchItem.h"
@@ -475,10 +476,10 @@ class nrf_app {
       subscrition_id2nrf_subscription;
   mutable std::shared_mutex m_subscription_id2nrf_subscription;
   nrf_event& m_event_sub;
-  util::uint_generator<uint32_t> evsub_id_generator;
+  oai::utils::uint_generator<uint32_t> evsub_id_generator;
   std::vector<bs2::connection> connections;
 
-  util::uint_generator<uint32_t> search_id_generator;
+  oai::utils::uint_generator<uint32_t> search_id_generator;
   std::map<std::string, std::shared_ptr<nrf_search_result>>
       search_id2search_result;
   mutable std::shared_mutex m_search_id2search_result;

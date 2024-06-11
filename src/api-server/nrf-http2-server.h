@@ -25,9 +25,10 @@
 #include "conversions.hpp"
 
 //#include "nrf.h"
+#include <nghttp2/asio_http2_server.h>
+
 #include "nrf_app.hpp"
 #include "uint_generator.hpp"
-#include <nghttp2/asio_http2_server.h>
 
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
@@ -71,7 +72,7 @@ class nrf_http2_server {
   void stop();
 
  private:
-  util::uint_generator<uint32_t> m_promise_id_generator;
+  oai::utils::uint_generator<uint32_t> m_promise_id_generator;
   std::string m_address;
   uint32_t m_port;
   http2 server;
@@ -80,7 +81,7 @@ class nrf_http2_server {
 
  protected:
   static uint64_t generate_promise_id() {
-    return util::uint_uid_generator<uint64_t>::get_instance().get_uid();
+    return oai::utils::uint_uid_generator<uint64_t>::get_instance().get_uid();
   }
 };
 
