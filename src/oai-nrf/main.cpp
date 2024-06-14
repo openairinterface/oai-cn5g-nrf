@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
+#include <signal.h>
+#include <stdint.h>
+#include <stdlib.h>  // srand
+#include <unistd.h>  // get_pid(), pause()
+
+#include <iostream>
+#include <thread>
+
+#include "conversions.hpp"
 #include "logger.hpp"
 #include "nrf-api-server.h"
 #include "nrf-http2-server.h"
 #include "nrf_app.hpp"
 #include "nrf_client.hpp"
+#include "nrf_config.hpp"
 #include "options.hpp"
 #include "pid_file.hpp"
-#include "conversions.hpp"
-
 #include "pistache/endpoint.h"
 #include "pistache/http.h"
 #include "pistache/router.h"
 
-#include <signal.h>
-#include <stdint.h>
-#include <stdlib.h>  // srand
-#include <unistd.h>  // get_pid(), pause()
-#include <iostream>
-#include <thread>
-#include "nrf_config.hpp"
-
 using namespace oai::nrf::app;
-using namespace util;
+using namespace oai::utils;
 using namespace std;
 using namespace oai::config::nrf;
 
@@ -122,8 +122,9 @@ int main(int argc, char** argv) {
 
   // PID file
   // Currently hard-coded value. TODO: add as config option.
-  string pid_file_name = get_exe_absolute_path("/var/run", nrf_cfg->instance);
-  if (!is_pid_file_lock_success(pid_file_name.c_str())) {
+  string pid_file_name =
+      oai::utils::get_exe_absolute_path("/var/run", nrf_cfg->instance);
+  if (!oai::utils::is_pid_file_lock_success(pid_file_name.c_str())) {
     Logger::nrf_app().error("Lock PID file %s failed\n", pid_file_name.c_str());
     exit(-EDEADLK);
   }

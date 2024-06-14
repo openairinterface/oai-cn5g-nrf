@@ -19,11 +19,14 @@
  *      contact@openairinterface.org
  */
 
+#include "api_conversions.hpp"
+
 #include <ctype.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -34,11 +37,10 @@
 
 #include "3gpp_29.510.h"
 #include "AmfInfo.h"
-#include "api_conversions.hpp"
+#include "common_defs.h"
 #include "logger.hpp"
 #include "nrf.h"
 #include "string.hpp"
-#include "common_defs.h"
 
 using namespace oai::model::nrf;
 using namespace oai::model::common;
@@ -101,11 +103,13 @@ bool api_conv::profile_api_to_nrf_profile(
     for (auto address : ipv4_addr_str) {
       struct in_addr addr4 = {};
       unsigned char buf_in_addr[sizeof(struct in_addr)];
-      if (inet_pton(AF_INET, util::trim(address).c_str(), buf_in_addr) == 1) {
+      if (inet_pton(AF_INET, oai::utils::trim(address).c_str(), buf_in_addr) ==
+          1) {
         memcpy(&addr4, buf_in_addr, sizeof(struct in_addr));
       } else {
         Logger::nrf_app().warn(
-            "Address conversion: Bad value %s", util::trim(address).c_str());
+            "Address conversion: Bad value %s",
+            oai::utils::trim(address).c_str());
       }
 
       Logger::nrf_app().debug("\tIPv4 Addr: %s", address.c_str());
@@ -118,14 +122,14 @@ bool api_conv::profile_api_to_nrf_profile(
   //   for (auto address : ipv6_addr) {
   //     struct in6_addr addr6 = {};
   //     unsigned char buf_in_addr[sizeof(struct in6_addr)];
-  //     if (inet_pton(AF_INET6, util::trim(address).c_str(), buf_in_addr) ==
-  //     1)
+  //     if (inet_pton(AF_INET6, oai::utils::trim(address).c_str(), buf_in_addr)
+  //     == 1)
   //     {
   //       memcpy(&addr6, buf_in_addr, sizeof(struct in6_addr));
   //     } else {
   //       Logger::nrf_app().warn(
   //           "Address conversion: Bad value %s",
-  //           util::trim(address).c_str());
+  //           oai::utils::trim(address).c_str());
   //     }
 
   //     Logger::nrf_app().debug("\tIPv6 Addr: %s", address.c_str());
@@ -248,12 +252,13 @@ bool api_conv::profile_api_to_nrf_profile(
               struct in_addr addr4 = {};
               unsigned char buf_in_addr[sizeof(struct in_addr)];
               if (inet_pton(
-                      AF_INET, util::trim(address).c_str(), buf_in_addr) == 1) {
+                      AF_INET, oai::utils::trim(address).c_str(),
+                      buf_in_addr) == 1) {
                 memcpy(&addr4, buf_in_addr, sizeof(struct in_addr));
               } else {
                 Logger::nrf_app().warn(
                     "Address conversion: Bad value %s",
-                    util::trim(address).c_str());
+                    oai::utils::trim(address).c_str());
               }
               Logger::nrf_app().debug(
                   "\t\tEndpoint: %s, IPv4 Addr: %s, FQDN: %s, NWI: %s",
@@ -271,13 +276,13 @@ bool api_conv::profile_api_to_nrf_profile(
           //     struct in6_addr addr6 = {};
           //     unsigned char buf_in_addr[sizeof(struct in6_addr)];
           //     if (inet_pton(
-          //             AF_INET, util::trim(address).c_str(), buf_in_addr) ==
-          //             1) {
+          //             AF_INET, oai::utils::trim(address).c_str(),
+          //             buf_in_addr) == 1) {
           //       memcpy(&addr6, buf_in_addr, sizeof(struct in6_addr));
           //     } else {
           //       Logger::nrf_app().warn(
           //           "Address conversion: Bad value %s",
-          //           util::trim(address).c_str());
+          //           oai::utils::trim(address).c_str());
           //     }
           //     Logger::nrf_app().debug("\tIPv4 Addr: %s", address.c_str());
           //     interface.ipv6_addresses.push_back(addr6);
