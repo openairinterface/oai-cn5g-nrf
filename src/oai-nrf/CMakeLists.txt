@@ -278,8 +278,9 @@ include_directories(${SRC_TOP_DIR}/../build/ext/cpp-jwt)
 include_directories(${SRC_TOP_DIR}/api-server)
 include_directories(${SRC_TOP_DIR}/api-server/api)
 include_directories(${SRC_TOP_DIR}/api-server/impl)
-include_directories(${SRC_TOP_DIR}/api-server/model)
 include_directories(${SRC_TOP_DIR}/${MOUNTED_COMMON}/logger)
+include_directories(${SRC_TOP_DIR}/${MOUNTED_COMMON}/model/common_model)
+include_directories(${SRC_TOP_DIR}/${MOUNTED_COMMON}/model/nrf)
 include_directories(${SRC_TOP_DIR}/${MOUNTED_COMMON}/utils)
 
 add_executable(nrf
