@@ -67,11 +67,6 @@ typedef uint32_t evsub_id_t;
 #define INVALID_EVSUB_ID ((evsub_id_t) 0x00000000)
 #define UNASSIGNED_EVSUB_ID ((evsub_id_t) 0x00000000)
 
-#define NNRF_NFM_BASE "/nnrf-nfm/"
-#define NNRF_DISC_BASE "/nnrf-disc/"
-#define NNRF_NFM_NF_INSTANCES "/nf-instances/"
-#define NNRF_NFM_STATUS_SUBSCRIBE_URL "/subscriptions"
-
 #define NF_CURL_TIMEOUT_MS 1000L
 
 #define MAX_WAIT_MSECS 20000  // 1 second
