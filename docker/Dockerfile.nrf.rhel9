@@ -127,6 +127,7 @@ COPY --from=oai-nrf-builder \
     /usr/local/lib64/libyaml-cpp.so.0.* \
     /usr/local/lib64/libspdlog.so \
     /usr/local/lib64/libfmt.so \
+    /usr/local/lib64/libcpr.so.1 \ 
     /usr/lib64/
 
 RUN ldconfig && \
