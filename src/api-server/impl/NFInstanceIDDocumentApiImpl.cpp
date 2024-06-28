@@ -52,7 +52,7 @@ void NFInstanceIDDocumentApiImpl::deregister_nf_instance(
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
-  if (http_code != HTTP_STATUS_CODE_204_NO_CONTENT) {
+  if (http_code != oai::common::sbi::http_status_code::NO_CONTENT) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
     // content type
@@ -84,7 +84,7 @@ void NFInstanceIDDocumentApiImpl::get_nf_instance(
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
-  if (http_code != HTTP_STATUS_CODE_200_OK) {
+  if (http_code != oai::common::sbi::http_status_code::OK) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {
@@ -115,9 +115,9 @@ void NFInstanceIDDocumentApiImpl::register_nf_instance(
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
-  if ((http_code != HTTP_STATUS_CODE_200_OK) and
-      (http_code != HTTP_STATUS_CODE_201_CREATED) and
-      (http_code != HTTP_STATUS_CODE_202_ACCEPTED)) {
+  if ((http_code != oai::common::sbi::http_status_code::OK) and
+      (http_code != oai::common::sbi::http_status_code::CREATED) and
+      (http_code != oai::common::sbi::http_status_code::ACCEPTED)) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {
@@ -159,11 +159,11 @@ void NFInstanceIDDocumentApiImpl::update_nf_instance(
   std::shared_ptr<nrf_profile> profile =
       m_nrf_app->find_nf_profile(nfInstanceID);
 
-  if ((http_code != HTTP_STATUS_CODE_200_OK) and
-      (http_code != HTTP_STATUS_CODE_204_NO_CONTENT)) {
+  if ((http_code != oai::common::sbi::http_status_code::OK) and
+      (http_code != oai::common::sbi::http_status_code::NO_CONTENT)) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
-  } else if (http_code == HTTP_STATUS_CODE_200_OK) {
+  } else if (http_code == oai::common::sbi::http_status_code::OK) {
     if (profile.get() != nullptr)
       // convert the profile to Json
       profile.get()->to_json(json_data);
@@ -175,7 +175,7 @@ void NFInstanceIDDocumentApiImpl::update_nf_instance(
   response.headers().add<Pistache::Http::Header::ContentType>(
       Pistache::Http::Mime::MediaType(content_type));
 
-  if (http_code != HTTP_STATUS_CODE_204_NO_CONTENT)
+  if (http_code != oai::common::sbi::http_status_code::NO_CONTENT)
     response.send(Pistache::Http::Code(http_code), json_data.dump().c_str());
   else
     response.send(Pistache::Http::Code(http_code));

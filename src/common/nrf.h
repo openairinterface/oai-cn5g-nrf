@@ -62,8 +62,6 @@ typedef enum patch_op_type_s {
 
 // Event Subscription IDs)
 typedef uint32_t evsub_id_t;
-#define EVSUB_ID_FMT "0x%" PRIx32
-#define EVSUB_ID_SCAN_FMT SCNx32
 #define INVALID_EVSUB_ID ((evsub_id_t) 0x00000000)
 #define UNASSIGNED_EVSUB_ID ((evsub_id_t) 0x00000000)
 

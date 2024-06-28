@@ -69,7 +69,7 @@ void AccessTokenRequestApiImpl::access_token_request(
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
-  if (http_code != HTTP_STATUS_CODE_200_OK) {
+  if (http_code != oai::common::sbi::http_status_code::OK) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {

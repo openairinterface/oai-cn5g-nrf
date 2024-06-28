@@ -27,10 +27,11 @@ static const std::string NRF_APP   = "nrf_app";
 static const std::string SYSTEM    = "system";
 static const std::string NRF_SBI   = "nrf_sbi";
 
-class Logger {
+class Logger : public oai::logger::logger_common {
  public:
   static void init(
       const std::string& name, const bool log_stdout, const bool log_rot_file) {
+    oai::logger::logger_common(name, log_stdout, log_rot_file);
     oai::logger::logger_registry::register_logger(
         name, ASYNC_CMD, log_stdout, log_rot_file);
     oai::logger::logger_registry::register_logger(

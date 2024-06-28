@@ -56,7 +56,7 @@ void NFInstancesStoreApiImpl::get_nf_instances(
   // TODO: std::string content_type = "application/3gppHal+json";
   std::string content_type = "application/json";
 
-  if (http_code != HTTP_STATUS_CODE_200_OK) {
+  if (http_code != oai::common::sbi::http_status_code::OK) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {

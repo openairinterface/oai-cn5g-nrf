@@ -78,7 +78,8 @@ void CompleteStoredSearchDocumentApiImpl::retrieve_complete_search(
       Pistache::Http::Mime::MediaType(content_type));
 
   response.send(
-      Pistache::Http::Code(HTTP_STATUS_CODE_200_OK), json_data.dump().c_str());
+      Pistache::Http::Code(oai::common::sbi::http_status_code::OK),
+      json_data.dump().c_str());
 }
 
 }  // namespace api
