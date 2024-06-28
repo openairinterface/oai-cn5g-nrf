@@ -36,11 +36,6 @@ namespace oai::nrf::api {
 
 class nrf_sbi_helper : public sbi_helper {
  public:
-  static inline const std::string NrfNfManagementServiceBase =
-      sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version();
-
-  static inline const std::string NrfNfDiscoveryServiceBase =
-      sbi_helper::NrfDiscBase + nrf_cfg->local().get_sbi().get_api_version();
 };
 
 }  // namespace oai::nrf::api

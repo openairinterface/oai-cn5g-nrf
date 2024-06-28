@@ -61,7 +61,7 @@ nrf_app::nrf_app(const std::string& config_file, nrf_event& ev)
   Logger::nrf_app().startup("Starting...");
 
   try {
-    nrf_client_inst = new nrf_client(ev);
+    nrf_client_inst = new nrf_client();
     nrf_jwt_inst    = new nrf_jwt();
   } catch (std::exception& e) {
     Logger::nrf_app().error("Cannot create NRF_APP: %s", e.what());

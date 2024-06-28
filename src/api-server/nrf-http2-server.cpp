@@ -61,7 +61,7 @@ void nrf_http2_server::start() {
 
   // NF Instances (Store)
   server.handle(
-      nrf_sbi_helper::NrfNfManagementServiceBase +
+      sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfNfmPathNfInstances,
       [&](const request& request, const response& response) {
         request.on_data([&](const uint8_t* data, std::size_t len) {
@@ -102,7 +102,7 @@ void nrf_http2_server::start() {
 
   // NF Instances ID (Document)
   server.handle(
-      nrf_sbi_helper::NrfNfManagementServiceBase +
+      sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfNfmPathNfInstances + "/",
       [&](const request& request, const response& response) {
         request.on_data([&](const uint8_t* data, std::size_t len) {
@@ -161,7 +161,7 @@ void nrf_http2_server::start() {
 
   // Subscriptions  (Collection & ID Document)
   server.handle(
-      nrf_sbi_helper::NrfNfManagementServiceBase +
+      sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfNfmPathSubscriptions,
       [&](const request& request, const response& response) {
         request.on_data([&](const uint8_t* data, std::size_t len) {
@@ -210,7 +210,7 @@ void nrf_http2_server::start() {
 
   // NF Discovery (Store)
   server.handle(
-      nrf_sbi_helper::NrfNfDiscoveryServiceBase +
+      sbi_helper::NrfDiscBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfDiscPathNfInstances,
       [&](const request& request, const response& response) {
         request.on_data([&](const uint8_t* data, std::size_t len) {
@@ -303,7 +303,8 @@ void nrf_http2_server::register_nf_instance_handler(
       sbi_helper::NrfNfmPathNfInstancesNfInstanceId, path_nf_instance_id);
   h.emplace(
       "location", header_value{
-                      m_address + nrf_sbi_helper::NrfNfManagementServiceBase +
+                      m_address + sbi_helper::NrfNfmBase +
+                      nrf_cfg->local().get_sbi().get_api_version() +
                       fmt::format(path_nf_instance_id, nfInstanceID)});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
@@ -338,7 +339,8 @@ void nrf_http2_server::get_nf_instance_handler(
       sbi_helper::NrfNfmPathNfInstancesNfInstanceId, path_nf_instance_id);
   h.emplace(
       "location", header_value{
-                      m_address + nrf_sbi_helper::NrfNfManagementServiceBase +
+                      m_address + sbi_helper::NrfNfmBase +
+                      nrf_cfg->local().get_sbi().get_api_version() +
                       fmt::format(path_nf_instance_id, nfInstanceID)});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
@@ -391,9 +393,10 @@ void nrf_http2_server::get_nf_instances_handler(
 
   header_map h;
   h.emplace(
-      "location", header_value{
-                      m_address + nrf_sbi_helper::NrfNfManagementServiceBase +
-                      "/nf-instances/"});
+      "location",
+      header_value{
+          m_address + sbi_helper::NrfNfmBase +
+          nrf_cfg->local().get_sbi().get_api_version() + "/nf-instances/"});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
   response.end(json_data.dump().c_str());
@@ -435,7 +438,8 @@ void nrf_http2_server::update_instance_handler(
       sbi_helper::NrfNfmPathNfInstancesNfInstanceId, path_nf_instance_id);
   h.emplace(
       "location", header_value{
-                      m_address + nrf_sbi_helper::NrfNfManagementServiceBase +
+                      m_address + sbi_helper::NrfNfmBase +
+                      nrf_cfg->local().get_sbi().get_api_version() +
                       fmt::format(path_nf_instance_id, nfInstanceID)});
   h.emplace("content-type", header_value{content_type});
 
@@ -465,7 +469,8 @@ void nrf_http2_server::deregister_nf_instance_handler(
       sbi_helper::NrfNfmPathNfInstancesNfInstanceId, path_nf_instance_id);
   h.emplace(
       "location", header_value{
-                      m_address + nrf_sbi_helper::NrfNfManagementServiceBase +
+                      m_address + sbi_helper::NrfNfmBase +
+                      nrf_cfg->local().get_sbi().get_api_version() +
                       fmt::format(path_nf_instance_id, nfInstanceID)});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
@@ -497,7 +502,8 @@ void nrf_http2_server::create_subscription_handler(
   header_map h;
   h.emplace(
       "location", header_value{
-                      m_address + nrf_sbi_helper::NrfNfManagementServiceBase +
+                      m_address + sbi_helper::NrfNfmBase +
+                      nrf_cfg->local().get_sbi().get_api_version() +
                       nrf_sbi_helper::NrfNfmPathSubscriptions});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);

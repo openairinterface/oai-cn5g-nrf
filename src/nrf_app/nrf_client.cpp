@@ -21,194 +21,19 @@
 
 #include "nrf_client.hpp"
 
-#include <curl/curl.h>
-#include <pistache/http.h>
-#include <pistache/mime.h>
-#include <nlohmann/json.hpp>
-#include <stdexcept>
-
 #include "3gpp_29.500.h"
+#include "http_client.hpp"
 #include "logger.hpp"
-#include "nrf.h"
 #include "nrf_config.hpp"
 
-using namespace Pistache::Http;
-using namespace Pistache::Http::Mime;
-using namespace oai::nrf::app;
-using namespace boost::placeholders;
-using json = nlohmann::json;
-
-extern nrf_client* nrf_client_inst;
+extern std::shared_ptr<oai::http::http_client> http_client_inst;
 
 //------------------------------------------------------------------------------
-// To read content of the response from NF
-static std::size_t callback(
-    const char* in, std::size_t size, std::size_t num, std::string* out) {
-  const std::size_t totalBytes(size * num);
-  out->append(in, totalBytes);
-  return totalBytes;
-}
-
-//------------------------------------------------------------------------------
-nrf_client::nrf_client(nrf_event& ev) : m_event_sub(ev) {
-  curl_global_init(CURL_GLOBAL_DEFAULT);
-  curl_multi = curl_multi_init();
-  handles    = {};
-  headers    = NULL;
-  headers    = curl_slist_append(headers, "Accept: application/json");
-  headers    = curl_slist_append(headers, "Content-Type: application/json");
-  headers    = curl_slist_append(headers, "charsets: utf-8");
-  // to prevent curl from using the Expect: 100-continue feature, which is not
-  // supported by our servers
-  headers = curl_slist_append(headers, "Expect:");
-  // subscribe_task_curl();
-}
+nrf_client::nrf_client() {}
 
 //------------------------------------------------------------------------------
 nrf_client::~nrf_client() {
   Logger::nrf_app().debug("Delete NRF Client instance...");
-  // Remove handle, free memory
-  for (auto h : handles) {
-    curl_multi_remove_handle(curl_multi, h);
-    curl_easy_cleanup(h);
-  }
-
-  handles.clear();
-  curl_multi_cleanup(curl_multi);
-  curl_global_cleanup();
-  curl_slist_free_all(headers);
-
-  if (task_connection.connected()) task_connection.disconnect();
-}
-
-//------------------------------------------------------------------------------
-CURL* nrf_client::curl_create_handle(
-    const std::string& uri, const std::string& data, std::string& response_data,
-    uint8_t http_version) {
-  // create handle for a curl request
-  CURL* curl = curl_easy_init();
-
-  if (curl) {
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(curl, CURLOPT_URL, uri.c_str());
-    // curl_easy_setopt(curl, CURLOPT_PRIVATE, str);
-    // curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, NF_CURL_TIMEOUT_MS);
-    // Hook up data handling function.
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &callback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_data);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, data.length());
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
-    if (http_version == 2) {
-      if (Logger::should_log(spdlog::level::debug))
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-      // curl_easy_setopt(curl, CURLOPT_PORT, 8080);
-      // We use a self-signed test server, skip verification during debugging
-      curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-      curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-      curl_easy_setopt(
-          curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE);
-    }
-  }
-  return curl;
-}
-
-//------------------------------------------------------------------------------
-void nrf_client::send_curl_multi(
-    const std::string& uri, const std::string& data, std::string& response_data,
-    uint8_t http_version) {
-  // create a new handle and add to the multi handle
-  // the curl will actually be sent in perform_curl_multi
-  CURL* tmp = curl_create_handle(uri, data, response_data, http_version);
-  curl_multi_add_handle(curl_multi, tmp);
-  handles.push_back(tmp);
-}
-
-//------------------------------------------------------------------------------
-void nrf_client::perform_curl_multi(uint64_t ms) {
-  _unused(ms);
-  int still_running = 0, numfds = 0;
-
-  CURLMcode code = curl_multi_perform(curl_multi, &still_running);
-
-  do {
-    code = curl_multi_wait(curl_multi, NULL, 0, 200000, &numfds);
-    if (code != CURLM_OK) {
-      Logger::nrf_app().debug("curl_multi_wait() returned %d!", code);
-    }
-    curl_multi_perform(curl_multi, &still_running);
-  } while (still_running);
-
-  curl_release_handles();
-}
-
-//------------------------------------------------------------------------------
-void nrf_client::wait_curl_end() {
-  // block until activity is detected on at least one of the handles or
-  // MAX_WAIT_MSECS has passed.
-  int still_running = 0, numfds = 0;
-  do {
-    CURLMcode code = curl_multi_perform(curl_multi, &still_running);
-    if (code == CURLM_OK) {
-      code = curl_multi_wait(curl_multi, NULL, 0, MAX_WAIT_MSECS, &numfds);
-      if (code != CURLM_OK) break;
-    } else {
-      break;
-    }
-  } while (still_running);
-
-  curl_release_handles();
-}
-
-//------------------------------------------------------------------------------
-void nrf_client::curl_release_handles() {
-  CURLMsg* curl_msg = nullptr;
-  CURL* curl        = nullptr;
-  CURLcode code     = {};
-  int http_code     = 0;
-  int msgs_left     = 0;
-
-  while ((curl_msg = curl_multi_info_read(curl_multi, &msgs_left))) {
-    if (curl_msg && curl_msg->msg == CURLMSG_DONE) {
-      curl = curl_msg->easy_handle;
-      code = curl_msg->data.result;
-      // int res = curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &curl_url);
-      if (code != CURLE_OK) {
-        Logger::nrf_app().debug("CURL error code  %d!", curl_msg->data.result);
-        continue;
-      }
-      // Get HTTP code
-      curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-      Logger::nrf_app().debug("Got response with HTTP code  %d!", http_code);
-
-      // TODO: remove handle from the multi session and end this handle now, or
-      // later
-      curl_multi_remove_handle(curl_multi, curl);
-      curl_easy_cleanup(curl);
-
-      std::vector<CURL*>::iterator it;
-      it = find(handles.begin(), handles.end(), curl);
-      if (it != handles.end()) {
-        handles.erase(it);
-      }
-
-    } else if (curl_msg) {
-      curl = curl_msg->easy_handle;
-      Logger::nrf_app().debug("Error after curl_multi_info_read()");
-      curl_multi_remove_handle(curl_multi, curl);
-      curl_easy_cleanup(curl);
-
-      std::vector<CURL*>::iterator it;
-      it = find(handles.begin(), handles.end(), curl);
-      if (it != handles.end()) {
-        handles.erase(it);
-      }
-    } else {
-      Logger::nrf_app().debug("curl_msg null");
-    }
-  }
 }
 
 //------------------------------------------------------------------------------
@@ -268,22 +93,16 @@ void nrf_client::notify_subscribed_event(
   for (auto uri : uris) {
     responses[uri] = "";
     std::unique_ptr<std::string> httpData(new std::string());
-    send_curl_multi(uri, body, responses[uri], http_version);
+
+    Logger::nrf_app().debug(
+        "Send notification for the subscribed event to the subscriptions, URI: "
+        "%s",
+        uri.c_str());
+    oai::http::request http_request =
+        http_client_inst->prepare_json_request(uri, body);
+    auto http_response = http_client_inst->send_http_request(
+        oai::common::sbi::method_e::POST, http_request);
+    responses[uri] = http_response.body;
+    // TODO: process response
   }
-
-  perform_curl_multi(
-      0);  // TODO: current time as parameter if curl is performed per event
-}
-
-//------------------------------------------------------------------------------
-void nrf_client::subscribe_task_curl() {
-  struct itimerspec its;
-  its.it_value.tv_sec  = 100;               // TODO: to be updated 100 seconds
-  its.it_value.tv_nsec = 10 * 1000 * 1000;  // 10ms
-  const uint64_t interval =
-      its.it_value.tv_sec * 1000 +
-      its.it_value.tv_nsec / 1000000;  // convert sec, nsec to msec
-
-  task_connection = m_event_sub.subscribe_task_tick(
-      boost::bind(&nrf_client::perform_curl_multi, this, _1), interval, 0);
 }

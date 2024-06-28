@@ -20,7 +20,6 @@
 ################################################################################
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${SRC_TOP_DIR}/common)
-include_directories(${SRC_TOP_DIR}/common)
 include_directories(${SRC_TOP_DIR}/nrf_app)
 include_directories(${SRC_TOP_DIR}/${MOUNTED_COMMON}/common)
 include_directories(${SRC_TOP_DIR}/${MOUNTED_COMMON}/config)
@@ -32,7 +31,6 @@ include_directories(${SRC_TOP_DIR}/${MOUNTED_COMMON}/utils/bstr)
 
 set(CN_UTILS_SRC STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/api_conversions.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/nrf_sbi_helper.cpp
     )
 
 add_library(CN_UTILS ${CN_UTILS_SRC})
