@@ -57,7 +57,8 @@ void StoredSearchDocumentApiImpl::retrieve_stored_search(
   // TODO: add headers:  Cache-Control, ETag
 
   response.send(
-      Pistache::Http::Code(HTTP_STATUS_CODE_200_OK), json_data.dump().c_str());
+      Pistache::Http::Code(oai::common::sbi::http_status_code::OK),
+      json_data.dump().c_str());
 }
 
 }  // namespace api

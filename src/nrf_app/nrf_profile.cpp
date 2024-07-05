@@ -285,7 +285,7 @@ void nrf_profile::display() {
     }
   }
   for (auto s : snssais) {
-    Logger::nrf_app().debug("\tNNSSAI(SST, SD): %d, %s", s.sST, s.sD.c_str());
+    Logger::nrf_app().debug("\tNNSSAI(SST, SD): %d, %s", s.sst, s.sd.c_str());
   }
   if (!fqdn.empty()) {
     Logger::nrf_app().debug("\tFQDN: %s", fqdn.c_str());
@@ -603,8 +603,8 @@ void nrf_profile::to_json(nlohmann::json& data) const {
     data["sNssais"] = nlohmann::json::array();
     for (auto s : snssais) {
       nlohmann::json tmp = {};
-      tmp["sst"]         = s.sST;
-      tmp["sd"]          = s.sD;
+      tmp["sst"]         = s.sst;
+      tmp["sd"]          = s.sd;
       data["sNssais"].push_back(tmp);
     }
   }
@@ -955,7 +955,7 @@ void smf_profile::display() {
   for (auto s : smf_info.snssai_smf_info_list) {
     Logger::nrf_app().debug(
         "\t\tSNSSAI SMF Info List, SNSSAI (SD: %s, SST: %d)",
-        s.snssai.sD.c_str(), s.snssai.sST);
+        s.snssai.sd.c_str(), s.snssai.sst);
     for (auto d : s.dnn_smf_info_list) {
       Logger::nrf_app().debug(
           "\t\tSNSSAI SMF Info List, DNN List: %s", d.dnn.c_str());
@@ -1052,8 +1052,8 @@ void smf_profile::to_json(nlohmann::json& data) const {
   data["smfInfo"]["sNssaiSmfInfoList"] = nlohmann::json::array();
   for (auto snssai : smf_info.snssai_smf_info_list) {
     nlohmann::json tmp    = {};
-    tmp["sNssai"]["sst"]  = snssai.snssai.sST;
-    tmp["sNssai"]["sd"]   = snssai.snssai.sD;
+    tmp["sNssai"]["sst"]  = snssai.snssai.sst;
+    tmp["sNssai"]["sd"]   = snssai.snssai.sd;
     tmp["dnnSmfInfoList"] = nlohmann::json::array();
     for (auto d : snssai.dnn_smf_info_list) {
       nlohmann::json tmp_dnn = {};
@@ -1081,7 +1081,7 @@ void upf_profile::display() {
   for (auto s : upf_info.snssai_upf_info_list) {
     Logger::nrf_app().debug(
         "\t\tSNSSAI UPF Info List, SNSSAI (SD: %s, SST: %d)",
-        s.snssai.sD.c_str(), s.snssai.sST);
+        s.snssai.sd.c_str(), s.snssai.sst);
     for (auto d : s.dnn_upf_info_list) {
       Logger::nrf_app().debug(
           "\t\tSNSSAI UPF Info List, DNN List: %s", d.dnn.c_str());
@@ -1196,8 +1196,8 @@ void upf_profile::to_json(nlohmann::json& data) const {
   data["upfInfo"]["sNssaiUpfInfoList"] = nlohmann::json::array();
   for (auto snssai : upf_info.snssai_upf_info_list) {
     nlohmann::json tmp    = {};
-    tmp["sNssai"]["sst"]  = snssai.snssai.sST;
-    tmp["sNssai"]["sd"]   = snssai.snssai.sD;
+    tmp["sNssai"]["sst"]  = snssai.snssai.sst;
+    tmp["sNssai"]["sd"]   = snssai.snssai.sd;
     tmp["dnnUpfInfoList"] = nlohmann::json::array();
     for (auto d : snssai.dnn_upf_info_list) {
       nlohmann::json tmp_upf_info_item = {};
@@ -1261,7 +1261,7 @@ void ausf_profile::display() {
         supi.supi_range.start.c_str(), supi.supi_range.end.c_str(),
         supi.supi_range.pattern.c_str());
   }
-  for (auto route_ind : ausf_info.routing_indicator) {
+  for (auto route_ind : ausf_info.routing_indicators) {
     Logger::nrf_app().debug("\t\t Routing Indicators: %s", route_ind.c_str());
   }
 }
@@ -1362,7 +1362,7 @@ void ausf_profile::to_json(nlohmann::json& data) const {
     tmp["pattern"]     = supi.supi_range.pattern;
     data["ausfInfo"]["supiRanges"].push_back(tmp);
   }
-  for (auto route_ind : ausf_info.routing_indicator) {
+  for (auto route_ind : ausf_info.routing_indicators) {
     data["ausfInfo"]["routingIndicators"].push_back(route_ind);
   }
 }

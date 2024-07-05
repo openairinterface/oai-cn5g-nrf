@@ -61,7 +61,7 @@ nrf_app::nrf_app(const std::string& config_file, nrf_event& ev)
   Logger::nrf_app().startup("Starting...");
 
   try {
-    nrf_client_inst = new nrf_client(ev);
+    nrf_client_inst = new nrf_client();
     nrf_jwt_inst    = new nrf_jwt();
   } catch (std::exception& e) {
     Logger::nrf_app().error("Cannot create NRF_APP: %s", e.what());
@@ -108,11 +108,13 @@ void nrf_app::handle_register_nf_instance(
 
   // Check if nfInstanceID is a valid UUID (version 4)
   if (!api_conv::validate_uuid(nf_instance_id)) {
-    http_code = HTTP_STATUS_CODE_400_BAD_REQUEST;
+    http_code = oai::common::sbi::http_status_code::BAD_REQUEST;
     Logger::nrf_app().info(
         "Bad UUID format for NF Instance ID (%s)", nf_instance_id.c_str());
     problem_details.setCause(
-        protocol_application_error_e2str[MANDATORY_QUERY_PARAM_INCORRECT]);
+        oai::common::sbi::protocol_application_error_to_string(
+            oai::common::sbi::protocol_application_error::
+                MANDATORY_QUERY_PARAM_INCORRECT));
     return;
   }
 
@@ -162,9 +164,9 @@ void nrf_app::handle_register_nf_instance(
     // set default value for hearbeattimer
     sn.get()->set_nf_heartBeat_timer(nrf_cfg->nrf()->get_heartbeat());
     if (is_profile_exist(nf_instance_id))
-      http_code = HTTP_STATUS_CODE_200_OK;
+      http_code = oai::common::sbi::http_status_code::OK;
     else
-      http_code = HTTP_STATUS_CODE_201_CREATED;
+      http_code = oai::common::sbi::http_status_code::CREATED;
     // add to the DB
     add_nf_profile(nf_instance_id, sn);
     Logger::nrf_app().info(
@@ -197,9 +199,11 @@ void nrf_app::handle_register_nf_instance(
         "Cannot convert a NF profile generated from OpenAPI to an AMF profile "
         "(profile ID %s)",
         nf_instance_id.c_str());
-    http_code = HTTP_STATUS_CODE_400_BAD_REQUEST;
+    http_code = oai::common::sbi::http_status_code::BAD_REQUEST;
     problem_details.setCause(
-        protocol_application_error_e2str[MANDATORY_IE_INCORRECT]);
+        oai::common::sbi::protocol_application_error_to_string(
+            oai::common::sbi::protocol_application_error::
+                MANDATORY_IE_INCORRECT));
   }
 }
 
@@ -227,9 +231,11 @@ void nrf_app::handle_update_nf_instance(
           (p.getPath().length() < 2)) {
         Logger::nrf_app().warn(
             "Bad value for operation path: %s ", p.getPath().c_str());
-        http_code = HTTP_STATUS_CODE_400_BAD_REQUEST;
+        http_code = oai::common::sbi::http_status_code::BAD_REQUEST;
         problem_details.setCause(
-            protocol_application_error_e2str[MANDATORY_IE_INCORRECT]);
+            oai::common::sbi::protocol_application_error_to_string(
+                oai::common::sbi::protocol_application_error::
+                    MANDATORY_IE_INCORRECT));
         return;
       }
 
@@ -244,7 +250,7 @@ void nrf_app::handle_update_nf_instance(
           }
           if (sn.get()->replace_profile_info(path, p.getValue())) {
             update_nf_profile(nf_instance_id, sn);
-            http_code = HTTP_STATUS_CODE_200_OK;
+            http_code = oai::common::sbi::http_status_code::OK;
           } else {
             op_success = false;
           }
@@ -253,7 +259,7 @@ void nrf_app::handle_update_nf_instance(
         case PATCH_OP_ADD: {
           if (sn.get()->add_profile_info(path, p.getValue())) {
             update_nf_profile(nf_instance_id, sn);
-            http_code = HTTP_STATUS_CODE_200_OK;
+            http_code = oai::common::sbi::http_status_code::OK;
           } else {
             op_success = false;
           }
@@ -262,7 +268,7 @@ void nrf_app::handle_update_nf_instance(
         case PATCH_OP_REMOVE: {
           if (sn.get()->remove_profile_info(path)) {
             update_nf_profile(nf_instance_id, sn);
-            http_code = HTTP_STATUS_CODE_200_OK;
+            http_code = oai::common::sbi::http_status_code::OK;
           } else {
             op_success = false;
           }
@@ -275,9 +281,11 @@ void nrf_app::handle_update_nf_instance(
       }
 
       if (!op_success) {
-        http_code = HTTP_STATUS_CODE_400_BAD_REQUEST;
+        http_code = oai::common::sbi::http_status_code::BAD_REQUEST;
         problem_details.setCause(
-            protocol_application_error_e2str[MANDATORY_IE_INCORRECT]);
+            oai::common::sbi::protocol_application_error_to_string(
+                oai::common::sbi::protocol_application_error::
+                    MANDATORY_IE_INCORRECT));
       } else {
         if (!is_heartbeat_procedure)
           // update successful,
@@ -288,8 +296,9 @@ void nrf_app::handle_update_nf_instance(
     }
 
     // for NF Heartbeat procedure
-    if (is_heartbeat_procedure and (http_code == HTTP_STATUS_CODE_200_OK)) {
-      http_code   = HTTP_STATUS_CODE_204_NO_CONTENT;
+    if (is_heartbeat_procedure and
+        (http_code == oai::common::sbi::http_status_code::OK)) {
+      http_code   = oai::common::sbi::http_status_code::NO_CONTENT;
       uint64_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                         std::chrono::system_clock::now().time_since_epoch())
                         .count();
@@ -330,9 +339,11 @@ void nrf_app::handle_update_nf_instance(
         "Handle Update NF Instance request, NF Profile with ID %s does not "
         "exit",
         nf_instance_id.c_str());
-    http_code = HTTP_STATUS_CODE_404_NOT_FOUND;
+    http_code = oai::common::sbi::http_status_code::NOT_FOUND;
     problem_details.setCause(
-        protocol_application_error_e2str[RESOURCE_URI_STRUCTURE_NOT_FOUND]);
+        oai::common::sbi::protocol_application_error_to_string(
+            oai::common::sbi::protocol_application_error::
+                RESOURCE_URI_STRUCTURE_NOT_FOUND));
   }
 }
 
@@ -351,13 +362,15 @@ void nrf_app::handle_get_nf_instances(
   nf_type_t type = api_conv::string_to_nf_type(nf_type);
   if (type == NF_TYPE_UNKNOWN) {
     Logger::nrf_app().debug("Unknown requested nf_type: %s", nf_type.c_str());
-    http_code = HTTP_STATUS_CODE_400_BAD_REQUEST;
+    http_code = oai::common::sbi::http_status_code::BAD_REQUEST;
     problem_details.setCause(
-        protocol_application_error_e2str[MANDATORY_IE_INCORRECT]);
+        oai::common::sbi::protocol_application_error_to_string(
+            oai::common::sbi::protocol_application_error::
+                MANDATORY_IE_INCORRECT));
     return;
   }
 
-  http_code = HTTP_STATUS_CODE_200_OK;
+  http_code = oai::common::sbi::http_status_code::OK;
   find_nf_profiles(type, profiles);
 
   if (profiles.size() == 0) {
@@ -394,15 +407,17 @@ void nrf_app::handle_get_nf_instance(
   if (profile.get() == nullptr) {
     Logger::nrf_app().info(
         "Profile with profile ID %s not found", nf_instance_id.c_str());
-    http_code = HTTP_STATUS_CODE_404_NOT_FOUND;
+    http_code = oai::common::sbi::http_status_code::NOT_FOUND;
     problem_details.setCause(
-        protocol_application_error_e2str[RESOURCE_URI_STRUCTURE_NOT_FOUND]);
+        oai::common::sbi::protocol_application_error_to_string(
+            oai::common::sbi::protocol_application_error::
+                RESOURCE_URI_STRUCTURE_NOT_FOUND));
     return;
   } else {
     Logger::nrf_app().debug(
         "Profile with profile ID %s", nf_instance_id.c_str());
     profile.get()->display();
-    http_code = HTTP_STATUS_CODE_200_OK;
+    http_code = oai::common::sbi::http_status_code::OK;
     return;
   }
 }
@@ -426,12 +441,13 @@ void nrf_app::handle_deregister_nf_instance(
     if (remove_nf_profile(nf_instance_id)) {
       Logger::nrf_app().info(
           "Removed NF profile with profile ID %s", nf_instance_id.c_str());
-      http_code = HTTP_STATUS_CODE_204_NO_CONTENT;
+      http_code = oai::common::sbi::http_status_code::NO_CONTENT;
       return;
     } else {
-      http_code = HTTP_STATUS_CODE_500_INTERNAL_SERVER_ERROR;
+      http_code = oai::common::sbi::http_status_code::INTERNAL_SERVER_ERROR;
       problem_details.setCause(
-          protocol_application_error_e2str[SYSTEM_FAILURE]);
+          oai::common::sbi::protocol_application_error_to_string(
+              oai::common::sbi::protocol_application_error::SYSTEM_FAILURE));
       return;
     }
   } else {
@@ -439,9 +455,11 @@ void nrf_app::handle_deregister_nf_instance(
         "Handle Deregister NF Instance request, Profile with profile ID %s not "
         "found",
         nf_instance_id.c_str());
-    http_code = HTTP_STATUS_CODE_404_NOT_FOUND;
+    http_code = oai::common::sbi::http_status_code::NOT_FOUND;
     problem_details.setCause(
-        protocol_application_error_e2str[RESOURCE_URI_STRUCTURE_NOT_FOUND]);
+        oai::common::sbi::protocol_application_error_to_string(
+            oai::common::sbi::protocol_application_error::
+                RESOURCE_URI_STRUCTURE_NOT_FOUND));
     return;
   }
 }
@@ -475,7 +493,7 @@ void nrf_app::handle_create_subscription(
       // display the info
       ss.get()->display();
       // assign info for API server
-      http_code = HTTP_STATUS_CODE_201_CREATED;
+      http_code = oai::common::sbi::http_status_code::CREATED;
       sub_id    = evsub_id;
 
       // Send notification (with the existed NFs which matches the
@@ -511,7 +529,7 @@ void nrf_app::handle_create_subscription(
       return;
     } else {
       Logger::nrf_app().debug("Subscription is not authorized!");
-      http_code = HTTP_STATUS_CODE_401_UNAUTHORIZED;
+      http_code = oai::common::sbi::http_status_code::UNAUTHORIZED;
       return;
     }
 
@@ -520,9 +538,11 @@ void nrf_app::handle_create_subscription(
     Logger::nrf_app().warn(
         "Cannot convert the subscription data (from OpenAPI) to an NRF "
         "subscription data");
-    http_code = HTTP_STATUS_CODE_400_BAD_REQUEST;
+    http_code = oai::common::sbi::http_status_code::BAD_REQUEST;
     problem_details.setCause(
-        protocol_application_error_e2str[MANDATORY_IE_INCORRECT]);
+        oai::common::sbi::protocol_application_error_to_string(
+            oai::common::sbi::protocol_application_error::
+                MANDATORY_IE_INCORRECT));
   }
 }
 
@@ -535,12 +555,14 @@ void nrf_app::handle_remove_subscription(
 
   // Remove the subscription
   if (remove_subscription(sub_id)) {
-    http_code = HTTP_STATUS_CODE_204_NO_CONTENT;
+    http_code = oai::common::sbi::http_status_code::NO_CONTENT;
   } else {
     // error
-    http_code = HTTP_STATUS_CODE_404_NOT_FOUND;
+    http_code = oai::common::sbi::http_status_code::NOT_FOUND;
     problem_details.setCause(
-        protocol_application_error_e2str[SUBSCRIPTION_NOT_FOUND]);
+        oai::common::sbi::protocol_application_error_to_string(
+            oai::common::sbi::protocol_application_error::
+                SUBSCRIPTION_NOT_FOUND));
   }
 }
 
@@ -569,9 +591,11 @@ void nrf_app::handle_update_subscription(
           (p.getPath().length() < 2)) {
         Logger::nrf_app().warn(
             "Bad value for operation path: %s ", p.getPath().c_str());
-        http_code = HTTP_STATUS_CODE_400_BAD_REQUEST;
+        http_code = oai::common::sbi::http_status_code::BAD_REQUEST;
         problem_details.setCause(
-            protocol_application_error_e2str[MANDATORY_IE_INCORRECT]);
+            oai::common::sbi::protocol_application_error_to_string(
+                oai::common::sbi::protocol_application_error::
+                    MANDATORY_IE_INCORRECT));
         return;
       }
 
@@ -594,7 +618,7 @@ void nrf_app::handle_update_subscription(
               Logger::nrf_app().debug("Updated a subscription to the DB");
               // display the info
               ss.get()->display();
-              http_code  = HTTP_STATUS_CODE_204_NO_CONTENT;
+              http_code  = oai::common::sbi::http_status_code::NO_CONTENT;
               op_success = true;
             } catch (std::exception& e) {
               std::cout << "  Exception: " << e.what() << std::endl;
@@ -608,17 +632,21 @@ void nrf_app::handle_update_subscription(
       }
 
       if (!op_success) {
-        http_code = HTTP_STATUS_CODE_400_BAD_REQUEST;
+        http_code = oai::common::sbi::http_status_code::BAD_REQUEST;
         problem_details.setCause(
-            protocol_application_error_e2str[MANDATORY_IE_INCORRECT]);
+            oai::common::sbi::protocol_application_error_to_string(
+                oai::common::sbi::protocol_application_error::
+                    MANDATORY_IE_INCORRECT));
       }
     }
   } else {
     Logger::nrf_app().debug(
         "Subscription with ID %s does not exit", sub_id.c_str());
-    http_code = HTTP_STATUS_CODE_404_NOT_FOUND;
+    http_code = oai::common::sbi::http_status_code::NOT_FOUND;
     problem_details.setCause(
-        protocol_application_error_e2str[SUBSCRIPTION_NOT_FOUND]);
+        oai::common::sbi::protocol_application_error_to_string(
+            oai::common::sbi::protocol_application_error::
+                SUBSCRIPTION_NOT_FOUND));
   }
 }
 
@@ -635,13 +663,15 @@ void nrf_app::handle_search_nf_instances(
   // Check if requester is allowed to discover the NF services
   if (!is_service_discover_allowed(
           requester_nf_instance_id, requester_nf_type)) {
-    http_code = HTTP_STATUS_CODE_403_FORBIDDEN;
+    http_code = oai::common::sbi::http_status_code::FORBIDDEN;
     Logger::nrf_app().debug(
         "Requester (instance id %s) is not allowed to discover the NF "
         "instances",
         requester_nf_instance_id.c_str());
     problem_details.setCause(
-        protocol_application_error_e2str[MODIFICATION_NOT_ALLOWED]);
+        oai::common::sbi::protocol_application_error_to_string(
+            oai::common::sbi::protocol_application_error::
+                MODIFICATION_NOT_ALLOWED));
     return;
   }
 
@@ -650,9 +680,11 @@ void nrf_app::handle_search_nf_instances(
 
   if ((target_type == NF_TYPE_UNKNOWN) or (requester_type == NF_TYPE_UNKNOWN)) {
     Logger::nrf_app().debug("Unknown target type/requester type");
-    http_code = HTTP_STATUS_CODE_400_BAD_REQUEST;
+    http_code = oai::common::sbi::http_status_code::BAD_REQUEST;
     problem_details.setCause(
-        protocol_application_error_e2str[OPTIONAL_IE_INCORRECT]);
+        oai::common::sbi::protocol_application_error_to_string(
+            oai::common::sbi::protocol_application_error::
+                OPTIONAL_IE_INCORRECT));
     return;
   }
 
@@ -686,7 +718,7 @@ void nrf_app::handle_search_nf_instances(
   Logger::nrf_app().debug(
       "Added a search result with ID %s to the DB", search_id.c_str());
   ss.get()->display();
-  http_code = HTTP_STATUS_CODE_200_OK;
+  http_code = oai::common::sbi::http_status_code::OK;
 }
 
 //------------------------------------------------------------------------------
@@ -723,9 +755,11 @@ void nrf_app::handle_access_token_request(
   if ((access_token_req.count("grant_type") == 0) or
       (access_token_req.count("nfInstanceId") == 0) or
       (access_token_req.count("scope") == 0)) {
-    http_code = HTTP_STATUS_CODE_400_BAD_REQUEST;
+    http_code = oai::common::sbi::http_status_code::BAD_REQUEST;
     problem_details.setCause(
-        protocol_application_error_e2str[MANDATORY_IE_MISSING]);
+        oai::common::sbi::protocol_application_error_to_string(
+            oai::common::sbi::protocol_application_error::
+                MANDATORY_IE_MISSING));
     Logger::nrf_app().info("Grant type/nfInstanceId/scope missing");
     return;
   }
@@ -754,9 +788,11 @@ void nrf_app::handle_access_token_request(
   }
 
   if (!result) {
-    http_code = HTTP_STATUS_CODE_400_BAD_REQUEST;
+    http_code = oai::common::sbi::http_status_code::BAD_REQUEST;
     problem_details.setCause(
-        protocol_application_error_e2str[MANDATORY_QUERY_PARAM_INCORRECT]);
+        oai::common::sbi::protocol_application_error_to_string(
+            oai::common::sbi::protocol_application_error::
+                MANDATORY_QUERY_PARAM_INCORRECT));
     Logger::nrf_app().info("Mandatory IE incorrect");
     return;
   }
@@ -765,7 +801,7 @@ void nrf_app::handle_access_token_request(
   access_token_rsp.setAccessToken(signature);
   access_token_rsp.setTokenType("Bearer");
   // TODO: Expires_in, Scope;
-  http_code = HTTP_STATUS_CODE_200_OK;
+  http_code = oai::common::sbi::http_status_code::OK;
 }
 
 //------------------------------------------------------------------------------

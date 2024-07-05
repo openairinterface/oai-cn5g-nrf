@@ -46,6 +46,7 @@ using namespace oai::model::nrf;
 using namespace oai::model::common;
 using namespace oai::nrf::app;
 using namespace oai::nrf;
+using namespace oai::common::sbi;
 
 //------------------------------------------------------------------------------
 bool api_conv::profile_api_to_nrf_profile(
@@ -76,11 +77,11 @@ bool api_conv::profile_api_to_nrf_profile(
   std::vector<Snssai> snssai = api_profile.getSNssais();
   for (auto s : snssai) {
     snssai_t sn = {};
-    sn.sD       = s.getSd();
-    sn.sST      = s.getSst();
+    sn.sd       = s.getSd();
+    sn.sst      = s.getSst();
     profile.get()->add_snssai(sn);
     Logger::nrf_app().debug(
-        "\tSNSSAI (SD, SST): %d, %s", sn.sST, sn.sD.c_str());
+        "\tSNSSAI (SD, SST): %d, %s", sn.sst, sn.sd.c_str());
   }
   if (api_profile.plmnListIsSet()) {
     NFProfile nf_profile        = api_profile;
@@ -176,11 +177,11 @@ bool api_conv::profile_api_to_nrf_profile(
 
       for (auto s : smf_info_api.getSNssaiSmfInfoList()) {
         snssai_smf_info_item_t snssai = {};
-        snssai.snssai.sD              = s.getSNssai().getSd();
-        snssai.snssai.sST             = s.getSNssai().getSst();
+        snssai.snssai.sd              = s.getSNssai().getSd();
+        snssai.snssai.sst             = s.getSNssai().getSst();
         Logger::nrf_app().debug(
-            "\t\tNSSAI SD: %s, SST: %d", snssai.snssai.sD.c_str(),
-            snssai.snssai.sST);
+            "\t\tNSSAI SD: %s, SST: %d", snssai.snssai.sd.c_str(),
+            snssai.snssai.sst);
         for (auto d : s.getDnnSmfInfoList()) {
           dnn_smf_info_item_t dnn = {};
           dnn.dnn                 = d.getDnn();
@@ -203,17 +204,17 @@ bool api_conv::profile_api_to_nrf_profile(
 
       for (auto s : upf_info_api.getSNssaiUpfInfoList()) {
         snssai_upf_info_item_t snssai = {};
-        snssai.snssai.sD              = s.getSNssai().getSd();
-        snssai.snssai.sST             = s.getSNssai().getSst();
+        snssai.snssai.sd              = s.getSNssai().getSd();
+        snssai.snssai.sst             = s.getSNssai().getSst();
         Logger::nrf_app().debug(
-            "\t\tNSSAI SD: %s, SST: %d", snssai.snssai.sD.c_str(),
-            snssai.snssai.sST);
+            "\t\tNSSAI SD: %s, SST: %d", snssai.snssai.sd.c_str(),
+            snssai.snssai.sst);
         for (auto d : s.getDnnUpfInfoList()) {
           dnn_upf_info_item_t upf_info   = {};
           upf_info.dnn                   = d.getDnn();
           upf_info.dnai_list             = d.getDnaiList();
           upf_info.dnai_nw_instance_list = d.getDnaiNwInstanceList();
-          snssai.dnn_upf_info_list.push_back(upf_info);
+          snssai.dnn_upf_info_list.insert(upf_info);
           Logger::nrf_app().debug("\t\tDNN: %s", upf_info.dnn.c_str());
         }
         info.snssai_upf_info_list.push_back(snssai);
@@ -316,7 +317,7 @@ bool api_conv::profile_api_to_nrf_profile(
             supiRange.supi_range.pattern.c_str());
       }
       for (auto s : ausf_info_api.getRoutingIndicators()) {
-        info.routing_indicator.push_back(s);
+        info.routing_indicators.push_back(s);
       }
       (std::static_pointer_cast<ausf_profile>(profile))
           .get()

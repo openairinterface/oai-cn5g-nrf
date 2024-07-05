@@ -148,7 +148,7 @@ void DiscNFInstancesStoreApiImpl::search_nf_instances(
   std::shared_ptr<nrf_search_result> search_result = {};
   m_nrf_app->find_search_result(search_id, search_result);
 
-  if (http_code != HTTP_STATUS_CODE_200_OK) {
+  if (http_code != oai::common::sbi::http_status_code::OK) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {

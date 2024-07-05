@@ -23,12 +23,14 @@
 #include <thread>
 
 #include "conversions.hpp"
+#include "http_client.hpp"
 #include "logger.hpp"
 #include "nrf-api-server.h"
 #include "nrf-http2-server.h"
 #include "nrf_app.hpp"
 #include "nrf_client.hpp"
 #include "nrf_config.hpp"
+#include "sbi_helper.hpp"
 #include "options.hpp"
 #include "pid_file.hpp"
 #include "pistache/endpoint.h"
@@ -37,14 +39,14 @@
 
 using namespace oai::nrf::app;
 using namespace oai::utils;
-using namespace std;
 using namespace oai::config::nrf;
 
 nrf_app* nrf_app_inst = nullptr;
 std::unique_ptr<nrf_config> nrf_cfg;
-NRFApiServer* api_server           = nullptr;
-nrf_http2_server* nrf_api_server_2 = nullptr;
-task_manager* tm_inst              = nullptr;
+std::shared_ptr<oai::http::http_client> http_client_inst = nullptr;
+NRFApiServer* api_server                                 = nullptr;
+nrf_http2_server* nrf_api_server_2                       = nullptr;
+task_manager* tm_inst                                    = nullptr;
 
 //------------------------------------------------------------------------------
 void my_app_signal_handler(int s) {
@@ -110,6 +112,11 @@ int main(int argc, char** argv) {
   }
   nrf_cfg->display();
 
+  // HTTP Client
+  http_client_inst = oai::http::http_client::create_instance(
+      Logger::nrf_sbi(), oai::common::sbi::kNfDefaultHttpRequestTimeout,
+      nrf_cfg->local().get_sbi().get_if_name(), nrf_cfg->get_http_version());
+
   // Event subsystem
   nrf_event ev;
 
@@ -122,7 +129,7 @@ int main(int argc, char** argv) {
 
   // PID file
   // Currently hard-coded value. TODO: add as config option.
-  string pid_file_name =
+  std::string pid_file_name =
       oai::utils::get_exe_absolute_path("/var/run", nrf_cfg->instance);
   if (!oai::utils::is_pid_file_lock_success(pid_file_name.c_str())) {
     Logger::nrf_app().error("Lock PID file %s failed\n", pid_file_name.c_str());

@@ -53,7 +53,7 @@ void SubscriptionsCollectionApiImpl::create_subscription(
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
-  if (http_code != HTTP_STATUS_CODE_201_CREATED) {
+  if (http_code != oai::common::sbi::http_status_code::CREATED) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {

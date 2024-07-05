@@ -44,7 +44,7 @@ void SubscriptionIDDocumentApiImpl::remove_subscription(
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
-  if (http_code != HTTP_STATUS_CODE_204_NO_CONTENT) {
+  if (http_code != oai::common::sbi::http_status_code::NO_CONTENT) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
     // content type
@@ -80,7 +80,7 @@ void SubscriptionIDDocumentApiImpl::update_subscription(
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
-  if (http_code != HTTP_STATUS_CODE_204_NO_CONTENT) {
+  if (http_code != oai::common::sbi::http_status_code::NO_CONTENT) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
     // content type

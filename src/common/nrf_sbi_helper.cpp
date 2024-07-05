@@ -4,8 +4,8 @@
  * this work for additional information regarding copyright ownership.
  * The OpenAirInterface Software Alliance licenses this file to You under
  * the OAI Public License, Version 1.1  (the "License"); you may not use this
- *file except in compliance with the License. You may obtain a copy of the
- *License at
+ * file except in compliance with the License. You may obtain a copy of the
+ * License at
  *
  *      http://www.openairinterface.org/?page_id=698
  *
@@ -19,9 +19,15 @@
  *      contact@openairinterface.org
  */
 
-#ifndef FILE_DYNAMIC_MEMORY_CHECK_SEEN
-#define FILE_DYNAMIC_MEMORY_CHECK_SEEN
+#include "nrf_sbi_helper.hpp"
 
-void free_wrapper(void** ptr) __attribute__((hot));
+#include <boost/algorithm/string.hpp>
+#include <regex>
+#include <vector>
 
-#endif /* FILE_DYNAMIC_MEMORY_CHECK_SEEN */
+#include "logger.hpp"
+
+namespace oai::nrf::api {
+//------------------------------------------------------------------------------
+
+}  // namespace oai::nrf::api

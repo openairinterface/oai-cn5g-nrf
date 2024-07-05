@@ -40,11 +40,13 @@
 #include "logger.hpp"
 #include "nrf_config.hpp"
 #include "string.hpp"
+#include "nrf_sbi_helper.hpp"
 
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
 using namespace oai::model::nrf;
 using namespace oai::model::common;
+using namespace oai::nrf::api;
 
 extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 
@@ -59,8 +61,8 @@ void nrf_http2_server::start() {
 
   // NF Instances (Store)
   server.handle(
-      NNRF_NFM_BASE + nrf_cfg->local().get_sbi().get_api_version() +
-          "/nf-instances",
+      sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
+          nrf_sbi_helper::NrfNfmPathNfInstances,
       [&](const request& request, const response& response) {
         request.on_data([&](const uint8_t* data, std::size_t len) {
           std::string msg((char*) data, len);
@@ -85,13 +87,13 @@ void nrf_http2_server::start() {
             Logger::nrf_sbi().warn(
                 "Can not parse the json data (error: %s)!", e.what());
             response.write_head(
-                http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
+                oai::common::sbi::http_status_code::BAD_REQUEST);
             response.end();
             return;
           } catch (std::exception& e) {
             Logger::nrf_sbi().warn("error: %s!", e.what());
             response.write_head(
-                http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
+                oai::common::sbi::http_status_code::BAD_REQUEST);
             response.end();
             return;
           }
@@ -100,8 +102,8 @@ void nrf_http2_server::start() {
 
   // NF Instances ID (Document)
   server.handle(
-      NNRF_NFM_BASE + nrf_cfg->local().get_sbi().get_api_version() +
-          NNRF_NFM_NF_INSTANCES,
+      sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
+          nrf_sbi_helper::NrfNfmPathNfInstances + "/",
       [&](const request& request, const response& response) {
         request.on_data([&](const uint8_t* data, std::size_t len) {
           std::string msg((char*) data, len);
@@ -144,13 +146,13 @@ void nrf_http2_server::start() {
             Logger::nrf_sbi().warn(
                 "Can not parse the json data (error: %s)!", e.what());
             response.write_head(
-                http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
+                oai::common::sbi::http_status_code::BAD_REQUEST);
             response.end();
             return;
           } catch (std::exception& e) {
             Logger::nrf_sbi().warn("error: %s!", e.what());
             response.write_head(
-                http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
+                oai::common::sbi::http_status_code::BAD_REQUEST);
             response.end();
             return;
           }
@@ -159,8 +161,8 @@ void nrf_http2_server::start() {
 
   // Subscriptions  (Collection & ID Document)
   server.handle(
-      NNRF_NFM_BASE + nrf_cfg->local().get_sbi().get_api_version() +
-          NNRF_NFM_STATUS_SUBSCRIBE_URL,
+      sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
+          nrf_sbi_helper::NrfNfmPathSubscriptions,
       [&](const request& request, const response& response) {
         request.on_data([&](const uint8_t* data, std::size_t len) {
           std::string msg((char*) data, len);
@@ -193,13 +195,13 @@ void nrf_http2_server::start() {
             Logger::nrf_sbi().warn(
                 "Can not parse the json data (error: %s)!", e.what());
             response.write_head(
-                http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
+                oai::common::sbi::http_status_code::BAD_REQUEST);
             response.end();
             return;
           } catch (std::exception& e) {
             Logger::nrf_sbi().warn("error: %s!", e.what());
             response.write_head(
-                http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
+                oai::common::sbi::http_status_code::BAD_REQUEST);
             response.end();
             return;
           }
@@ -208,8 +210,8 @@ void nrf_http2_server::start() {
 
   // NF Discovery (Store)
   server.handle(
-      NNRF_DISC_BASE + nrf_cfg->local().get_sbi().get_api_version() +
-          "/nf-instances",
+      sbi_helper::NrfDiscBase + nrf_cfg->local().get_sbi().get_api_version() +
+          nrf_sbi_helper::NrfDiscPathNfInstances,
       [&](const request& request, const response& response) {
         request.on_data([&](const uint8_t* data, std::size_t len) {
           std::string msg((char*) data, len);
@@ -244,13 +246,13 @@ void nrf_http2_server::start() {
             Logger::nrf_sbi().warn(
                 "Can not parse the json data (error: %s)!", e.what());
             response.write_head(
-                http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
+                oai::common::sbi::http_status_code::BAD_REQUEST);
             response.end();
             return;
           } catch (std::exception& e) {
             Logger::nrf_sbi().warn("error: %s!", e.what());
             response.write_head(
-                http_status_code_e::HTTP_STATUS_CODE_400_BAD_REQUEST);
+                oai::common::sbi::http_status_code::BAD_REQUEST);
             response.end();
             return;
           }
@@ -282,9 +284,9 @@ void nrf_http2_server::register_nf_instance_handler(
   m_nrf_app->handle_register_nf_instance(
       nfInstanceID, NFProfiledata, http_code, 2, problem_details);
 
-  if ((http_code != HTTP_STATUS_CODE_200_OK) and
-      (http_code != HTTP_STATUS_CODE_201_CREATED) and
-      (http_code != HTTP_STATUS_CODE_202_ACCEPTED)) {
+  if ((http_code != oai::common::sbi::http_status_code::OK) and
+      (http_code != oai::common::sbi::http_status_code::CREATED) and
+      (http_code != oai::common::sbi::http_status_code::ACCEPTED)) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {
@@ -295,11 +297,15 @@ void nrf_http2_server::register_nf_instance_handler(
     }
   }
   header_map h;
+
+  std::string path_nf_instance_id = {};
+  nrf_sbi_helper::get_fmt_format_form(
+      sbi_helper::NrfNfmPathNfInstancesNfInstanceId, path_nf_instance_id);
   h.emplace(
       "location", header_value{
-                      m_address + NNRF_NFM_BASE +
+                      m_address + sbi_helper::NrfNfmBase +
                       nrf_cfg->local().get_sbi().get_api_version() +
-                      "/nf-instances/" + nfInstanceID});
+                      fmt::format(path_nf_instance_id, nfInstanceID)});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
   response.end(json_data.dump().c_str());
@@ -320,7 +326,7 @@ void nrf_http2_server::get_nf_instance_handler(
   m_nrf_app->handle_get_nf_instance(
       nfInstanceID, profile, http_code, 2, problem_details);
 
-  if (http_code != HTTP_STATUS_CODE_200_OK) {
+  if (http_code != oai::common::sbi::http_status_code::OK) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {
@@ -328,11 +334,14 @@ void nrf_http2_server::get_nf_instance_handler(
   }
 
   header_map h;
+  std::string path_nf_instance_id = {};
+  nrf_sbi_helper::get_fmt_format_form(
+      sbi_helper::NrfNfmPathNfInstancesNfInstanceId, path_nf_instance_id);
   h.emplace(
       "location", header_value{
-                      m_address + NNRF_NFM_BASE +
+                      m_address + sbi_helper::NrfNfmBase +
                       nrf_cfg->local().get_sbi().get_api_version() +
-                      "/nf-instances/" + nfInstanceID});
+                      fmt::format(path_nf_instance_id, nfInstanceID)});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
   response.end(json_data.dump().c_str());
@@ -368,7 +377,7 @@ void nrf_http2_server::get_nf_instances_handler(
   m_nrf_app->handle_get_nf_instances(
       nfType, uris, limit_Nfs, http_code, 2, problem_details);
 
-  if (http_code != HTTP_STATUS_CODE_200_OK) {
+  if (http_code != oai::common::sbi::http_status_code::OK) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {
@@ -386,7 +395,7 @@ void nrf_http2_server::get_nf_instances_handler(
   h.emplace(
       "location",
       header_value{
-          m_address + NNRF_NFM_BASE +
+          m_address + sbi_helper::NrfNfmBase +
           nrf_cfg->local().get_sbi().get_api_version() + "/nf-instances/"});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
@@ -411,12 +420,12 @@ void nrf_http2_server::update_instance_handler(
   std::shared_ptr<nrf_profile> profile =
       m_nrf_app->find_nf_profile(nfInstanceID);
 
-  if ((http_code != HTTP_STATUS_CODE_200_OK) and
-      (http_code != HTTP_STATUS_CODE_204_NO_CONTENT)) {
+  if ((http_code != oai::common::sbi::http_status_code::OK) and
+      (http_code != oai::common::sbi::http_status_code::NO_CONTENT)) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
     Logger::nrf_sbi().debug("Json data: %s", json_data.dump().c_str());
-  } else if (http_code == HTTP_STATUS_CODE_200_OK) {
+  } else if (http_code == oai::common::sbi::http_status_code::OK) {
     if (profile.get() != nullptr)
       // convert the profile to Json
       profile.get()->to_json(json_data);
@@ -424,15 +433,18 @@ void nrf_http2_server::update_instance_handler(
   }
 
   header_map h;
+  std::string path_nf_instance_id = {};
+  nrf_sbi_helper::get_fmt_format_form(
+      sbi_helper::NrfNfmPathNfInstancesNfInstanceId, path_nf_instance_id);
   h.emplace(
       "location", header_value{
-                      m_address + NNRF_NFM_BASE +
+                      m_address + sbi_helper::NrfNfmBase +
                       nrf_cfg->local().get_sbi().get_api_version() +
-                      "/nf-instances/" + nfInstanceID});
+                      fmt::format(path_nf_instance_id, nfInstanceID)});
   h.emplace("content-type", header_value{content_type});
 
   response.write_head(http_code, h);
-  if (http_code != HTTP_STATUS_CODE_204_NO_CONTENT) {
+  if (http_code != oai::common::sbi::http_status_code::NO_CONTENT) {
     response.end(json_data.dump().c_str());
   }
 }
@@ -452,11 +464,14 @@ void nrf_http2_server::deregister_nf_instance_handler(
       nfInstanceID, http_code, 2, problem_details);
 
   header_map h;
+  std::string path_nf_instance_id = {};
+  nrf_sbi_helper::get_fmt_format_form(
+      sbi_helper::NrfNfmPathNfInstancesNfInstanceId, path_nf_instance_id);
   h.emplace(
       "location", header_value{
-                      m_address + NNRF_NFM_BASE +
+                      m_address + sbi_helper::NrfNfmBase +
                       nrf_cfg->local().get_sbi().get_api_version() +
-                      "/nf-instances/" + nfInstanceID});
+                      fmt::format(path_nf_instance_id, nfInstanceID)});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
   response.end();
@@ -476,7 +491,7 @@ void nrf_http2_server::create_subscription_handler(
   m_nrf_app->handle_create_subscription(
       subscriptionData, sub_id, http_code, 2, problem_details);
 
-  if (http_code != HTTP_STATUS_CODE_201_CREATED) {
+  if (http_code != oai::common::sbi::http_status_code::CREATED) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {
@@ -487,9 +502,9 @@ void nrf_http2_server::create_subscription_handler(
   header_map h;
   h.emplace(
       "location", header_value{
-                      m_address + NNRF_NFM_BASE +
+                      m_address + sbi_helper::NrfNfmBase +
                       nrf_cfg->local().get_sbi().get_api_version() +
-                      NNRF_NFM_STATUS_SUBSCRIBE_URL});
+                      nrf_sbi_helper::NrfNfmPathSubscriptions});
   h.emplace("content-type", header_value{content_type});
   response.write_head(http_code, h);
   response.end(json_data.dump().c_str());
@@ -519,7 +534,7 @@ void nrf_http2_server::update_subscription_handler(
   header_map h;
   h.emplace("content-type", header_value{content_type});
 
-  if (http_code != HTTP_STATUS_CODE_204_NO_CONTENT) {
+  if (http_code != oai::common::sbi::http_status_code::NO_CONTENT) {
     to_json(json_data, problem_details);
     response.write_head(http_code, h);
     response.end(json_data.dump().c_str());
@@ -545,7 +560,7 @@ void nrf_http2_server::remove_subscription_handler(
   header_map h;
   h.emplace("content-type", header_value{content_type});
 
-  if (http_code != HTTP_STATUS_CODE_204_NO_CONTENT) {
+  if (http_code != oai::common::sbi::http_status_code::NO_CONTENT) {
     to_json(json_data, problem_details);
     response.write_head(http_code, h);
     response.end(json_data.dump().c_str());
@@ -606,7 +621,7 @@ void nrf_http2_server::search_nf_instances_handler(
   std::shared_ptr<nrf_search_result> search_result = {};
   m_nrf_app->find_search_result(search_id, search_result);
 
-  if (http_code != HTTP_STATUS_CODE_200_OK) {
+  if (http_code != oai::common::sbi::http_status_code::OK) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {

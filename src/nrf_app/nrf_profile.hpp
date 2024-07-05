@@ -41,6 +41,7 @@ namespace nrf {
 namespace app {
 
 using namespace std;
+using namespace oai::common::sbi;
 
 class nrf_profile : public std::enable_shared_from_this<nrf_profile> {
  public:
