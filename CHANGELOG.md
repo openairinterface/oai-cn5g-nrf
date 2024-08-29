@@ -1,5 +1,19 @@
 # RELEASE NOTES: #
 
+## v2.1.0 -- August 2024 ##
+
+* Features
+  - Adding debug info
+* Fixes
+  - Fix for Boost::signals2 issue
+  - Fix exception handling
+  - Fix HTTP/2 server shutdown
+* Tech Debt
+  - Stopping support for RHEL8/Rocky8 in favor of RHEL9/Rocky9
+  - Removing unneccessary packages from target images
+  - Move NRF SBI models to common src git submodule
+  - HTTP client cpr library refactoring effort
+
 ## v2.0.0 -- December 2023 ##
 
 * Features
