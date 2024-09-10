@@ -48,7 +48,7 @@ std::shared_ptr<oai::http::http_client> http_client_inst = nullptr;
 NRFApiServer* api_server                                 = nullptr;
 nrf_http2_server* nrf_api_server_2                       = nullptr;
 task_manager* tm_inst                                    = nullptr;
-
+std::unique_ptr<oai::config::lttng_configuration> lttng_config_yaml;
 //------------------------------------------------------------------------------
 void my_app_signal_handler(int s) {
   auto shutdown_start = std::chrono::system_clock::now();
@@ -99,6 +99,28 @@ int main(int argc, char** argv) {
   }
 
   // Logger
+  const std::string conf_file_name =
+      static_cast<std::string>(Options::getlibconfigConfig());
+
+  std::cout << "Trying to read .yaml configuration file: " << conf_file_name
+            << "\n";
+  lttng_config_yaml =
+      std::make_unique<oai::config::lttng_configuration>(conf_file_name);
+  lttng_config_yaml->read_from_file();
+
+#ifdef LOGGER_CAN_USE_LTTNG
+  std::cout << "LTTNG Log Activation: " << lttng_config_yaml->is_lttng_active()
+            << "\n";
+  std::cout << "Log Level of LTTng: "
+            << lttng_config_yaml->get_lttng_log_level() << "\n";
+#else
+  std::cout << "LTTNG Tracing disabled at build-time!\n";
+  if (lttng_config_yaml->is_lttng_active())
+    std::cout << "Cannot use lttng log scheme on this build variant!\n";
+#endif
+
+  Logger::set_lttng(static_cast<bool>(lttng_config_yaml->is_lttng_active()));
+
   Logger::init("nrf", Options::getlogStdout(), Options::getlogRotFilelog());
   Logger::nrf_app().startup("Options parsed");
 

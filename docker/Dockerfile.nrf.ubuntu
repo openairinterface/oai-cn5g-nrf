@@ -37,6 +37,7 @@ FROM $BASE_IMAGE as oai-nrf-base
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Paris
 ENV IS_DOCKERFILE=1
+ARG ENABLE_LTTNG=false
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes && \
     DEBIAN_FRONTEND=noninteractive apt-get install --yes \
@@ -67,7 +68,16 @@ FROM oai-nrf-base as oai-nrf-builder
 COPY . /openair-nrf
 # Building NRF
 WORKDIR /openair-nrf/build/scripts
-RUN ./build_nrf --clean --Verbose --build-type Release --jobs && \
+RUN  if [ "$ENABLE_LTTNG" = "true" ]; then DEBIAN_FRONTEND=noninteractive apt-get install --yes \
+        lttng-modules-dkms \
+        liblttng-ust-dev \
+        lttng-tools && \
+        ldconfig && \
+        ./build_nrf --clean --Verbose --build-type Release --jobs --lttng; \
+    else \
+        ldconfig && \
+        ./build_nrf --clean --Verbose --build-type Release --jobs; \
+    fi && \
     ldd /openair-nrf/build/nrf/build/nrf && \
     mv /openair-nrf/build/nrf/build/nrf /openair-nrf/build/nrf/build/oai_nrf
 
@@ -79,6 +89,7 @@ FROM mikefarah/yq:latest as yq-source
 FROM $BASE_IMAGE as oai-nrf
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Paris
+ARG ENABLE_LTTNG=false
 # We install some debug tools for the moment in addition of mandatory libraries
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes && \
@@ -106,6 +117,8 @@ RUN apt-get update && \
 # Ubuntu 22 --> boost74
       libboost-thread1.7?.0 \
       libboost-chrono1.7?.0 \
+# lttng
+  && if [ "$ENABLE_LTTNG" = "true" ]; then DEBIAN_FRONTEND=noninteractive apt-get install --yes liblttng-ust-dev; fi \
   && rm -rf /var/lib/apt/lists/*
 
 # Copying executable and generated libraries
@@ -135,7 +148,7 @@ COPY --from=oai-nrf-builder /openair-nrf/etc/config.yaml /openair-nrf/etc/
 WORKDIR /openair-nrf
 
 # expose ports
-EXPOSE 80/tcp 8080/tcp
+EXPOSE 80/tcp 8080/tcp 5342 5343 5344
 # healthcheck
 HEALTHCHECK --interval=10s \
             --timeout=15s \
