@@ -21,11 +21,9 @@
 #include <vector>
 #include "logger_base.hpp"
 
-static const std::string ASYNC_CMD = "async_cmd";
-static const std::string ITTI      = "itti";
-static const std::string NRF_APP   = "nrf_app";
-static const std::string SYSTEM    = "system";
-static const std::string NRF_SBI   = "nrf_sbi";
+static const std::string ITTI    = "itti";
+static const std::string NRF_APP = "nrf_app";
+static const std::string NRF_SBI = "nrf_sbi";
 
 class Logger : public oai::logger::logger_common {
  public:
@@ -33,13 +31,9 @@ class Logger : public oai::logger::logger_common {
       const std::string& name, const bool log_stdout, const bool log_rot_file) {
     oai::logger::logger_common(name, log_stdout, log_rot_file);
     oai::logger::logger_registry::register_logger(
-        name, ASYNC_CMD, log_stdout, log_rot_file);
-    oai::logger::logger_registry::register_logger(
         name, ITTI, log_stdout, log_rot_file);
     oai::logger::logger_registry::register_logger(
         name, NRF_APP, log_stdout, log_rot_file);
-    oai::logger::logger_registry::register_logger(
-        name, SYSTEM, log_stdout, log_rot_file);
     oai::logger::logger_registry::register_logger(
         name, NRF_SBI, log_stdout, log_rot_file);
   }
@@ -49,17 +43,11 @@ class Logger : public oai::logger::logger_common {
   static bool should_log(spdlog::level::level_enum level) {
     return oai::logger::logger_registry::should_log(level);
   }
-  static const oai::logger::printf_logger& async_cmd() {
-    return oai::logger::logger_registry::get_logger(ASYNC_CMD);
-  }
   static const oai::logger::printf_logger& itti() {
     return oai::logger::logger_registry::get_logger(ITTI);
   }
   static const oai::logger::printf_logger& nrf_app() {
     return oai::logger::logger_registry::get_logger(NRF_APP);
-  }
-  static const oai::logger::printf_logger& system() {
-    return oai::logger::logger_registry::get_logger(SYSTEM);
   }
   static const oai::logger::printf_logger& nrf_sbi() {
     return oai::logger::logger_registry::get_logger(NRF_SBI);
