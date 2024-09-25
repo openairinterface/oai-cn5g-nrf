@@ -68,6 +68,7 @@ pipeline {
     // Minimal checks
     gitlabBuilds(builds: [
       "Build Ubuntu NRF Image",
+      "Build Ubuntu NRF Image with LTTNG",
       "Build RHEL NRF Image",
       "Static Code Analysis",
       "Code Formatting Checker"
@@ -156,6 +157,7 @@ pipeline {
                   }
                   if ("MERGE".equals(env.gitlabActionType)) {
                     dockerBuildOptions = ''
+                    sh "date --rfc-email > src/common-src/date.txt"
                   }
                   sh "docker buildx build ${dockerBuildOptions} --target oai-nrf --tag oai-nrf:${nrf_tag} --file docker/Dockerfile.nrf.ubuntu . > archives/nrf_ubuntu_image_build.log 2>&1"
                   // Putting a place holder to try out on the flattening of image.
@@ -183,7 +185,33 @@ pipeline {
             }
           }
         }
-
+        stage ('Build Ubuntu NRF Image with LTTNG') {
+          steps {
+            // I want the previous stage to run always before to profit from the cache
+            // This stage only exists to make sure we don't have a regression in LTTNG build
+            // Generated image is not used
+            sleep 30
+            lock(ubuntuBuildResource) {
+              script {
+                gitlabCommitStatus(name: "Build Ubuntu NRF Image with LTTNG") {
+                  sh "docker image rm oai-nrf:lttng-build || true"
+                  sh "docker image prune --force"
+                  sh "docker buildx build --target oai-nrf --tag oai-nrf:lttng-build --file docker/Dockerfile.nrf.ubuntu --build-arg ENABLE_LTTNG=true . > archives/nrf_ubuntu_lttng_image_build.log 2>&1"
+                  sh "docker image prune --force"
+                  sh "docker image rm oai-nrf:lttng-build || true"
+                }
+              }
+            }
+          }
+          post {
+            success {
+              sh "echo 'OAI-NRF UBUNTU IMAGE BUILD: OK' >> archives/nrf_ubuntu_lttng_image_build.log"
+            }
+            unsuccessful {
+              sh "echo 'OAI-NRF UBUNTU IMAGE BUILD: KO' >> archives/nrf_ubuntu_lttng_image_build.log"
+            }
+          }
+        }
         stage ('Build RHEL NRF Image') {
           agent { label rhelNode }
           steps {
@@ -238,6 +266,7 @@ pipeline {
                 gitlabCommitStatus(name: "Static Code Analysis") {
                   // It's a different agent from main one.
                   prepareWorkspaceMergeCase()
+                  sh "date --rfc-email > src/common-src/date.txt"
                   // Moving to focal and cppcheck 1.90 and a dockerfile approach
                   sh 'sed -i -e "s@nfName@nrf@" ci-scripts/common/docker/Dockerfile.ci.cppcheck'
                   sh 'docker build --target nrf-cppcheck --tag nrf-cppcheck:test --file ci-scripts/common/docker/Dockerfile.ci.cppcheck . > archives/cppcheck_install.log 2>&1'
@@ -276,6 +305,7 @@ pipeline {
                 gitlabCommitStatus(name: "Code Formatting Checker") {
                   // It's a different agent from main one.
                   prepareWorkspaceMergeCase()
+                  sh "date --rfc-email > src/common-src/date.txt"
                   sh 'sed -i -e "s@nfName@nrf@" ci-scripts/common/docker/Dockerfile.ci.clang-format'
                   if ("MERGE".equals(env.gitlabActionType)) {
                     sh 'docker build --target nrf-clang-format-check --tag nrf-clang-format-check:test --file ci-scripts/common/docker/Dockerfile.ci.clang-format --build-arg MERGE_REQUEST_CHECK=True --build-arg SOURCE_BRANCH=' + env.gitlabSourceBranch + ' --build-arg TARGET_BRANCH=' + env.gitlabTargetBranch + ' . > archives/clang_format_install.log 2>&1'
@@ -483,12 +513,6 @@ pipeline {
     }
     cleanup {
       script {
-        // Zipping all archived log files
-        sh "zip -r -qq docker_logs.zip archives"
-        if (fileExists('docker_logs.zip')) {
-          archiveArtifacts artifacts: 'docker_logs.zip'
-        }
-
         // Generating the HTML report(s)
         if ("MERGE".equals(env.gitlabActionType)) {
           sh "./ci-scripts/generateHtmlReport.py --job-name ${JOB_NAME} --build-id ${BUILD_ID} --build-url ${BUILD_URL} --git-url ${GIT_URL} --git-src-branch ${env.gitlabSourceBranch} --git-src-commit ${env.gitlabMergeRequestLastCommit} --git-merge-request --git-dst-branch ${env.gitlabTargetBranch} --git-dst-commit ${GIT_COMMIT}"
@@ -504,6 +528,12 @@ pipeline {
           }
           sh "sed -i -e 's#TEMPLATE_TIME#${JOB_TIMESTAMP}#' ${htmlFile}"
           archiveArtifacts artifacts: htmlFile
+        }
+
+        // Zipping all archived log files
+        sh "zip -r -qq docker_logs.zip archives"
+        if (fileExists('docker_logs.zip')) {
+          archiveArtifacts artifacts: 'docker_logs.zip'
         }
 
         // Sending email to commiter
