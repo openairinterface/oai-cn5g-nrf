@@ -86,6 +86,7 @@ RUN microdnf update -y && \
       libicu \
       boost \
       libevent \
+      ca-certificates \
       findutils && \
     microdnf clean all -y && \
     rm -rf /var/cache/yum /var/cache/dnf
@@ -111,6 +112,12 @@ COPY --from=oai-nrf-builder \
 
 RUN ldconfig && \
     ldd /openair-nrf/bin/oai_nrf
+
+#Copying certificates to the local CA certificates directory 
+RUN cp /openair-nrf/cert/*.crt /etc/pki/ca-trust/source/anchors/
+
+#Adding the certificates to the local trust store
+RUN update-ca-trust
 
 # Copying template configuration files
 # The configuration folder will be flat

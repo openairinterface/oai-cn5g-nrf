@@ -117,6 +117,7 @@ RUN apt-get update && \
 # Ubuntu 22 --> boost74
       libboost-thread1.7?.0 \
       libboost-chrono1.7?.0 \
+      ca-certificates \
 # lttng
   && if [ "$ENABLE_LTTNG" = "true" ]; then DEBIAN_FRONTEND=noninteractive apt-get install --yes liblttng-ust-dev; fi \
   && rm -rf /var/lib/apt/lists/*
@@ -144,6 +145,12 @@ RUN ldconfig && \
 
 # Copying template configuration files
 COPY --from=oai-nrf-builder /openair-nrf/etc/config.yaml /openair-nrf/etc/
+
+#Copying certificates to the local CA certificates directory 
+RUN cp /openair-nrf/cert/*.crt /usr/local/share/ca-certificates
+
+#Adding the certificates to the local trust store
+RUN update-ca-certificates
 
 WORKDIR /openair-nrf
 
