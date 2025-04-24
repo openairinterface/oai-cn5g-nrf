@@ -56,11 +56,12 @@ void nrf_http2_server::start() {
 
   boost::asio::ssl::context tls(boost::asio::ssl::context::sslv23);
 
-  tls.use_private_key_file(
-      "./conf/cert/nrf.key", boost::asio::ssl::context::pem);
-  tls.use_certificate_chain_file("./conf/cert/nrf.crt");
-
-  configure_tls_context_easy(ec, tls);
+  if (nrf_cfg->enable_tls()) {
+    tls.use_private_key_file(
+        "./conf/cert/nrf.key", boost::asio::ssl::context::pem);
+    tls.use_certificate_chain_file("./conf/cert/nrf.crt");
+    configure_tls_context_easy(ec, tls);
+  }
 
   Logger::nrf_app().info("HTTP2 server being started");
   std::string nfInstanceID          = {};
@@ -268,9 +269,15 @@ void nrf_http2_server::start() {
       });
 
   running_server = true;
-  if (server.listen_and_serve(ec, tls, m_address, std::to_string(m_port))) {
-    Logger::nrf_app().debug("HTTP2 server status: %s", ec.message());
+
+  if (nrf_cfg->enable_tls()) {
+    server.listen_and_serve(ec, tls, m_address, std::to_string(m_port));
+  } else {
+    server.listen_and_serve(ec, m_address, std::to_string(m_port));
   }
+
+  Logger::nrf_app().debug("HTTP2 server status: %s", ec.message());
+
   running_server = false;
   Logger::nrf_app().info("HTTP2 server fully stopped");
 }
