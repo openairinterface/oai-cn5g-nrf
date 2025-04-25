@@ -35,7 +35,12 @@ register_nf:
 
 http_version: 2
 
-enable_tls: yes
+tls: 
+  enable_tls: yes
+  cert_certificate_path: "./cert"
+  cert_key_path: "./cert"
+  cert_pem_path: "./cert"
+
 
 ############## SBI Interfaces
 ### Each NF takes its local SBI interfaces and remote interfaces from here, unless it gets them using NRF discovery mechanisms
