@@ -597,6 +597,7 @@ bool api_conv::subscription_api_to_nrf_subscription(
     nlohmann::json sub_condition_api = {};
     api_sub.getSubscrCond(sub_condition_api);
 
+    // TODO: should be removed
     if (sub_condition_api.find("NfInstanceIdCond") != sub_condition_api.end()) {
       sub_condition.type = NF_INSTANCE_ID_COND;
       sub_condition.nf_instance_id =
@@ -607,10 +608,28 @@ bool api_conv::subscription_api_to_nrf_subscription(
           sub_condition.nf_instance_id.c_str());
     }
 
+    if (sub_condition_api.find("nfInstanceId") != sub_condition_api.end()) {
+      sub_condition.type = NF_INSTANCE_ID_COND;
+      sub_condition.nf_instance_id =
+          sub_condition_api["nfInstanceId"].get<std::string>();
+      Logger::nrf_app().debug(
+          "Subscription condition type: NfInstanceIdCond, nfInstanceId: %s",
+          sub_condition.nf_instance_id.c_str());
+    }
+
+    // TODO: should be removed
     if (sub_condition_api.find("NfTypeCond") != sub_condition_api.end()) {
       sub_condition.type = NF_TYPE_COND;
       sub_condition.nf_type =
           sub_condition_api["NfTypeCond"]["nfType"].get<std::string>();
+      Logger::nrf_app().debug(
+          "Subscription condition type: NfTypeCond, nf_type: %s",
+          sub_condition.nf_type.c_str());
+    }
+
+    if (sub_condition_api.find("nfType") != sub_condition_api.end()) {
+      sub_condition.type    = NF_TYPE_COND;
+      sub_condition.nf_type = sub_condition_api["nfType"].get<std::string>();
       Logger::nrf_app().debug(
           "Subscription condition type: NfTypeCond, nf_type: %s",
           sub_condition.nf_type.c_str());
