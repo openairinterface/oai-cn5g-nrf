@@ -40,6 +40,12 @@ cppcheckResource = params.CppCheckResource
 formatCheckNode = params.FormatCheckNode
 formatCheckResource = params.FormatCheckResource
 
+// Its main purpose is the ARM Neoverse-v2 Build
+armBuildResource = params.armBuildResource
+
+// Boolean param to control trivy scan
+runTrivyScan = params.runTrivyScan
+
 // Tags/Branches to use
 def nrf_tag = "develop"
 def nrf_branch = "develop"
@@ -76,7 +82,7 @@ pipeline {
     gitLabConnection('OAI GitLab')
     // Minimal checks
     gitlabBuilds(builds: [
-      "Build Ubuntu NRF Image",
+      "Build Ubuntu ARM Neoverse V2 (Grace) Image",
       "Build Ubuntu NRF Image with LTTNG",
       "Build RHEL NRF Image",
       "Static Code Analysis",
@@ -153,13 +159,15 @@ pipeline {
     }
     stage('Build Core Network Function') {
       parallel {
-        stage ('Build Ubuntu NRF Image') {
+        stage ('Build Ubuntu ARM Neoverse V2 (Grace) Image') {
           steps {
             // Now it is only locked during this build stage and not for the whole pipeline
             lock(ubuntuBuildResource) {
+              lock(armBuildResource) {
               script {
-                gitlabCommitStatus(name: "Build Ubuntu NRF Image") {
+                gitlabCommitStatus(name: "Build Ubuntu ARM Neoverse V2 (Grace) Image") {
                   sh "docker image rm oai-nrf:${nrf_tag} || true"
+                  sh "docker image rm ${PrivateRegistryURL}/oai-nrf:${nrf_tag} || true"
                   sh "docker image prune --force"
                   if ("PUSH".equals(env.gitlabActionType)) {
                     dockerBuildOptions = '--no-cache '
@@ -168,21 +176,33 @@ pipeline {
                     dockerBuildOptions = ''
                     sh "date --rfc-email > src/common-src/date.txt"
                   }
-                  sh "docker buildx build ${dockerBuildOptions} --target oai-nrf --tag oai-nrf:${nrf_tag} --file docker/Dockerfile.nrf.ubuntu . > archives/nrf_ubuntu_image_build.log 2>&1"
-                  // Putting a place holder to try out on the flattening of image.
-                  // If not satisfactory, we can remove it.
-                  sh "python3 ./ci-scripts/flatten_image.py --tag oai-nrf:${nrf_tag}"
-                  sh "docker image prune --force"
-                  sh "docker image ls | egrep --color=never 'nrf|REPOSITORY' >> archives/nrf_ubuntu_image_build.log"
-                  // Pushing to local private registry for testing purpose
                   sh "docker login -u oaicicd -p oaicicd ${PrivateRegistryURL}"
-                  sh "docker image tag oai-nrf:${nrf_tag} ${PrivateRegistryURL}/oai-nrf:${nrf_tag}"
-                  sh "docker push ${PrivateRegistryURL}/oai-nrf:${nrf_tag}"
-                  // Remove all images locally
-                  sh "docker rmi oai-nrf:${nrf_tag} ${PrivateRegistryURL}/oai-nrf:${nrf_tag}"
+                  sh "docker buildx build ${dockerBuildOptions} \
+                    --target oai-nrf \
+                    --tag ${PrivateRegistryURL}/oai-nrf:${nrf_tag} \
+                    --platform linux/amd64,linux/arm64 \
+                    --build-arg GIT_COMMIT=\"${shortenShaOne}\" \
+                    --file docker/Dockerfile.nrf.ubuntu \
+                    --builder multiarch-localremote-builder \
+                    --progress=plain \
+                    --push . > archives/nrf_multiarch_buildx.log 2>&1"
+                  sh "docker image prune --force"
+                  sh "docker rmi ${PrivateRegistryURL}/oai-nrf:${nrf_tag} || true"
+                  sh "docker pull ${PrivateRegistryURL}/oai-nrf:${nrf_tag}"
+                  sh "docker image inspect ${PrivateRegistryURL}/oai-nrf:${nrf_tag} | jq '.[0] | {RepoTags, Labels: .Config.Labels, DockerVersion}' >> archives/nrf_multiarch_buildx.log 2>&1"
+                  if (runTrivyScan) {
+                     sh "docker rmi oai-nrf:${shortenShaOne} || true"
+                     sh "docker image tag ${PrivateRegistryURL}/oai-nrf:${nrf_tag} oai-nrf:${shortenShaOne}"
+                     sh "trivy image --exit-code 1 --severity MEDIUM,HIGH,CRITICAL --no-progress --format=template --template @./ci-scripts/common/html-templates/trivy_html.tpl --output archives/nrf_multiarch_image_trivy_report.html oai-nrf:${shortenShaOne} > /dev/null || true"
+                     sh "docker rmi oai-nrf:${shortenShaOne} || true"
+                  }
+                  sh "docker rmi ${PrivateRegistryURL}/oai-nrf:${nrf_tag} || true"
                   sh "docker logout ${PrivateRegistryURL}"
+                  sh "bash ./ci-scripts/common/bash/extract_arm_amd_logs.sh archives/nrf_multiarch_buildx.log"
+
                 }
               }
+             }
             }
           }
           post {
