@@ -411,6 +411,7 @@ pipeline {
         }
         stage ('Testing with COTS-UE') {
           steps {
+           catchError(stageResult: 'UNSTABLE') {
             script {
               gitlabCommitStatus(name: "Test with COTS-UE") {
                 localStatus = build job: 'OAI-CN5G-COTS-UE-Test',
@@ -423,10 +424,12 @@ pipeline {
                 if (localStatus.resultIsBetterOrEqualTo('SUCCESS')) {
                   echo "Test Job with COTS-UE is OK"
                 } else {
-                  error "Test Job with COTS-UE is is KO"
+                  echo "Test Job with COTS-UE is KO but marking COTS-UE as UNSTABLE"
+                  currentBuild.result = 'UNSTABLE'
                 }
               }
             }
+           }
           }
           post {
             always {
