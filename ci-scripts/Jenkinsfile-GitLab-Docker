@@ -426,6 +426,7 @@ pipeline {
                 } else {
                   echo "Test Job with COTS-UE is KO but marking COTS-UE as UNSTABLE"
                   currentBuild.result = 'UNSTABLE'
+                  error "Test Job with COTS-UE is KO"
                 }
               }
             }
