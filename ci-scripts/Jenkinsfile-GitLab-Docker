@@ -411,7 +411,6 @@ pipeline {
         }
         stage ('Testing with COTS-UE') {
           steps {
-           catchError(stageResult: 'UNSTABLE') {
             script {
               gitlabCommitStatus(name: "Test with COTS-UE") {
                 localStatus = build job: 'OAI-CN5G-COTS-UE-Test',
@@ -426,11 +425,10 @@ pipeline {
                 } else {
                   echo "Test Job with COTS-UE is KO but marking COTS-UE as UNSTABLE"
                   currentBuild.result = 'UNSTABLE'
-                  error "Test Job with COTS-UE is KO"
+                  unstable('Test Job with COTS-UE failed')
                 }
               }
             }
-           }
           }
           post {
             always {
@@ -510,6 +508,7 @@ pipeline {
       steps {
         lock(ubuntuBuildResource) {
           script {
+            echo "Running the stage to push Image to Official DH Registry"
             // Only in case of push to target branch!
             if ("PUSH".equals(env.gitlabActionType) || runDockerHubPushStage) {
               withCredentials([
