@@ -31,10 +31,27 @@
 
 # 3. OAI NRF Feature List #
 
-Based on document **3GPP TS 23.501 v16.0.0 (Section 6.2.6)**.
+Based on document **3GPP TS 23.501 v16.14.0 (Section 6.2.6)**.
 
-| **ID** | **Classification**                                                              | **Status**         | **Comments**     |
-| ------ | ------------------------------------------------------------------------------- | ------------------ | ---------------- |
-| 1      | Supports service discovery function                                             | :heavy_check_mark: |                  |
-| 2      | Maintains the NF profile of available NF instances and their supported services | :heavy_check_mark: |                  |
+| **ID** | **Classification**                                                              | **Status**         |   **Comments**                     |
+| ------ | ------------------------------------------------------------------------------- | ------------------ | ---------------------------------- |
+| 1      | Supports service discovery function                                             | :heavy_check_mark: |                                    |
+| 2      | Supports P-CSCF discovery                                                       | :x:                |                                    |
+| 3      | Maintains the NF profile of available NF instances and their supported services | :heavy_check_mark: |                                    |
+| 4      | Maintains SCP profile of available SCP instances                                | :x:                |                                    |
+| 5      | Supports SCP discovery by SCP instances                                         | :x:                |                                    |
+| 6      | Notifies about newly registered/updated/ deregistered NF and SCP instances      | :x:                |                                    |
+| 7      | Maintains the health status of NFs and SCP                                      | :heavy_check_mark: | Partially, only for status of NFs  |
+| 8      | Notifies about newly registered/updated/ deregistered NF and SCP instances      | :x:                |                                    |
+
+In the context of Network Slicing, based on network implementation, multiple NRFs can be deployed at different levels:
+
+| 9      | PLMN level (the NRF is configured with information for the whole PLMN)          | :x:                |                                    |
+| 10     | Shared-slice level                                                              | :x:                |                                    |
+| 11     | Slice-specific level                                                            | :x:                |                                    |
+
+In the context of roaming, multiple NRFs may be deployed in the different networks:
+
+| 11     | the NRF(s) in the Visited PLMN configured with information for the visited PLMN | :x:                |                                    |
+| 11     | the NRF(s) in the Home PLMN configured with information for the home PLMN       | :x:                |                                    |
 
