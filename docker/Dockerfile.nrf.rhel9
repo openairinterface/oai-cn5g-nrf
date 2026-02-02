@@ -29,7 +29,7 @@
 # BUILDER IMAGE
 #---------------------------------------------------------------------
 
-FROM registry.access.redhat.com/ubi9/ubi:latest AS oai-nrf-builder
+FROM registry.redhat.io/ubi9/ubi:latest AS oai-nrf-builder
 
 ENV IS_DOCKERFILE=1
 
@@ -73,7 +73,7 @@ FROM mikefarah/yq:latest as yq-source
 #---------------------------------------------------------------------
 # TARGET IMAGE
 #---------------------------------------------------------------------
-FROM registry.access.redhat.com/ubi9/ubi-minimal:latest as oai-nrf
+FROM registry.redhat.io/ubi9/ubi-minimal:latest as oai-nrf
 ENV TZ=Europe/Paris
 
 # Copy the entitlements
