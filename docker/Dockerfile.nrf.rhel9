@@ -31,6 +31,9 @@
 
 FROM registry.redhat.io/ubi9/ubi:latest AS oai-nrf-builder
 
+ARG EPEL_URL
+ENV EPEL_URL=${EPEL_URL}
+
 ENV IS_DOCKERFILE=1
 
 # Copy the entitlements
