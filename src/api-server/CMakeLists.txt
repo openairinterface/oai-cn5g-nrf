@@ -38,6 +38,7 @@ include(${SRC_TOP_DIR}/${MOUNTED_COMMON}/model/common_model/common_model.cmake)
 include(${SRC_TOP_DIR}/${MOUNTED_COMMON}/model/nrf/nrf_model.cmake)
 
 file(GLOB NRF_API_SERVER_src_files
+    ${NRF_API_SERVER_DIR}/http2-server.cpp
     ${NRF_API_SERVER_DIR}/nrf-api-server.cpp
     ${NRF_API_SERVER_DIR}/nrf-http2-server.cpp
     ${NRF_API_SERVER_DIR}/api/*.cpp

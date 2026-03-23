@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <signal.h>
+#include <csignal>
 #include <stdint.h>
 #include <stdlib.h>  // srand
 #include <unistd.h>  // get_pid(), pause()
