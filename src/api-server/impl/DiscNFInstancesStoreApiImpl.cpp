@@ -135,18 +135,18 @@ void DiscNFInstancesStoreApiImpl::search_nf_instances(
 
   // TODO: other query parameters
 
-  int http_code                  = 0;
-  ProblemDetails problem_details = {};
-  std::string search_id          = {};
+  int http_code                                    = 0;
+  ProblemDetails problem_details                   = {};
+  std::string search_id                            = {};
+  std::shared_ptr<nrf_search_result> search_result = {};
   m_nrf_app->handle_search_nf_instances(
       target_nf_type, requester_nf_type, requester_nf_instance_id, limit_nfs,
-      search_id, http_code, 1, problem_details);
+      search_id, http_code, 1, problem_details, search_result);
 
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
-  std::shared_ptr<nrf_search_result> search_result = {};
-  m_nrf_app->find_search_result(search_id, search_result);
+  // m_nrf_app->find_search_result(search_id, search_result);
 
   if (http_code != oai::common::sbi::http_status_code::OK) {
     to_json(json_data, problem_details);

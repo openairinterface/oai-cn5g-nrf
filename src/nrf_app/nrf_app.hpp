@@ -189,7 +189,8 @@ class nrf_app {
       const std::string& target_nf_type, const std::string& requester_nf_type,
       const std::string& requester_nf_instance_id, uint32_t& limit_nfs,
       std::string& search_id, int& http_code, const uint8_t http_version,
-      oai::model::common::ProblemDetails& problem_details);
+      oai::model::common::ProblemDetails& problem_details,
+      std::shared_ptr<nrf_search_result>& search_result);
 
   /*
    * Handle a Register NF Instance request

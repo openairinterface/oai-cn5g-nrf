@@ -93,8 +93,7 @@ void nrf_http2_server::start() {
           // Read the profile of a given NF Instance
           if (request.method == "GET") {
             std::vector<std::string> split_result;
-            boost::split(
-                split_result, request.path, boost::is_any_of("/"));
+            boost::split(split_result, request.path, boost::is_any_of("/"));
             if (split_result.size() == 5) {
               std::string nfInstanceID = split_result[split_result.size() - 1];
               this->get_nf_instance_handler(nfInstanceID, response);
@@ -105,16 +104,14 @@ void nrf_http2_server::start() {
             std::vector<PatchItem> patchItem;
             nlohmann::json::parse(request.body).get_to(patchItem);
             std::vector<std::string> split_result;
-            boost::split(
-                split_result, request.path, boost::is_any_of("/"));
+            boost::split(split_result, request.path, boost::is_any_of("/"));
             std::string nfInstanceID = split_result[split_result.size() - 1];
             this->update_instance_handler(nfInstanceID, patchItem, response);
           }
           // Deregisters a given NF Instance
           if (request.method == "DELETE") {
             std::vector<std::string> split_result;
-            boost::split(
-                split_result, request.path, boost::is_any_of("/"));
+            boost::split(split_result, request.path, boost::is_any_of("/"));
             std::string nfInstanceID = split_result[split_result.size() - 1];
             this->deregister_nf_instance_handler(nfInstanceID, response);
           }
@@ -145,8 +142,7 @@ void nrf_http2_server::start() {
             std::vector<PatchItem> patchItem;
             nlohmann::json::parse(request.body).get_to(patchItem);
             std::vector<std::string> split_result;
-            boost::split(
-                split_result, request.path, boost::is_any_of("/"));
+            boost::split(split_result, request.path, boost::is_any_of("/"));
             std::string subscriptionID = split_result[split_result.size() - 1];
             this->update_subscription_handler(
                 subscriptionID, patchItem, response);
@@ -154,8 +150,7 @@ void nrf_http2_server::start() {
           // Delete a subscription
           if (request.method == "DELETE") {
             std::vector<std::string> split_result;
-            boost::split(
-                split_result, request.path, boost::is_any_of("/"));
+            boost::split(split_result, request.path, boost::is_any_of("/"));
             std::string subscriptionID = split_result[split_result.size() - 1];
             this->remove_subscription_handler(subscriptionID, response);
           }
@@ -177,13 +172,12 @@ void nrf_http2_server::start() {
         try {
           // Search a collection of NF Instances
           if (request.method == "GET") {
-            std::string nfTypeTarget =
-                oai::utils::get_query_param(request.raw_query, "target-nf-type");
+            std::string nfTypeTarget = oai::utils::get_query_param(
+                request.raw_query, "target-nf-type");
             std::string nfTypeReq = oai::utils::get_query_param(
                 request.raw_query, "requester-nf-type");
-            std::string requester_nf_instance_id =
-                oai::utils::get_query_param(
-                    request.raw_query, "requester-nf-instance-id");
+            std::string requester_nf_instance_id = oai::utils::get_query_param(
+                request.raw_query, "requester-nf-instance-id");
             std::string limit_nfs =
                 oai::utils::get_query_param(request.raw_query, "limit");
             // TODO: other query parameters
@@ -209,7 +203,7 @@ void nrf_http2_server::start() {
       });
 
   // Configure thread pool (4 workers by default)
-  //TODO: get from configuration file
+  // TODO: get from configuration file
   server_.config().num_worker_threads = 4;
 
   // Start the server (blocks until stop() is called)
@@ -306,7 +300,7 @@ void nrf_http2_server::get_nf_instances_handler(
 
   uint32_t limit_Nfs = 0;
   if (!limit_nfs.empty()) {
-   // limit_Nfs = stoi(limit_nfs);
+    // limit_Nfs = stoi(limit_nfs);
     Logger::nrf_sbi().debug(
         "\tMaximum number of NFProfiles to be returned in the response: %d",
         limit_Nfs);
@@ -338,7 +332,8 @@ void nrf_http2_server::get_nf_instances_handler(
 
   std::map<std::string, std::string> h;
   h["location"] = m_address + sbi_helper::NrfNfmBase +
-                  nrf_cfg->local().get_sbi().get_api_version() + "/nf-instances/";
+                  nrf_cfg->local().get_sbi().get_api_version() +
+                  "/nf-instances/";
   h["content-type"] = content_type;
   response.send(http_code, h, json_data.dump());
 }
@@ -533,7 +528,7 @@ void nrf_http2_server::search_nf_instances_handler(
 
   uint32_t limit_Nfs = 0;
   if (!limit_nfs.empty()) {
-    limit_Nfs = stoi(limit_nfs);
+    // limit_Nfs = stoi(limit_nfs);
     Logger::nrf_sbi().debug(
         "\tMaximum number of NFProfiles to be returned in the response: %d",
         limit_Nfs);
@@ -541,23 +536,24 @@ void nrf_http2_server::search_nf_instances_handler(
 
   // TODO: other query parameters
 
-  int http_code                  = 0;
-  ProblemDetails problem_details = {};
-  std::string search_id          = {};
+  int http_code                                    = 0;
+  ProblemDetails problem_details                   = {};
+  std::string search_id                            = {};
+  std::shared_ptr<nrf_search_result> search_result = {};
   m_nrf_app->handle_search_nf_instances(
       target_nfType, requester_nfType, requester_nfInstance_id, limit_Nfs,
-      search_id, http_code, 2, problem_details);
+      search_id, http_code, 2, problem_details, search_result);
 
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
-  std::shared_ptr<nrf_search_result> search_result = {};
-  m_nrf_app->find_search_result(search_id, search_result);
+  // m_nrf_app->find_search_result(search_id, search_result);
 
   if (http_code != oai::common::sbi::http_status_code::OK) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {
+    limit_Nfs = 0;
     // convert the profile to Json
     if (search_result != nullptr)
       search_result.get()->to_json(json_data, limit_Nfs);

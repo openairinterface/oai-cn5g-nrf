@@ -655,7 +655,8 @@ void nrf_app::handle_search_nf_instances(
     const std::string& target_nf_type, const std::string& requester_nf_type,
     const std::string& requester_nf_instance_id, uint32_t& limit_nfs,
     std::string& search_id, int& http_code, const uint8_t http_version,
-    ProblemDetails& problem_details) {
+    ProblemDetails& problem_details,
+    std::shared_ptr<nrf_search_result>& search_result) {
   Logger::nrf_app().info(
       "Handle NFDiscover to discover the set of NF Instances (HTTP version %d)",
       http_version);
@@ -693,31 +694,32 @@ void nrf_app::handle_search_nf_instances(
       target_nf_type.c_str(), requester_nf_type.c_str(),
       requester_nf_instance_id.c_str());
 
-  std::shared_ptr<nrf_search_result> ss = std::make_shared<nrf_search_result>();
+  search_result = std::make_shared<nrf_search_result>();
   // generate a search ID and assign to the search result
   generate_search_id(search_id);
-  ss.get()->set_search_id(search_id);
+  search_result.get()->set_search_id(search_id);
 
   // set search result
   std::vector<std::shared_ptr<nrf_profile>> profiles = {};
   find_nf_profiles(target_type, profiles);
   if (profiles.size() > 0) {
-    ss.get()->set_nf_instances(profiles);
+    search_result.get()->set_nf_instances(profiles);
   }
-  ss.get()->set_limit_nf_instances(limit_nfs);
-  ss.get()->set_num_nf_inst_complete(limit_nfs);
+  search_result.get()->set_limit_nf_instances(limit_nfs);
+  search_result.get()->set_num_nf_inst_complete(limit_nfs);
 
   if (profiles.size() > limit_nfs) {
-    ss.get()->set_num_nf_inst_complete(profiles.size());
+    search_result.get()->set_num_nf_inst_complete(profiles.size());
   }
 
   // set validity period
-  ss.get()->set_validity_period(100000);  // 100s
+  search_result.get()->set_validity_period(100000);  // 100s
   // add to the DB
-  add_search_result(search_id, ss);
+  add_search_result(search_id, search_result);
+  // find_search_result(search_id, search_result);
   Logger::nrf_app().debug(
       "Added a search result with ID %s to the DB", search_id.c_str());
-  ss.get()->display();
+  search_result.get()->display();
   http_code = oai::common::sbi::http_status_code::OK;
 }
 
@@ -1401,6 +1403,7 @@ bool nrf_app::add_search_result(
   return true;
 }
 
+//------------------------------------------------------------------------------
 bool nrf_app::find_search_result(
     const std::string& search_id, std::shared_ptr<nrf_search_result>& s) const {
   std::shared_lock lock(m_search_id2search_result);
