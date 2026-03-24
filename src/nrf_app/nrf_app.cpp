@@ -1055,25 +1055,37 @@ void nrf_app::handle_remove_suspended_nf(uint64_t ms) {
                    std::chrono::system_clock::now().time_since_epoch())
                    .count();
 
+  std::vector<std::string> ids_to_remove;
+
   if ((s / nrf_cfg->nrf()->get_suspended_nf_interval()) % 2 == 0) {
-    if (!suspended_nf[1].empty()) {
-      for (auto i : suspended_nf[1]) {
-        remove_nf_profile(i);
-      }
+    {
       std::unique_lock lock(m_suspended_nf);
-      suspended_nf[1].clear();
+      if (!suspended_nf[1].empty()) {
+        ids_to_remove.assign(suspended_nf[1].begin(), suspended_nf[1].end());
+        suspended_nf[1].clear();
+      }
+    }
+    for (const auto& i : ids_to_remove) {
+      remove_nf_profile(i);
+    }
+    if (!ids_to_remove.empty()) {
       Logger::nrf_app().debug(
           "Removed the second part of the suspended NF set, current time %d "
           "(seconds)",
           s);
     }
   } else {
-    if (!suspended_nf[0].empty()) {
-      for (auto i : suspended_nf[0]) {
-        remove_nf_profile(i);
-      }
+    {
       std::unique_lock lock(m_suspended_nf);
-      suspended_nf[0].clear();
+      if (!suspended_nf[0].empty()) {
+        ids_to_remove.assign(suspended_nf[0].begin(), suspended_nf[0].end());
+        suspended_nf[0].clear();
+      }
+    }
+    for (const auto& i : ids_to_remove) {
+      remove_nf_profile(i);
+    }
+    if (!ids_to_remove.empty()) {
       Logger::nrf_app().debug(
           "Remove the first part of the suspended NF set,  current time %d "
           "(seconds)",
@@ -1266,6 +1278,7 @@ void nrf_app::get_subscription_list(
     return;
   }
 
+  std::shared_lock lock(m_subscription_id2nrf_subscription);
   for (auto s : subscrition_id2nrf_subscription) {
     Logger::nrf_app().info(
         "\tVerifying subscription, subscription id %s", s.first.c_str());

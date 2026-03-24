@@ -121,7 +121,7 @@ struct http2_server_config {
   int shutdown_drain_timeout_sec   = 5;
 
   // Thread pool (0 = synchronous/event-loop-only mode)
-  uint32_t num_worker_threads = 2;
+  uint32_t num_worker_threads = 4;
   size_t   max_pending_tasks  = 10000;
 };
 
