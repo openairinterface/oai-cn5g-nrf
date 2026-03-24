@@ -23,7 +23,7 @@ class thread_pool {
  public:
   // Create a pool with num_threads workers and an optional max queue depth.
   // Workers start immediately.
-  explicit thread_pool(size_t num_threads, size_t max_queue_size = 1000)
+  explicit thread_pool(size_t num_threads, size_t max_queue_size = 100000)
       : shutdown_(false), max_queue_size_(max_queue_size) {
     workers_.reserve(num_threads);
     for (size_t i = 0; i < num_threads; ++i) {

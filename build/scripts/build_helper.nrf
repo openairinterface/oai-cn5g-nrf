@@ -35,6 +35,7 @@ source $THIS_SCRIPT_PATH/../common-build/installation/build_helper.spdlog
 source $THIS_SCRIPT_PATH/../common-build/installation/build_helper.pistache
 source $THIS_SCRIPT_PATH/../common-build/installation/build_helper.nlohmann
 source $THIS_SCRIPT_PATH/../common-build/installation/build_helper.nghttp2
+source $THIS_SCRIPT_PATH/build_nghttp2_v168.sh
 source $THIS_SCRIPT_PATH/../common-build/installation/build_helper.cpp_jwt
 source $THIS_SCRIPT_PATH/../common-build/installation/build_helper.yamlcpp
 source $THIS_SCRIPT_PATH/../common-build/installation/build_helper.cpr
@@ -158,7 +159,7 @@ check_install_nrf_deps() {
   install_nlohmann_from_git $1 $2
   ret=$?;[[ $ret -ne 0 ]] && return $ret
 
-  install_nghttp2_from_git $1 $2
+  install_nghttp2_v168_from_git $1 $2
   ret=$?;[[ $ret -ne 0 ]] && return $ret
 
   install_cpr_from_git $1 $2

@@ -549,6 +549,16 @@ class nrf_profile : public std::enable_shared_from_this<nrf_profile> {
   std::vector<nf_service_t> nf_services;
   nlohmann::json custom_info;  // store extra json data
 
+  // Unlocked implementations for virtual methods (called from within a held
+  // lock). Call these only when nf_profile_mutex is already held by the caller.
+  void to_json_unlocked(nlohmann::json& data) const;
+  void display_unlocked();
+  bool replace_profile_info_unlocked(
+      const std::string& path, const std::string& value);
+  bool add_profile_info_unlocked(
+      const std::string& path, const std::string& value);
+  bool remove_profile_info_unlocked(const std::string& path);
+
   /*
    std::vector<PlmnId> m_PlmnList;
    bool m_PlmnListIsSet;

@@ -56,7 +56,7 @@ void nrf_http2_server::start() {
   server_.handle(
       sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfNfmPathNfInstances,
-      [this](const http2_request& request, http2_response& response) {
+      [&](const http2_request& request, http2_response& response) {
         try {
           if (request.method == "GET") {
             std::string nfType =
@@ -82,7 +82,7 @@ void nrf_http2_server::start() {
   server_.handle(
       sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfNfmPathNfInstances + "/",
-      [this](const http2_request& request, http2_response& response) {
+      [&](const http2_request& request, http2_response& response) {
         try {
           // Register a new NF Instance
           if (request.method == "PUT" && !request.body.empty()) {
@@ -132,7 +132,7 @@ void nrf_http2_server::start() {
   server_.handle(
       sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfNfmPathSubscriptions,
-      [this](const http2_request& request, http2_response& response) {
+      [&](const http2_request& request, http2_response& response) {
         try {
           // Create a new subscription
           if (request.method == "POST" && !request.body.empty()) {
@@ -173,7 +173,7 @@ void nrf_http2_server::start() {
   server_.handle(
       sbi_helper::NrfDiscBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfDiscPathNfInstances,
-      [this](const http2_request& request, http2_response& response) {
+      [&](const http2_request& request, http2_response& response) {
         try {
           // Search a collection of NF Instances
           if (request.method == "GET") {
@@ -306,7 +306,7 @@ void nrf_http2_server::get_nf_instances_handler(
 
   uint32_t limit_Nfs = 0;
   if (!limit_nfs.empty()) {
-    limit_Nfs = stoi(limit_nfs);
+   // limit_Nfs = stoi(limit_nfs);
     Logger::nrf_sbi().debug(
         "\tMaximum number of NFProfiles to be returned in the response: %d",
         limit_Nfs);

@@ -21,7 +21,7 @@
 
 /*! \file http2-server.h
  \brief Generic HTTP/2 server wrapper using nghttp2 C API + libevent.
-        Targets nghttp2 v1.43.0-DEV (no v2 functions).
+        Targets nghttp2 v1.68.1 (uses v2 API functions).
  \author  OAI
  */
 
@@ -108,21 +108,21 @@ using http2_handler = std::function<void(const http2_request&, http2_response&)>
 // Server Configuration
 struct http2_server_config {
   // SETTINGS frame values sent to clients
-  uint32_t max_concurrent_streams = 100;
+  uint32_t max_concurrent_streams = 1000;
   uint32_t initial_window_size    = 65535;  // per-stream flow control window
   uint32_t max_header_list_size   = 65536;  // HPACK bomb protection (SETTINGS frame)
 
   // Application-level limits
   size_t   max_request_body_size      = 1 * 1024 * 1024; // 1 MB
-  uint32_t max_connections            = 1000;
+  uint32_t max_connections            = 10000;
 
   // Timeouts (seconds)
   int connection_idle_timeout_sec  = 60;
   int shutdown_drain_timeout_sec   = 5;
 
   // Thread pool (0 = synchronous/event-loop-only mode)
-  uint32_t num_worker_threads = 4;
-  size_t   max_pending_tasks  = 1000;
+  uint32_t num_worker_threads = 2;
+  size_t   max_pending_tasks  = 10000;
 };
 
 // Server Class

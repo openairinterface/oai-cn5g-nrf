@@ -50,41 +50,49 @@ extern nrf_app* nrf_app_inst;
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_nf_instance_id(const std::string& instance_id) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   nf_instance_id = instance_id;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::get_nf_instance_id(std::string& instance_id) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   instance_id = nf_instance_id;
 }
 
 //------------------------------------------------------------------------------
 std::string nrf_profile::get_nf_instance_id() const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   return nf_instance_id;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_nf_instance_name(const std::string& instance_name) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   nf_instance_name = instance_name;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::get_nf_instance_name(std::string& instance_name) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   instance_name = nf_instance_name;
 }
 
 //------------------------------------------------------------------------------
 std::string nrf_profile::get_nf_instance_name() const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   return nf_instance_name;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_nf_type(const nf_type_t& type) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   nf_type = type;
 }
 
 //------------------------------------------------------------------------------
 nf_type_t nrf_profile::get_nf_type() const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   return nf_type;
 }
 
@@ -124,149 +132,184 @@ bool nrf_profile::is_nf_active() const {
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_nf_heartBeat_timer(const int32_t& timer) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   heartBeat_timer = timer;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::get_nf_heartBeat_timer(int32_t& timer) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   timer = heartBeat_timer;
 }
 
 //------------------------------------------------------------------------------
 int32_t nrf_profile::get_nf_heartBeat_timer() const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   return heartBeat_timer;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_nf_priority(const uint16_t& p) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   priority = p;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::get_nf_priority(uint16_t& p) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   p = priority;
 }
 
 //------------------------------------------------------------------------------
 uint16_t nrf_profile::get_nf_priority() const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   return priority;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_nf_capacity(const uint16_t& c) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   capacity = c;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::get_nf_capacity(uint16_t& c) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   c = capacity;
 }
 
 //------------------------------------------------------------------------------
 uint16_t nrf_profile::get_nf_capacity() const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   return capacity;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_nf_snssais(const std::vector<snssai_t>& s) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   snssais = s;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::get_nf_snssais(std::vector<snssai_t>& s) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   s = snssais;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::add_snssai(const snssai_t& s) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   snssais.push_back(s);
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_fqdn(const std::string& fqdN) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   fqdn = fqdN;
 }
 
 //------------------------------------------------------------------------------
 std::string nrf_profile::get_fqdn() const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   return fqdn;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_plmn_list(const std::vector<plmn_t>& s) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   plmn_list = s;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::get_plmn_list(std::vector<plmn_t>& s) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   s = plmn_list;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::add_plmn_list(const plmn_t& s) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   plmn_list.push_back(s);
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_nf_ipv4_addresses(const std::vector<struct in_addr>& a) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   ipv4_addresses = a;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::add_nf_ipv4_addresses(const struct in_addr& a) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   ipv4_addresses.push_back(a);
 }
 //------------------------------------------------------------------------------
 void nrf_profile::set_nf_ipv6_addresses(const std::vector<struct in6_addr>& a) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   ipv6_addresses = a;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::add_nf_ipv6_addresses(const struct in6_addr& a) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   ipv6_addresses.push_back(a);
 }
 //------------------------------------------------------------------------------
 void nrf_profile::get_nf_ipv4_addresses(std::vector<struct in_addr>& a) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   a = ipv4_addresses;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_json_data(const nlohmann::json& data) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   json_data = data;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::get_json_data(nlohmann::json& data) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   data = json_data;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_nf_services(const std::vector<nf_service_t>& n) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   nf_services = n;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::add_nf_service(const nf_service_t& n) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   nf_services.push_back(n);
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::get_nf_services(std::vector<nf_service_t>& n) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   n = nf_services;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::set_custom_info(const nlohmann::json& c) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   custom_info = c;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::get_custom_info(nlohmann::json& c) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   c = custom_info;
 }
 
 //------------------------------------------------------------------------------
 void nrf_profile::display() {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  display_unlocked();
+}
+
+//------------------------------------------------------------------------------
+void nrf_profile::display_unlocked() {
   Logger::nrf_app().debug("NF instance info");
   Logger::nrf_app().debug("\tInstance ID: %s", nf_instance_id.c_str());
   Logger::nrf_app().debug("\tInstance name: %s", nf_instance_name.c_str());
@@ -307,6 +350,13 @@ void nrf_profile::display() {
 
 //------------------------------------------------------------------------------
 bool nrf_profile::replace_profile_info(
+    const std::string& path, const std::string& value) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  return replace_profile_info_unlocked(path, value);
+}
+
+//------------------------------------------------------------------------------
+bool nrf_profile::replace_profile_info_unlocked(
     const std::string& path, const std::string& value) {
   Logger::nrf_app().debug(
       "Replace member %s with new value %s", path.c_str(), value.c_str());
@@ -391,6 +441,13 @@ bool nrf_profile::replace_profile_info(
 
 //------------------------------------------------------------------------------
 bool nrf_profile::add_profile_info(
+    const std::string& path, const std::string& value) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  return add_profile_info_unlocked(path, value);
+}
+
+//------------------------------------------------------------------------------
+bool nrf_profile::add_profile_info_unlocked(
     const std::string& path, const std::string& value) {
   Logger::nrf_app().debug(
       "Add an array element (value, array member), or a new member (value, "
@@ -507,6 +564,12 @@ bool nrf_profile::add_profile_info(
 
 //------------------------------------------------------------------------------
 bool nrf_profile::remove_profile_info(const std::string& path) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  return remove_profile_info_unlocked(path);
+}
+
+//------------------------------------------------------------------------------
+bool nrf_profile::remove_profile_info_unlocked(const std::string& path) {
   Logger::nrf_app().debug(
       "Remove an array element or a member: %s", path.c_str());
   if (path.compare("nfInstanceName") == 0) {
@@ -535,7 +598,7 @@ bool nrf_profile::remove_profile_info(const std::string& path) {
   }
 
   if (path.compare("capacity") == 0) {
-    priority = 0;
+    capacity = 0;
     return true;
   }
 
@@ -593,6 +656,12 @@ bool nrf_profile::remove_profile_info(const std::string& path) {
 
 //------------------------------------------------------------------------------
 void nrf_profile::to_json(nlohmann::json& data) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  to_json_unlocked(data);
+}
+
+//------------------------------------------------------------------------------
+void nrf_profile::to_json_unlocked(nlohmann::json& data) const {
   data["nfInstanceId"]   = nf_instance_id;
   data["nfInstanceName"] = nf_instance_name;
   data["nfType"]         = api_conv::nf_type_to_string(nf_type);
@@ -815,17 +884,20 @@ bool nrf_profile::get_status_updated() {
 
 //------------------------------------------------------------------------------
 void amf_profile::add_amf_info(const amf_info_t& info) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   amf_info = info;
 }
 
 //------------------------------------------------------------------------------
 void amf_profile::get_amf_info(amf_info_t& info) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   info = amf_info;
 }
 
 //------------------------------------------------------------------------------
 void amf_profile::display() {
-  nrf_profile::display();
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::display_unlocked();
   Logger::nrf_app().debug("\tAMF Info");
   Logger::nrf_app().debug(
       "\t\tAMF Set ID: %s, AMF Region ID: %s", amf_info.amf_set_id.c_str(),
@@ -842,7 +914,8 @@ void amf_profile::display() {
 //------------------------------------------------------------------------------
 bool amf_profile::replace_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::replace_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::replace_profile_info_unlocked(path, value);
   if (result) return true;
   // for AMF info
   if (path.compare("amfInfo") == 0) {
@@ -868,7 +941,8 @@ bool amf_profile::replace_profile_info(
 //------------------------------------------------------------------------------
 bool amf_profile::add_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::add_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::add_profile_info_unlocked(path, value);
   if (result) return true;
 
   // add an element to a list of json object
@@ -897,7 +971,8 @@ bool amf_profile::add_profile_info(
 
 //------------------------------------------------------------------------------
 bool amf_profile::remove_profile_info(const std::string& path) {
-  bool result = nrf_profile::remove_profile_info(path);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::remove_profile_info_unlocked(path);
   if (result) return true;
   // for AMF info
   if (path.compare("amfInfo") == 0) {
@@ -923,7 +998,8 @@ bool amf_profile::remove_profile_info(const std::string& path) {
 
 //------------------------------------------------------------------------------
 void amf_profile::to_json(nlohmann::json& data) const {
-  nrf_profile::to_json(data);
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::to_json_unlocked(data);
   // AMF Info
   data["amfInfo"]["amfSetId"]    = amf_info.amf_set_id;
   data["amfInfo"]["amfRegionId"] = amf_info.amf_region_id;
@@ -940,17 +1016,20 @@ void amf_profile::to_json(nlohmann::json& data) const {
 
 //------------------------------------------------------------------------------
 void smf_profile::add_smf_info(const smf_info_t& info) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   smf_info = info;
 }
 
 //------------------------------------------------------------------------------
 void smf_profile::get_smf_info(smf_info_t& infos) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   infos = smf_info;
 }
 
 //------------------------------------------------------------------------------
 void smf_profile::display() {
-  nrf_profile::display();
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::display_unlocked();
   Logger::nrf_app().debug("\tSMF Info");
   for (auto s : smf_info.snssai_smf_info_list) {
     Logger::nrf_app().debug(
@@ -966,7 +1045,8 @@ void smf_profile::display() {
 //------------------------------------------------------------------------------
 bool smf_profile::add_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::add_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::add_profile_info_unlocked(path, value);
   if (result) return true;
 
   // add an element to a list of json object
@@ -995,7 +1075,8 @@ bool smf_profile::add_profile_info(
 //------------------------------------------------------------------------------
 bool smf_profile::replace_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::replace_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::replace_profile_info_unlocked(path, value);
   if (result) return true;
   // for SMF info
   if (path.compare("smfInfo") == 0) {
@@ -1021,7 +1102,8 @@ bool smf_profile::replace_profile_info(
 
 //------------------------------------------------------------------------------
 bool smf_profile::remove_profile_info(const std::string& path) {
-  bool result = nrf_profile::remove_profile_info(path);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::remove_profile_info_unlocked(path);
   if (result) return true;
   // for SMF info
   if (path.compare("smfInfo") == 0) {
@@ -1047,7 +1129,8 @@ bool smf_profile::remove_profile_info(const std::string& path) {
 
 //------------------------------------------------------------------------------
 void smf_profile::to_json(nlohmann::json& data) const {
-  nrf_profile::to_json(data);
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::to_json_unlocked(data);
   // SMF Info
   data["smfInfo"]["sNssaiSmfInfoList"] = nlohmann::json::array();
   for (auto snssai : smf_info.snssai_smf_info_list) {
@@ -1066,17 +1149,20 @@ void smf_profile::to_json(nlohmann::json& data) const {
 
 //------------------------------------------------------------------------------
 void upf_profile::add_upf_info(const upf_info_t& info) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   upf_info = info;
 }
 
 //------------------------------------------------------------------------------
 void upf_profile::get_upf_info(upf_info_t& infos) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   infos = upf_info;
 }
 
 //------------------------------------------------------------------------------
 void upf_profile::display() {
-  nrf_profile::display();
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::display_unlocked();
   Logger::nrf_app().debug("\tUPF Info");
   for (auto s : upf_info.snssai_upf_info_list) {
     Logger::nrf_app().debug(
@@ -1110,7 +1196,8 @@ void upf_profile::display() {
 //------------------------------------------------------------------------------
 bool upf_profile::add_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::add_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::add_profile_info_unlocked(path, value);
   if (result) return true;
 
   // add an element to a list of json object
@@ -1139,7 +1226,8 @@ bool upf_profile::add_profile_info(
 //------------------------------------------------------------------------------
 bool upf_profile::replace_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::replace_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::replace_profile_info_unlocked(path, value);
   if (result) return true;
   // for UPF info
   if (path.compare("upfInfo") == 0) {
@@ -1165,7 +1253,8 @@ bool upf_profile::replace_profile_info(
 
 //------------------------------------------------------------------------------
 bool upf_profile::remove_profile_info(const std::string& path) {
-  bool result = nrf_profile::remove_profile_info(path);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::remove_profile_info_unlocked(path);
   if (result) return true;
   // for UPF info
   if (path.compare("upfInfo") == 0) {
@@ -1191,7 +1280,8 @@ bool upf_profile::remove_profile_info(const std::string& path) {
 
 //------------------------------------------------------------------------------
 void upf_profile::to_json(nlohmann::json& data) const {
-  nrf_profile::to_json(data);
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::to_json_unlocked(data);
   // UPF Info
   data["upfInfo"]["sNssaiUpfInfoList"] = nlohmann::json::array();
   for (auto snssai : upf_info.snssai_upf_info_list) {
@@ -1242,17 +1332,20 @@ void upf_profile::to_json(nlohmann::json& data) const {
 
 //------------------------------------------------------------------------------
 void ausf_profile::add_ausf_info(const ausf_info_t& info) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   ausf_info = info;
 }
 
 //------------------------------------------------------------------------------
 void ausf_profile::get_ausf_info(ausf_info_t& infos) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   infos = ausf_info;
 }
 
 //------------------------------------------------------------------------------
 void ausf_profile::display() {
-  nrf_profile::display();
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::display_unlocked();
   Logger::nrf_app().debug("\tAUSF Info");
   Logger::nrf_app().debug("\t\tGroupId: %s", ausf_info.groupid.c_str());
   for (auto supi : ausf_info.supi_ranges) {
@@ -1269,7 +1362,8 @@ void ausf_profile::display() {
 //------------------------------------------------------------------------------
 bool ausf_profile::add_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::add_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::add_profile_info_unlocked(path, value);
   if (result) return true;
 
   // add an element to a list of json object
@@ -1298,7 +1392,8 @@ bool ausf_profile::add_profile_info(
 //------------------------------------------------------------------------------
 bool ausf_profile::replace_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::replace_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::replace_profile_info_unlocked(path, value);
   if (result) return true;
   // for AUSF info
   if (path.compare("ausfInfo") == 0) {
@@ -1324,7 +1419,8 @@ bool ausf_profile::replace_profile_info(
 
 //------------------------------------------------------------------------------
 bool ausf_profile::remove_profile_info(const std::string& path) {
-  bool result = nrf_profile::remove_profile_info(path);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::remove_profile_info_unlocked(path);
   if (result) return true;
   // for AUSF info
   if (path.compare("ausfInfo") == 0) {
@@ -1350,7 +1446,8 @@ bool ausf_profile::remove_profile_info(const std::string& path) {
 
 //------------------------------------------------------------------------------
 void ausf_profile::to_json(nlohmann::json& data) const {
-  nrf_profile::to_json(data);
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::to_json_unlocked(data);
   // AUSF Info
   data["ausfInfo"]["groupId"]           = ausf_info.groupid;
   data["ausfInfo"]["supiRanges"]        = nlohmann::json::array();
@@ -1369,17 +1466,20 @@ void ausf_profile::to_json(nlohmann::json& data) const {
 
 //------------------------------------------------------------------------------
 void udm_profile::add_udm_info(const udm_info_t& info) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   udm_info = info;
 }
 
 //------------------------------------------------------------------------------
 void udm_profile::get_udm_info(udm_info_t& infos) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   infos = udm_info;
 }
 
 //------------------------------------------------------------------------------
 void udm_profile::display() {
-  nrf_profile::display();
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::display_unlocked();
   Logger::nrf_app().debug("\tUDM Info");
   Logger::nrf_app().debug("\t\tGroupId: %s", udm_info.groupid.c_str());
   for (auto supi : udm_info.supi_ranges) {
@@ -1419,7 +1519,8 @@ void udm_profile::display() {
 //------------------------------------------------------------------------------
 bool udm_profile::add_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::add_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::add_profile_info_unlocked(path, value);
   if (result) return true;
 
   // add an element to a list of json object
@@ -1448,7 +1549,8 @@ bool udm_profile::add_profile_info(
 //------------------------------------------------------------------------------
 bool udm_profile::replace_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::replace_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::replace_profile_info_unlocked(path, value);
   if (result) return true;
   // for UDMAUSF info
   if (path.compare("udmInfo") == 0) {
@@ -1473,7 +1575,8 @@ bool udm_profile::replace_profile_info(
 
 //------------------------------------------------------------------------------
 bool udm_profile::remove_profile_info(const std::string& path) {
-  bool result = nrf_profile::remove_profile_info(path);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::remove_profile_info_unlocked(path);
   if (result) return true;
   // for UDM info
   if (path.compare("udmInfo") == 0) {
@@ -1498,7 +1601,8 @@ bool udm_profile::remove_profile_info(const std::string& path) {
 
 //------------------------------------------------------------------------------
 void udm_profile::to_json(nlohmann::json& data) const {
-  nrf_profile::to_json(data);
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::to_json_unlocked(data);
   // UDM Info
   data["udmInfo"]["groupId"]                        = udm_info.groupid;
   data["udmInfo"]["supiRanges"]                     = nlohmann::json::array();
@@ -1542,17 +1646,20 @@ void udm_profile::to_json(nlohmann::json& data) const {
 
 //------------------------------------------------------------------------------
 void udr_profile::add_udr_info(const udr_info_t& info) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   udr_info = info;
 }
 
 //------------------------------------------------------------------------------
 void udr_profile::get_udr_info(udr_info_t& infos) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   infos = udr_info;
 }
 
 //------------------------------------------------------------------------------
 void udr_profile::display() {
-  nrf_profile::display();
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::display_unlocked();
   Logger::nrf_app().debug("\tUDR Info");
   Logger::nrf_app().debug("\t\tGroupId: %s", udr_info.groupid.c_str());
   for (auto supi : udr_info.supi_ranges) {
@@ -1584,7 +1691,8 @@ void udr_profile::display() {
 //------------------------------------------------------------------------------
 bool udr_profile::add_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::add_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::add_profile_info_unlocked(path, value);
   if (result) return true;
 
   // add an element to a list of json object
@@ -1613,7 +1721,8 @@ bool udr_profile::add_profile_info(
 //------------------------------------------------------------------------------
 bool udr_profile::replace_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::replace_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::replace_profile_info_unlocked(path, value);
   if (result) return true;
   // for UDMAUSF info
   if (path.compare("udrInfo") == 0) {
@@ -1639,7 +1748,8 @@ bool udr_profile::replace_profile_info(
 
 //------------------------------------------------------------------------------
 bool udr_profile::remove_profile_info(const std::string& path) {
-  bool result = nrf_profile::remove_profile_info(path);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::remove_profile_info_unlocked(path);
   if (result) return true;
   // for UDM info
   if (path.compare("udrInfo") == 0) {
@@ -1664,7 +1774,8 @@ bool udr_profile::remove_profile_info(const std::string& path) {
 
 //------------------------------------------------------------------------------
 void udr_profile::to_json(nlohmann::json& data) const {
-  nrf_profile::to_json(data);
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::to_json_unlocked(data);
   // UDR Info
   data["udrInfo"]["groupId"]                        = udr_info.groupid;
   data["udrInfo"]["supiRanges"]                     = nlohmann::json::array();
@@ -1700,17 +1811,20 @@ void udr_profile::to_json(nlohmann::json& data) const {
 
 //------------------------------------------------------------------------------
 void pcf_profile::add_pcf_info(const pcf_info_t& info) {
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
   pcf_info = info;
 }
 
 //------------------------------------------------------------------------------
 void pcf_profile::get_pcf_info(pcf_info_t& infos) const {
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
   infos = pcf_info;
 }
 
 //------------------------------------------------------------------------------
 void pcf_profile::display() {
-  nrf_profile::display();
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::display_unlocked();
   Logger::nrf_app().debug("\tUDR Info");
   Logger::nrf_app().debug("\t\tGroupId: %s", pcf_info.groupid.c_str());
   for (auto dnn : pcf_info.dnn_list) {
@@ -1734,7 +1848,8 @@ void pcf_profile::display() {
 //------------------------------------------------------------------------------
 bool pcf_profile::add_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::add_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::add_profile_info_unlocked(path, value);
   if (result) return true;
 
   // add an element to a list of json object
@@ -1763,7 +1878,8 @@ bool pcf_profile::add_profile_info(
 //------------------------------------------------------------------------------
 bool pcf_profile::replace_profile_info(
     const std::string& path, const std::string& value) {
-  bool result = nrf_profile::replace_profile_info(path, value);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::replace_profile_info_unlocked(path, value);
   if (result) return true;
   // for UDMAUSF info
   if (path.compare("pcfInfo") == 0) {
@@ -1789,7 +1905,8 @@ bool pcf_profile::replace_profile_info(
 
 //------------------------------------------------------------------------------
 bool pcf_profile::remove_profile_info(const std::string& path) {
-  bool result = nrf_profile::remove_profile_info(path);
+  std::unique_lock<std::shared_mutex> lock(nf_profile_mutex);
+  bool result = nrf_profile::remove_profile_info_unlocked(path);
   if (result) return true;
   // for UDM info
   if (path.compare("pcfInfo") == 0) {
@@ -1814,7 +1931,8 @@ bool pcf_profile::remove_profile_info(const std::string& path) {
 
 //------------------------------------------------------------------------------
 void pcf_profile::to_json(nlohmann::json& data) const {
-  nrf_profile::to_json(data);
+  std::shared_lock<std::shared_mutex> lock(nf_profile_mutex);
+  nrf_profile::to_json_unlocked(data);
   // UDR Info
   data["pcfInfo"]["groupId"]    = pcf_info.groupid;
   data["pcfInfo"]["dnnList"]    = nlohmann::json::array();
