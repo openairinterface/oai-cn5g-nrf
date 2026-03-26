@@ -37,12 +37,27 @@ include(${SRC_TOP_DIR}/${MOUNTED_COMMON}/config/config.cmake)
 include(${SRC_TOP_DIR}/${MOUNTED_COMMON}/model/common_model/common_model.cmake)
 include(${SRC_TOP_DIR}/${MOUNTED_COMMON}/model/nrf/nrf_model.cmake)
 
-file(GLOB NRF_API_SERVER_src_files
-    ${NRF_API_SERVER_DIR}/nrf-api-server.cpp
-    ${NRF_API_SERVER_DIR}/nrf-http2-server.cpp
-    ${NRF_API_SERVER_DIR}/api/*.cpp
-    ${NRF_API_SERVER_DIR}/impl/*.cpp
-)
- 
-add_library(NRF_API STATIC
-           ${NRF_API_SERVER_src_files})
+if(USE_NATIVE_HTTP2)
+  file(GLOB NRF_API_SERVER_src_files
+      ${NRF_API_SERVER_DIR}/nrf-api-server.cpp
+      ${NRF_API_SERVER_DIR}/nrf-http2-server.cpp
+      ${NRF_API_SERVER_DIR}/h2_event_loop.cpp
+      ${NRF_API_SERVER_DIR}/h2_thread_pool.cpp
+      ${NRF_API_SERVER_DIR}/h2_connection.cpp
+      ${NRF_API_SERVER_DIR}/h2_request.cpp
+      ${NRF_API_SERVER_DIR}/h2_response.cpp
+      ${NRF_API_SERVER_DIR}/h2_router.cpp
+      ${NRF_API_SERVER_DIR}/h2_server.cpp
+      ${NRF_API_SERVER_DIR}/api/*.cpp
+      ${NRF_API_SERVER_DIR}/impl/*.cpp
+  )
+else()
+  file(GLOB NRF_API_SERVER_src_files
+      ${NRF_API_SERVER_DIR}/nrf-api-server.cpp
+      ${NRF_API_SERVER_DIR}/nrf-http2-server.cpp
+      ${NRF_API_SERVER_DIR}/api/*.cpp
+      ${NRF_API_SERVER_DIR}/impl/*.cpp
+  )
+endif()
+
+add_library(NRF_API STATIC ${NRF_API_SERVER_src_files})

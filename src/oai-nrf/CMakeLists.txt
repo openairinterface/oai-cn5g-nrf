@@ -244,6 +244,11 @@ include(CheckTypeSize)
 add_boolean_option( DISPLAY_LICENCE_INFO            False    "If a module has a licence banner to show")
 add_boolean_option( LOG_OAI                         False    "Thread safe logging utility")
 
+################################################################
+# Native HTTP/2 feature flag
+################################################################
+option(USE_NATIVE_HTTP2 "Use native nghttp2 HTTP/2 server instead of nghttp2-asio" ON)
+
 # System packages that are required
 # We use either the cmake buildin, in ubuntu are in: /usr/share/cmake*/Modules/
 # or cmake provide a generic interface to pkg-config that widely used
@@ -256,6 +261,33 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 #CPR
 find_package(cpr REQUIRED)
+
+################################################################
+# Native nghttp2 version and API checks
+################################################################
+if(USE_NATIVE_HTTP2)
+  set(CMAKE_REQUIRED_INCLUDES "/usr/local/include")
+  check_c_source_compiles("
+    #include <nghttp2/nghttp2.h>
+    #if NGHTTP2_VERSION_NUM != 0x014400
+    #error nghttp2 version must be exactly v1.68.0
+    #endif
+    int main() { return 0; }
+  " NGHTTP2_VERSION_OK)
+  if(NOT NGHTTP2_VERSION_OK)
+    message(FATAL_ERROR "nghttp2 v1.68.0 required (NGHTTP2_VERSION_NUM == 0x014400) for native HTTP/2 server")
+  endif()
+  set(CMAKE_REQUIRED_LIBRARIES "nghttp2")
+  check_symbol_exists(nghttp2_session_server_new2 "nghttp2/nghttp2.h" HAVE_SESSION_SERVER_NEW2)
+  check_symbol_exists(nghttp2_submit_response "nghttp2/nghttp2.h" HAVE_SUBMIT_RESPONSE)
+  check_symbol_exists(nghttp2_option_new "nghttp2/nghttp2.h" HAVE_OPTION_NEW)
+  check_symbol_exists(nghttp2_option_set_no_auto_window_update "nghttp2/nghttp2.h" HAVE_OPTION_NO_AUTO_WU)
+  if(NOT HAVE_SESSION_SERVER_NEW2 OR NOT HAVE_SUBMIT_RESPONSE OR NOT HAVE_OPTION_NEW OR NOT HAVE_OPTION_NO_AUTO_WU)
+    message(FATAL_ERROR "Required nghttp2 API functions not found — install nghttp2 v1.68.0")
+  endif()
+  unset(CMAKE_REQUIRED_LIBRARIES)
+  unset(CMAKE_REQUIRED_INCLUDES)
+endif()
 
 ################################################################
 # Add sub modules
@@ -306,8 +338,14 @@ IF(STATIC_LINKING)
     SET(ASAN)
 ENDIF(STATIC_LINKING)   
 
-target_link_libraries (nrf ${ASAN} 
-    -Wl,--start-group NRF NRF_API CN_UTILS -lnettle ${NETTLE_LIBRARIES} ${CRYPTO_LIBRARIES} -lnghttp2_asio -lboost_system -lboost_thread -lboost_date_time -lfmt -lspdlog -lssl -lcrypto dl -Wl,--end-group pthread m rt event boost_system pistache curl -lyaml-cpp cpr::cpr)
+if(USE_NATIVE_HTTP2)
+  target_compile_definitions(nrf PRIVATE USE_NATIVE_HTTP2)
+  target_link_libraries (nrf ${ASAN}
+      -Wl,--start-group NRF NRF_API CN_UTILS -lnettle ${NETTLE_LIBRARIES} ${CRYPTO_LIBRARIES} -lnghttp2 -lboost_system -lboost_thread -lboost_date_time -lfmt -lspdlog -lssl -lcrypto dl -Wl,--end-group pthread m rt event boost_system pistache curl -lyaml-cpp cpr::cpr)
+else()
+  target_link_libraries (nrf ${ASAN}
+      -Wl,--start-group NRF NRF_API CN_UTILS -lnettle ${NETTLE_LIBRARIES} ${CRYPTO_LIBRARIES} -lnghttp2_asio -lboost_system -lboost_thread -lboost_date_time -lfmt -lspdlog -lssl -lcrypto dl -Wl,--end-group pthread m rt event boost_system pistache curl -lyaml-cpp cpr::cpr)
+endif()
 
 add_boolean_option(USE_LTTNG  False "Activate the LTTNG tracer, a debugging/monitoring framework" ON)
 if (USE_LTTNG)

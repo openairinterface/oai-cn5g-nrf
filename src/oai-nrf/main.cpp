@@ -174,9 +174,19 @@ int main(int argc, char** argv) {
     nrf_manager.join();
   } else if (nrf_cfg->get_http_version() == 2) {
     // NRF NGHTTP API server (HTTP2)
+#ifdef USE_NATIVE_HTTP2
+    Logger::nrf_app().startup("HTTP/2 server mode: native nghttp2 (USE_NATIVE_HTTP2)");
+#else
+    Logger::nrf_app().startup("HTTP/2 server mode: nghttp2-asio");
+#endif
     nrf_api_server_2 = new nrf_http2_server(
         conv::toString(nrf_cfg->local().get_sbi().get_addr4()),
         nrf_cfg->local().get_sbi().get_port(), nrf_app_inst);
+    // NRF config has no num_threads/worker_threads setting; hardware_concurrency()
+    // is the appropriate default for I/O-bound HTTP/2 server workers.
+    // TODO: expose as config option (e.g. nrf_cfg->get_http2_num_threads()) if
+    // deterministic CPU quota control is required in production deployments.
+    nrf_api_server_2->init(std::thread::hardware_concurrency());
     std::thread nrf_http2_manager(&nrf_http2_server::start, nrf_api_server_2);
     nrf_http2_manager.join();
   }

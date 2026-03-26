@@ -42,8 +42,10 @@
 #include "string.hpp"
 #include "nrf_sbi_helper.hpp"
 
+#ifndef USE_NATIVE_HTTP2
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
+#endif
 using namespace oai::model::nrf;
 using namespace oai::model::common;
 using namespace oai::nrf::api;
@@ -52,6 +54,44 @@ extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 
 //------------------------------------------------------------------------------
 void nrf_http2_server::start() {
+#ifdef USE_NATIVE_HTTP2
+  Logger::nrf_app().info("HTTP2 server being started");
+
+  // NF Instances (Store)
+  m_server.handle(
+      sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
+          nrf_sbi_helper::NrfNfmPathNfInstances,
+      [this](const h2::Request& request, h2::Response& response) {
+        std::string msg = request.body();
+        try {
+          // Retrieves a collection of NF Instances
+          if (request.method() == "GET") {
+            std::string split_query = request.uri().raw_query;
+
+            // Parse query paramaters
+            std::string nfType =
+                oai::utils::get_query_param(split_query, "nf-type");
+            std::string limit_nfs =
+                oai::utils::get_query_param(split_query.c_str(), "limit");
+
+            Logger::nrf_sbi().debug(
+                "/nnrf-nfm/ query params - nfType: %s, limit_nfs: %s, ",
+                nfType.c_str(), limit_nfs.c_str());
+
+            this->get_nf_instances_handler(nfType, limit_nfs, response);
+          }
+        } catch (nlohmann::detail::exception& e) {
+          Logger::nrf_sbi().warn(
+              "Can not parse the json data (error: %s)!", e.what());
+          response.write_head(oai::common::sbi::http_status_code::BAD_REQUEST);
+          response.end();
+        } catch (std::exception& e) {
+          Logger::nrf_sbi().warn("error: %s!", e.what());
+          response.write_head(oai::common::sbi::http_status_code::BAD_REQUEST);
+          response.end();
+        }
+      });
+#else
   boost::system::error_code ec;
 
   Logger::nrf_app().info("HTTP2 server being started");
@@ -99,8 +139,65 @@ void nrf_http2_server::start() {
           }
         });
       });
+#endif  // USE_NATIVE_HTTP2 / NF Instances (Store)
 
   // NF Instances ID (Document)
+#ifdef USE_NATIVE_HTTP2
+  m_server.handle(
+      sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
+          nrf_sbi_helper::NrfNfmPathNfInstances + "/",
+      [this](const h2::Request& request, h2::Response& response) {
+        std::string msg = request.body();
+        NFProfile nFProfile;
+        try {
+          // Register a new NF Instance
+          if (request.method() == "PUT" && !msg.empty()) {
+            nlohmann::json::parse(msg.c_str()).get_to(nFProfile);
+            this->register_nf_instance_handler(nFProfile, response);
+          }
+          // Read the profile of a given NF Instance
+          if (request.method() == "GET") {
+            std::vector<std::string> split_result;
+            boost::split(
+                split_result, request.uri().path, boost::is_any_of("/"));
+            if (split_result.size() == 5) {
+              std::string nfInstanceID =
+                  split_result[split_result.size() - 1].c_str();
+              this->get_nf_instance_handler(nfInstanceID, response);
+            }
+          }
+          // Update NF Instance profile
+          if (request.method() == "PATCH" && !msg.empty()) {
+            std::vector<PatchItem> patchItem;
+            nlohmann::json::parse(msg.c_str()).get_to(patchItem);
+            std::vector<std::string> split_result;
+            boost::split(
+                split_result, request.uri().path, boost::is_any_of("/"));
+            std::string nfInstanceID =
+                split_result[split_result.size() - 1].c_str();
+            this->update_instance_handler(nfInstanceID, patchItem, response);
+          }
+          // Deregisters a given NF Instance
+          if (request.method() == "DELETE") {
+            std::vector<std::string> split_result;
+            boost::split(
+                split_result, request.uri().path, boost::is_any_of("/"));
+            std::string nfInstanceID =
+                split_result[split_result.size() - 1].c_str();
+            this->deregister_nf_instance_handler(nfInstanceID, response);
+          }
+        } catch (nlohmann::detail::exception& e) {
+          Logger::nrf_sbi().warn(
+              "Can not parse the json data (error: %s)!", e.what());
+          response.write_head(oai::common::sbi::http_status_code::BAD_REQUEST);
+          response.end();
+        } catch (std::exception& e) {
+          Logger::nrf_sbi().warn("error: %s!", e.what());
+          response.write_head(oai::common::sbi::http_status_code::BAD_REQUEST);
+          response.end();
+        }
+      });
+#else
   server.handle(
       sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfNfmPathNfInstances + "/",
@@ -158,8 +255,54 @@ void nrf_http2_server::start() {
           }
         });
       });
+#endif  // USE_NATIVE_HTTP2 / NF Instances ID (Document)
 
   // Subscriptions  (Collection & ID Document)
+#ifdef USE_NATIVE_HTTP2
+  m_server.handle(
+      sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
+          nrf_sbi_helper::NrfNfmPathSubscriptions,
+      [this](const h2::Request& request, h2::Response& response) {
+        std::string msg                   = request.body();
+        SubscriptionData subscriptionData = {};
+        std::string subscriptionID        = {};
+        try {
+          // Create a new subscription
+          if (request.method() == "POST" && !msg.empty()) {
+            nlohmann::json::parse(msg.c_str()).get_to(subscriptionData);
+            this->create_subscription_handler(subscriptionData, response);
+          }
+          // Updates a subscription
+          if (request.method() == "PATCH" && !msg.empty()) {
+            std::vector<PatchItem> patchItem;
+            nlohmann::json::parse(msg.c_str()).get_to(patchItem);
+            std::vector<std::string> split_result;
+            boost::split(
+                split_result, request.uri().path, boost::is_any_of("/"));
+            subscriptionID = split_result[split_result.size() - 1].c_str();
+            this->update_subscription_handler(
+                subscriptionID, patchItem, response);
+          }
+          // Delete a subscription
+          if (request.method() == "DELETE") {
+            std::vector<std::string> split_result;
+            boost::split(
+                split_result, request.uri().path, boost::is_any_of("/"));
+            subscriptionID = split_result[split_result.size() - 1].c_str();
+            this->remove_subscription_handler(subscriptionID, response);
+          }
+        } catch (nlohmann::detail::exception& e) {
+          Logger::nrf_sbi().warn(
+              "Can not parse the json data (error: %s)!", e.what());
+          response.write_head(oai::common::sbi::http_status_code::BAD_REQUEST);
+          response.end();
+        } catch (std::exception& e) {
+          Logger::nrf_sbi().warn("error: %s!", e.what());
+          response.write_head(oai::common::sbi::http_status_code::BAD_REQUEST);
+          response.end();
+        }
+      });
+#else
   server.handle(
       sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfNfmPathSubscriptions,
@@ -207,8 +350,54 @@ void nrf_http2_server::start() {
           }
         });
       });
+#endif  // USE_NATIVE_HTTP2 / Subscriptions
 
   // NF Discovery (Store)
+#ifdef USE_NATIVE_HTTP2
+  m_server.handle(
+      sbi_helper::NrfDiscBase + nrf_cfg->local().get_sbi().get_api_version() +
+          nrf_sbi_helper::NrfDiscPathNfInstances,
+      [this](const h2::Request& request, h2::Response& response) {
+        std::string msg = request.body();
+        try {
+          // Search a collection of NF Instances
+          if (request.method() == "GET") {
+            std::string split_query = request.uri().raw_query;
+
+            // Parse query paramaters
+            std::string nfTypeTarget =
+                oai::utils::get_query_param(split_query, "target-nf-type");
+            std::string nfTypeReq = oai::utils::get_query_param(
+                split_query.c_str(), "requester-nf-type");
+            std::string requester_nf_instance_id =
+                oai::utils::get_query_param(
+                    split_query.c_str(), "requester-nf-instance-id");
+            std::string limit_nfs =
+                oai::utils::get_query_param(split_query.c_str(), "limit");
+            // TODO: other query parameters
+
+            Logger::nrf_sbi().debug(
+                "/nnrf-disc/ query params - nfTypeTarget: %s, nfTypeReq: %s, "
+                "requester-nf-instance-id: %s, limit_nfs %s",
+                nfTypeTarget.c_str(), nfTypeReq.c_str(),
+                requester_nf_instance_id.c_str(), limit_nfs.c_str());
+
+            this->search_nf_instances_handler(
+                nfTypeTarget, nfTypeReq, requester_nf_instance_id, limit_nfs,
+                response);
+          }
+        } catch (nlohmann::detail::exception& e) {
+          Logger::nrf_sbi().warn(
+              "Can not parse the json data (error: %s)!", e.what());
+          response.write_head(oai::common::sbi::http_status_code::BAD_REQUEST);
+          response.end();
+        } catch (std::exception& e) {
+          Logger::nrf_sbi().warn("error: %s!", e.what());
+          response.write_head(oai::common::sbi::http_status_code::BAD_REQUEST);
+          response.end();
+        }
+      });
+#else
   server.handle(
       sbi_helper::NrfDiscBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfDiscPathNfInstances,
@@ -258,17 +447,43 @@ void nrf_http2_server::start() {
           }
         });
       });
+#endif  // USE_NATIVE_HTTP2 / NF Discovery (Store)
 
-  running_server = true;
+#ifdef USE_NATIVE_HTTP2
+  std::string error_msg;
+  m_running = true;
+  if (!m_server.listen_and_serve(error_msg, m_address, std::to_string(m_port))) {
+    Logger::nrf_app().error(
+        "HTTP2 server failed to start: %s", error_msg.c_str());
+  }
+  m_running = false;
+  Logger::nrf_app().info("HTTP2 server fully stopped");
+#else
+  m_running = true;
   if (server.listen_and_serve(ec, m_address, std::to_string(m_port))) {
     Logger::nrf_app().debug("HTTP2 server status: %s", ec.message());
   }
-  running_server = false;
+  m_running = false;
   Logger::nrf_app().info("HTTP2 server fully stopped");
+#endif
+}
+
+//------------------------------------------------------------------------------
+void nrf_http2_server::init(size_t thr) {
+#ifdef USE_NATIVE_HTTP2
+  m_server.num_threads(thr);
+#else
+  server.num_threads(thr);
+#endif
 }
 
 void nrf_http2_server::register_nf_instance_handler(
-    const NFProfile& NFProfiledata, const response& response) {
+    const NFProfile& NFProfiledata,
+#ifdef USE_NATIVE_HTTP2
+    h2::Response& response) {
+#else
+    const response& response) {
+#endif
   std::string nfInstanceID = {};
   nfInstanceID             = NFProfiledata.getNfInstanceId();
   Logger::nrf_sbi().info(
@@ -312,7 +527,12 @@ void nrf_http2_server::register_nf_instance_handler(
 };
 
 void nrf_http2_server::get_nf_instance_handler(
-    const std::string& nfInstanceID, const response& response) {
+    const std::string& nfInstanceID,
+#ifdef USE_NATIVE_HTTP2
+    h2::Response& response) {
+#else
+    const response& response) {
+#endif
   Logger::nrf_sbi().info(
       "Got a request to retrieve the profile of a given NF Instance, Instance "
       "ID: %s",
@@ -349,7 +569,11 @@ void nrf_http2_server::get_nf_instance_handler(
 
 void nrf_http2_server::get_nf_instances_handler(
     const std::string& nf_type, const std::string& limit_nfs,
+#ifdef USE_NATIVE_HTTP2
+    h2::Response& response) {
+#else
     const response& response) {
+#endif
   Logger::nrf_sbi().info(
       "Got a request to retrieve  a collection of NF Instances");
 
@@ -403,8 +627,13 @@ void nrf_http2_server::get_nf_instances_handler(
 }
 
 void nrf_http2_server::update_instance_handler(
-    const std::string& nfInstanceID, const std::vector<PatchItem>& patchItem,
+    const std::string& nfInstanceID,
+    const std::vector<PatchItem>& patchItem,
+#ifdef USE_NATIVE_HTTP2
+    h2::Response& response) {
+#else
     const response& response) {
+#endif
   Logger::nrf_sbi().info(
       "Got a request to update an NF instance, Instance ID: %s",
       nfInstanceID.c_str());
@@ -450,7 +679,12 @@ void nrf_http2_server::update_instance_handler(
 }
 
 void nrf_http2_server::deregister_nf_instance_handler(
-    const std::string& nfInstanceID, const response& response) {
+    const std::string& nfInstanceID,
+#ifdef USE_NATIVE_HTTP2
+    h2::Response& response) {
+#else
+    const response& response) {
+#endif
   Logger::nrf_sbi().info(
       "Got a request to de-register a given NF Instance, Instance ID: %s",
       nfInstanceID.c_str());
@@ -478,7 +712,12 @@ void nrf_http2_server::deregister_nf_instance_handler(
 };
 
 void nrf_http2_server::create_subscription_handler(
-    const SubscriptionData& subscriptionData, const response& response) {
+    const SubscriptionData& subscriptionData,
+#ifdef USE_NATIVE_HTTP2
+    h2::Response& response) {
+#else
+    const response& response) {
+#endif
   Logger::nrf_sbi().info("Got a request to create a new subscription");
   int http_code                  = 0;
   ProblemDetails problem_details = {};
@@ -511,8 +750,13 @@ void nrf_http2_server::create_subscription_handler(
 };
 
 void nrf_http2_server::update_subscription_handler(
-    const std::string& subscriptionID, const std::vector<PatchItem>& patchItem,
+    const std::string& subscriptionID,
+    const std::vector<PatchItem>& patchItem,
+#ifdef USE_NATIVE_HTTP2
+    h2::Response& response) {
+#else
     const response& response) {
+#endif
   Logger::nrf_sbi().info(
       "Got a request to update of subscription to NF instances, subscription "
       "ID %s",
@@ -545,7 +789,12 @@ void nrf_http2_server::update_subscription_handler(
 }
 
 void nrf_http2_server::remove_subscription_handler(
-    const std::string& subscriptionID, const response& response) {
+    const std::string& subscriptionID,
+#ifdef USE_NATIVE_HTTP2
+    h2::Response& response) {
+#else
+    const response& response) {
+#endif
   Logger::nrf_sbi().info(
       "Got a request to remove an existing subscription, subscription ID %s",
       subscriptionID.c_str());
@@ -572,8 +821,13 @@ void nrf_http2_server::remove_subscription_handler(
 
 void nrf_http2_server::search_nf_instances_handler(
     const std::string& target_nf_type, const std::string& requester_nf_type,
-    const std::string& requester_nf_instance_id, const std::string& limit_nfs,
+    const std::string& requester_nf_instance_id,
+    const std::string& limit_nfs,
+#ifdef USE_NATIVE_HTTP2
+    h2::Response& response) {
+#else
     const response& response) {
+#endif
   Logger::nrf_sbi().info(
       "Got a request to discover the set of NF instances that satisfies a "
       "number of input query parameters");
@@ -642,15 +896,24 @@ void nrf_http2_server::search_nf_instances_handler(
   response.end(json_data.dump().c_str());
 }
 
+#ifdef USE_NATIVE_HTTP2
+void nrf_http2_server::access_token_request_handler(
+    const SubscriptionData& subscriptionData, h2::Response& response) {}
+#else
 void nrf_http2_server::access_token_request_handler(
     const SubscriptionData& subscriptionData, const response& response) {}
+#endif
 
 //------------------------------------------------------------------------------
 void nrf_http2_server::stop() {
+#ifdef USE_NATIVE_HTTP2
+  m_server.stop();
+#else
   server.stop();
-  while (running_server) {
+  while (m_running) {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
+#endif
   Logger::nrf_app().info("HTTP2 server should be fully stopped");
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
