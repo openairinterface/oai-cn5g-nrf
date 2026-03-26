@@ -23,7 +23,7 @@
 #define FILE_NRF_HTTP2_SERVER_SEEN
 
 #include <atomic>
-
+#define USE_NATIVE_HTTP2 1
 #ifdef USE_NATIVE_HTTP2
 #include "h2_server.hpp"
 #include "h2_request.hpp"

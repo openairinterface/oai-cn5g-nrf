@@ -552,7 +552,16 @@ int Connection::on_frame_recv_cb(nghttp2_session* /*session*/,
   switch (frame->hd.type) {
     case NGHTTP2_DATA:
       if (strm && (frame->hd.flags & NGHTTP2_FLAG_END_STREAM)) {
-        conn->dispatch_request(*strm);
+        if (strm->body_limit_exceeded) {
+          // Body exceeded kMaxRequestBodySize.  Send RST_STREAM to the client
+          // and clean up without dispatching the request.
+          nghttp2_submit_rst_stream(conn->session_, NGHTTP2_FLAG_NONE,
+                                    frame->hd.stream_id,
+                                    NGHTTP2_INTERNAL_ERROR);
+          conn->close_stream(frame->hd.stream_id);
+        } else {
+          conn->dispatch_request(*strm);
+        }
       }
       break;
     case NGHTTP2_HEADERS:
@@ -578,8 +587,14 @@ int Connection::on_data_chunk_recv_cb(nghttp2_session* session,
   auto* strm = conn->find_stream(stream_id);
   if (!strm) return 0;
 
-  if (strm->body.size() + len > kMaxRequestBodySize) {
-    return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
+  if (strm->body_limit_exceeded ||
+      strm->body.size() + len > kMaxRequestBodySize) {
+    // Body limit exceeded.  Mark the stream so on_frame_recv_cb can send an
+    // explicit RST_STREAM instead of dispatching the request.  The window is
+    // still consumed to avoid stalling the peer before END_STREAM arrives.
+    strm->body_limit_exceeded = true;
+    nghttp2_session_consume(session, stream_id, len);
+    return 0;
   }
   strm->body.append(reinterpret_cast<const char*>(data), len);
   // Restore the flow-control window so the peer can continue sending request

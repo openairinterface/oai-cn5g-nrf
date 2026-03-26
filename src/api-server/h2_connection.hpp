@@ -37,8 +37,12 @@ struct StreamData {
   std::string authority;
   std::multimap<std::string, std::string> headers;
   std::string body;
-  size_t header_buffer_size = 0;  // accrued decompressed header bytes
-  bool headers_complete     = false;
+  size_t header_buffer_size   = 0;    // accrued decompressed header bytes
+  bool headers_complete       = false;
+  // Set when accumulated body would exceed kMaxRequestBodySize.  Once true,
+  // further DATA chunks are dropped (window still consumed to avoid stall)
+  // and on_frame_recv_cb will RST_STREAM instead of dispatching.
+  bool body_limit_exceeded    = false;
 };
 
 // Connection wraps a single accepted TCP socket and its nghttp2 server session.

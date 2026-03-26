@@ -38,6 +38,8 @@
 #include "pistache/http.h"
 #include "pistache/router.h"
 
+#define USE_NATIVE_HTTP2 1
+
 using namespace oai::nrf::app;
 using namespace oai::utils;
 using namespace oai::config::nrf;
@@ -124,8 +126,8 @@ int main(int argc, char** argv) {
   Logger::init("nrf", Options::getlogStdout(), Options::getlogRotFilelog());
   Logger::nrf_app().startup("Options parsed");
 
-  std::signal(SIGTERM, my_app_signal_handler);
-  std::signal(SIGINT, my_app_signal_handler);
+  ::signal(SIGTERM, my_app_signal_handler);
+  ::signal(SIGINT, my_app_signal_handler);
 
   // Config
   nrf_cfg = std::make_unique<nrf_config>(

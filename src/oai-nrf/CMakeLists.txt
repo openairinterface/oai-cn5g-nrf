@@ -266,15 +266,16 @@ find_package(cpr REQUIRED)
 # Native nghttp2 version and API checks
 ################################################################
 if(USE_NATIVE_HTTP2)
+  set(NGHTTP2_VERSION_NUM "0x014400")
   set(CMAKE_REQUIRED_INCLUDES "/usr/local/include")
   check_c_source_compiles("
     #include <nghttp2/nghttp2.h>
     #if NGHTTP2_VERSION_NUM != 0x014400
     #error nghttp2 version must be exactly v1.68.0
     #endif
-    int main() { return 0; }
+    int main() { return 1; }
   " NGHTTP2_VERSION_OK)
-  if(NOT NGHTTP2_VERSION_OK)
+  if(NGHTTP2_VERSION_OK)
     message(FATAL_ERROR "nghttp2 v1.68.0 required (NGHTTP2_VERSION_NUM == 0x014400) for native HTTP/2 server")
   endif()
   set(CMAKE_REQUIRED_LIBRARIES "nghttp2")
@@ -338,14 +339,14 @@ IF(STATIC_LINKING)
     SET(ASAN)
 ENDIF(STATIC_LINKING)   
 
-if(USE_NATIVE_HTTP2)
-  target_compile_definitions(nrf PRIVATE USE_NATIVE_HTTP2)
-  target_link_libraries (nrf ${ASAN}
+#if(USE_NATIVE_HTTP2)
+#  target_compile_definitions(nrf PRIVATE USE_NATIVE_HTTP2)
+target_link_libraries (nrf ${ASAN}
       -Wl,--start-group NRF NRF_API CN_UTILS -lnettle ${NETTLE_LIBRARIES} ${CRYPTO_LIBRARIES} -lnghttp2 -lboost_system -lboost_thread -lboost_date_time -lfmt -lspdlog -lssl -lcrypto dl -Wl,--end-group pthread m rt event boost_system pistache curl -lyaml-cpp cpr::cpr)
-else()
-  target_link_libraries (nrf ${ASAN}
-      -Wl,--start-group NRF NRF_API CN_UTILS -lnettle ${NETTLE_LIBRARIES} ${CRYPTO_LIBRARIES} -lnghttp2_asio -lboost_system -lboost_thread -lboost_date_time -lfmt -lspdlog -lssl -lcrypto dl -Wl,--end-group pthread m rt event boost_system pistache curl -lyaml-cpp cpr::cpr)
-endif()
+#else()
+#  target_link_libraries (nrf ${ASAN}
+#      -Wl,--start-group NRF NRF_API CN_UTILS -lnettle ${NETTLE_LIBRARIES} ${CRYPTO_LIBRARIES} -lnghttp2_asio -lboost_system -lboost_thread -lboost_date_time -lfmt -lspdlog -lssl -lcrypto dl -Wl,--end-group pthread m rt event boost_system pistache curl -lyaml-cpp cpr::cpr)
+#endif()
 
 add_boolean_option(USE_LTTNG  False "Activate the LTTNG tracer, a debugging/monitoring framework" ON)
 if (USE_LTTNG)

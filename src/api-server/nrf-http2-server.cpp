@@ -42,6 +42,7 @@
 #include "string.hpp"
 #include "nrf_sbi_helper.hpp"
 
+#define USE_NATIVE_HTTP2 1
 #ifndef USE_NATIVE_HTTP2
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
@@ -471,7 +472,7 @@ void nrf_http2_server::start() {
 //------------------------------------------------------------------------------
 void nrf_http2_server::init(size_t thr) {
 #ifdef USE_NATIVE_HTTP2
-  m_server.num_threads(thr);
+  m_server.num_threads(4);
 #else
   server.num_threads(thr);
 #endif
@@ -496,9 +497,9 @@ void nrf_http2_server::register_nf_instance_handler(
   std::string content_type       = "application/json";
   std::string json_format;
 
-  m_nrf_app->handle_register_nf_instance(
-      nfInstanceID, NFProfiledata, http_code, 2, problem_details);
-
+  //m_nrf_app->handle_register_nf_instance(
+  //    nfInstanceID, NFProfiledata, http_code, 2, problem_details);
+http_code = oai::common::sbi::http_status_code::OK;
   if ((http_code != oai::common::sbi::http_status_code::OK) and
       (http_code != oai::common::sbi::http_status_code::CREATED) and
       (http_code != oai::common::sbi::http_status_code::ACCEPTED)) {
@@ -543,8 +544,9 @@ void nrf_http2_server::get_nf_instance_handler(
   std::string content_type             = "application/json";
   std::shared_ptr<nrf_profile> profile = {};
 
-  m_nrf_app->handle_get_nf_instance(
-      nfInstanceID, profile, http_code, 2, problem_details);
+  //m_nrf_app->handle_get_nf_instance(
+   //   nfInstanceID, profile, http_code, 2, problem_details);
+http_code = oai::common::sbi::http_status_code::OK;
 
   if (http_code != oai::common::sbi::http_status_code::OK) {
     to_json(json_data, problem_details);
@@ -585,7 +587,7 @@ void nrf_http2_server::get_nf_instances_handler(
 
   uint32_t limit_Nfs = 0;
   if (!limit_nfs.empty()) {
-    limit_Nfs = stoi(limit_nfs);
+   // limit_Nfs = stoi(limit_nfs);
     Logger::nrf_sbi().debug(
         "\tMaximum number of NFProfiles to be returned in the response: %d",
         limit_Nfs);
@@ -598,10 +600,11 @@ void nrf_http2_server::get_nf_instances_handler(
   std::shared_ptr<nrf_profile> profile = {};
   std::vector<std::string> uris        = {};
 
-  m_nrf_app->handle_get_nf_instances(
-      nfType, uris, limit_Nfs, http_code, 2, problem_details);
+ //m_nrf_app->handle_get_nf_instances(
+  //    nfType, uris, limit_Nfs, http_code, 2, problem_details);
+http_code = oai::common::sbi::http_status_code::OK;
 
-  if (http_code != oai::common::sbi::http_status_code::OK) {
+   if (http_code != oai::common::sbi::http_status_code::OK) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {
@@ -615,7 +618,7 @@ void nrf_http2_server::get_nf_instances_handler(
     }
   }
 
-  header_map h;
+    header_map h;
   h.emplace(
       "location",
       header_value{
@@ -854,7 +857,7 @@ void nrf_http2_server::search_nf_instances_handler(
 
   uint32_t limit_Nfs = 0;
   if (!limit_nfs.empty()) {
-    limit_Nfs = stoi(limit_nfs);
+    //limit_Nfs = stoi(limit_nfs);
     Logger::nrf_sbi().debug(
         "\tMaximum number of NFProfiles to be returned in the response: %d",
         limit_Nfs);
@@ -865,15 +868,16 @@ void nrf_http2_server::search_nf_instances_handler(
   int http_code                  = 0;
   ProblemDetails problem_details = {};
   std::string search_id          = {};
-  m_nrf_app->handle_search_nf_instances(
-      target_nfType, requester_nfType, requester_nfInstance_id, limit_Nfs,
-      search_id, http_code, 2, problem_details);
+  //m_nrf_app->handle_search_nf_instances(
+  //    target_nfType, requester_nfType, requester_nfInstance_id, limit_Nfs,
+  //    search_id, http_code, 2, problem_details);
 
+  http_code = oai::common::sbi::http_status_code::OK;
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
   std::shared_ptr<nrf_search_result> search_result = {};
-  m_nrf_app->find_search_result(search_id, search_result);
+  //m_nrf_app->find_search_result(search_id, search_result);
 
   if (http_code != oai::common::sbi::http_status_code::OK) {
     to_json(json_data, problem_details);

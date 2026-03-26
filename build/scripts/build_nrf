@@ -201,6 +201,11 @@ function main()
 
   cmake_args="$cmake_args  -DBUILD_SHARED_LIBS=OFF"
 
+  # Pick up USE_NATIVE_HTTP2 from environment (set by Dockerfile ARG/ENV or caller)
+  if [[ "${USE_NATIVE_HTTP2}" == "ON" ]]; then
+    cmake_args="$cmake_args -DUSE_NATIVE_HTTP2=ON"
+  fi
+
   ##############################################################################
   # Clean
   ##############################################################################

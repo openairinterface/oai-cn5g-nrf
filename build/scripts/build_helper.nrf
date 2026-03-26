@@ -37,11 +37,11 @@ source $THIS_SCRIPT_PATH/../common-build/installation/build_helper.nlohmann
 # USE_NATIVE_HTTP2: source the NRF-specific v1.68.0 C-only build script
 # instead of the shared asio-enabled helper used by other NFs.
 # The shared common-build/installation/build_helper.nghttp2 is NOT modified.
-if [[ "${USE_NATIVE_HTTP2}" == "ON" ]]; then
-  source $THIS_SCRIPT_PATH/build_nghttp2_v168.sh
-else
-  source $THIS_SCRIPT_PATH/../common-build/installation/build_helper.nghttp2
-fi
+#if [[ "${USE_NATIVE_HTTP2}" == "ON" ]]; then
+./build_nghttp2_v168.sh
+#else
+#source $THIS_SCRIPT_PATH/../common-build/installation/build_helper.nghttp2
+#fi
 source $THIS_SCRIPT_PATH/../common-build/installation/build_helper.cpp_jwt
 source $THIS_SCRIPT_PATH/../common-build/installation/build_helper.yamlcpp
 source $THIS_SCRIPT_PATH/../common-build/installation/build_helper.cpr
