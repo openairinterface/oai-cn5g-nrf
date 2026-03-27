@@ -37,13 +37,13 @@
 #include <unistd.h>  // close() — used in accept_cb when max_connections exceeded
 #include <event2/thread.h>
 
-#include "logger.hpp"  // Logger::nrf_app(), Logger::nrf_sbi()
+#include "logger.hpp"
 
-// ═══════════════════════════════════════════════════════════════════════════
-// § 1  Internal types (not exposed in header)
-// ═══════════════════════════════════════════════════════════════════════════
+// ---------------------------------------------------------------------------
+// Internal types (not exposed in header)
+// ---------------------------------------------------------------------------
 
-// ─── Response Body Provider ──────────────────────────────────────────────────
+// Response Body Provider
 // Heap-allocated by http2_response::send(); ownership transferred to
 // http2_stream so it is cleaned up even on RST_STREAM / connection drop.
 
@@ -52,9 +52,7 @@ struct response_body {
   size_t offset = 0;
 };
 
-// ─── Per-Stream Data
-// ──────────────────────────────────────────────────────────
-
+// Per-Stream Data
 struct http2_stream {
   int32_t stream_id = 0;
   http2_request request;              // accumulated request (headers + body)
@@ -75,9 +73,7 @@ struct http2_stream {
   http2_stream& operator=(const http2_stream&) = delete;
 };
 
-// ─── Per-Connection Data
-// ──────────────────────────────────────────────────────
-
+// Per-Connection Data
 struct http2_connection {
   http2_server* server     = nullptr;
   struct bufferevent* bev  = nullptr;
@@ -165,11 +161,11 @@ struct http2_connection {
   }
 };
 
-// ─── Thread Pool Work Item
-// ──────────────────────────────────────────────────── Heap-allocated when a
-// request is dispatched to a worker thread. The worker fills response fields
-// via threaded-mode http2_response::send(), then posts response_post_cb back to
-// the event loop via event_base_once(). The event loop thread owns deletion.
+// Thread Pool Work Item
+// Heap-allocated when a request is dispatched to a worker thread. The worker
+// fills response fields via threaded-mode http2_response::send(), then posts
+// response_post_cb back to the event loop via event_base_once(). The event loop
+// thread owns deletion.
 
 struct thread_pool_work_item {
   uint64_t conn_id     = 0;
@@ -182,11 +178,11 @@ struct thread_pool_work_item {
   std::string resp_body;
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// § 2  nghttp2 session initialisation
-// ═══════════════════════════════════════════════════════════════════════════
+// ---------------------------------------------------------------------------
+// nghttp2 session initialisation
+// ---------------------------------------------------------------------------
 
-// ─── send_callback ──────────────────────────────────────────────────────────
+// send_callback
 // Called by nghttp2 to hand outgoing bytes to the transport layer.
 // Appends to the bufferevent output buffer; does NOT call bufferevent_write()
 // (which can trigger recursive write callbacks in some libevent configs).
@@ -203,7 +199,7 @@ static nghttp2_ssize send_callback(
   return static_cast<nghttp2_ssize>(length);
 }
 
-// ─── on_begin_headers_callback ───────────────────────────────────────────────
+// on_begin_headers_callback
 // Called when nghttp2 begins processing a HEADERS frame.
 // For a new client request (NGHTTP2_HCAT_REQUEST), allocate per-stream state.
 
@@ -222,7 +218,7 @@ static int on_begin_headers_callback(
   return 0;
 }
 
-// ─── on_header_callback ──────────────────────────────────────────────────────
+// on_header_callback
 // Called once per header in a HEADERS frame.
 // Populates http2_request pseudo-header fields and regular headers map.
 
@@ -268,7 +264,7 @@ static int on_header_callback(
   return 0;
 }
 
-// ─── on_data_chunk_recv_callback ─────────────────────────────────────────────
+// on_data_chunk_recv_callback
 // Called for each chunk of received DATA payload.
 // Accumulates body data.  Enforces max_request_body_size.
 // CRITICAL: nghttp2_session_consume() MUST be called to replenish the
@@ -299,10 +295,10 @@ static int on_data_chunk_recv_callback(
   return 0;
 }
 
-// ─── on_frame_recv_callback
-// ─────────────────────────────────────────────────── Called when a complete
-// HTTP/2 frame has been received. When END_STREAM is set on a HEADERS or DATA
-// frame, the request is complete; dispatch to the registered route handler.
+// on_frame_recv_callback
+// Called when a complete HTTP/2 frame has been received. When END_STREAM is set
+// on a HEADERS or DATA frame, the request is complete; dispatch to the
+// registered route handler.
 
 static int on_frame_recv_callback(
     nghttp2_session* /*session*/, const nghttp2_frame* frame, void* user_data) {
@@ -383,7 +379,7 @@ static int on_frame_recv_callback(
                 503, {{"content-type", "text/plain"}}, "Service Unavailable");
           }
         } else {
-          // ── Synchronous path (no pool, or shutting down)
+          // Synchronous path (no pool, or shutting down)
           http2_response response(
               conn->session, frame->hd.stream_id, conn->bev, stream);
           try {
@@ -411,7 +407,7 @@ static int on_frame_recv_callback(
   return 0;
 }
 
-// ─── on_stream_close_callback ────────────────────────────────────────────────
+// on_stream_close_callback
 // Called whenever a stream is closed (normal completion, RST_STREAM, GOAWAY).
 // Cleans up per-stream state (including response_body via http2_stream dtor).
 // Also detects Rapid Reset (CVE-2023-44487).
@@ -456,7 +452,7 @@ static int on_stream_close_callback(
   return 0;
 }
 
-// ─── Session initialisation helper ───────────────────────────────────────────
+// Session initialisation helper
 
 static void initialize_nghttp2_session(
     http2_connection* conn, const http2_server_config& config) {
@@ -530,9 +526,9 @@ static void initialize_nghttp2_session(
       sizeof(settings) / sizeof(settings[0]));
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// § 3  http2_response implementation
-// ═══════════════════════════════════════════════════════════════════════════
+// ---------------------------------------------------------------------------
+// http2_response implementation
+// ---------------------------------------------------------------------------
 
 // Forward declaration — response_body_read_callback must be declared before
 // http2_response::send() references it as a function pointer (feedback N8).
@@ -541,7 +537,7 @@ static nghttp2_ssize response_body_read_callback(
     nghttp2_session*, int32_t, uint8_t*, size_t, uint32_t*,
     nghttp2_data_source*, void*);
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
 
 http2_response::http2_response(
     nghttp2_session* session, int32_t stream_id, struct bufferevent* bev,
@@ -650,7 +646,7 @@ void http2_response::send(
   send(status_code, headers, "");
 }
 
-// ─── Response Body Data Provider ─────────────────────────────────────────────
+// Response Body Data Provider
 // v2 API (nghttp2 v1.68.1): read_callback returns nghttp2_ssize.
 // Called by nghttp2_session_send() to read body bytes into a DATA frame.
 
@@ -674,10 +670,9 @@ static nghttp2_ssize response_body_read_callback(
   return static_cast<nghttp2_ssize>(nread);
 }
 
-// ─── response_post_cb
-// ───────────────────────────────────────────────────────── Runs on the event
-// loop thread (scheduled via event_base_once() by a worker). Submits the
-// captured response to nghttp2 and cleans up the work item.
+// response_post_cb
+// Runs on the event loop thread (scheduled via event_base_once() by a worker).
+// Submits the captured response to nghttp2 and cleans up the work item.
 //
 // Discard branches (bounded diagnostics, anti-log-storm):
 //   conn_missing        — connection deleted before postback arrived; warn
@@ -694,7 +689,7 @@ void http2_server::response_post_cb(
   auto* item   = static_cast<thread_pool_work_item*>(arg);
   auto* server = item->server;
 
-  // ── 1. Connection lookup ───────────────────────────────────────────────────
+  // 1. Connection lookup
   // conn_id provides O(1) lookup without dangling pointers.
   http2_connection* conn = server->find_connection(item->conn_id);
   if (!conn) {
@@ -707,7 +702,7 @@ void http2_server::response_post_cb(
     return;
   }
 
-  // ── 2. Deferred-destruction gate ───────────────────────────────────────────
+  // 2. Deferred-destruction gate
   // The connection is logically dead but kept alive so this postback can find
   // it.  Do NOT send the response; instead clear the stream's pending flag and,
   // if this was the last in-flight worker, complete the deferred cleanup.
@@ -744,7 +739,7 @@ void http2_server::response_post_cb(
     return;
   }
 
-  // ── 3. Stream lookup ───────────────────────────────────────────────────────
+  // 3. Stream lookup
   http2_stream* stream = conn->find_stream(item->stream_id);
   if (!stream) {
     if (!conn->warned_stream_missing) {
@@ -758,7 +753,7 @@ void http2_server::response_post_cb(
     return;
   }
 
-  // ── 4. Stream-closed-while-pending guard ───────────────────────────────────
+  // 4. Stream-closed-while-pending guard
   // The stream was RST or GOAWAY'd after the worker was dispatched — or
   // pending_worker was already cleared by a prior path (defensive guard).
   if (stream->closed_while_pending || !stream->pending_worker) {
@@ -775,7 +770,7 @@ void http2_server::response_post_cb(
     return;
   }
 
-  // ── 5. Normal send path ────────────────────────────────────────────────────
+  // 5. Normal send path
   // Submit the response on the event loop thread (nghttp2 not thread-safe).
   http2_response response(conn->session, item->stream_id, conn->bev, stream);
   response.send(item->status_code, item->resp_headers, item->resp_body);
@@ -793,9 +788,9 @@ void http2_server::response_post_cb(
   delete item;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// § 4  http2_server — constructor / destructor
-// ═══════════════════════════════════════════════════════════════════════════
+// ---------------------------------------------------------------------------
+// http2_server — constructor / destructor
+// ---------------------------------------------------------------------------
 
 http2_server::http2_server(
     const std::string& address, uint32_t port, http2_server_config config)
@@ -810,9 +805,9 @@ http2_server::~http2_server() {
   // returns.  If start() was never called, base_ is nullptr — nothing to do.
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// § 5  Route registration and lookup
-// ═══════════════════════════════════════════════════════════════════════════
+// ---------------------------------------------------------------------------
+// 5  Route registration and lookup
+// ---------------------------------------------------------------------------
 
 void http2_server::handle(
     const std::string& path_prefix, http2_handler handler) {
@@ -830,9 +825,9 @@ http2_handler* http2_server::find_handler(const std::string& path) {
   return nullptr;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// § 6  Server lifecycle — start / stop
-// ═══════════════════════════════════════════════════════════════════════════
+// ---------------------------------------------------------------------------
+// 6  Server lifecycle — start / stop
+// ---------------------------------------------------------------------------
 
 void http2_server::start() {
   // Sort routes longest-prefix-first so find_handler() returns the most
@@ -902,7 +897,7 @@ void http2_server::start() {
   // Blocks until drain_timer_cb calls event_base_loopbreak().
   event_base_dispatch(base_);
 
-  // ── Cleanup after event loop exits ──
+  // Cleanup after event loop exits
   // At this point goaway_and_drain_cb + drain_timer_cb have completed.
   if (listener_) {
     evconnlistener_free(listener_);
@@ -935,13 +930,13 @@ void http2_server::stop() {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// § 7  libevent callbacks
+// ---------------------------------------------------------------------------
+// 7  libevent callbacks
 //      NOTE: NO `static` keyword on these out-of-class definitions.
 //      `static` appears only in the in-class declarations (feedback M7).
-// ═══════════════════════════════════════════════════════════════════════════
+// ---------------------------------------------------------------------------
 
-// ─── accept_cb ───────────────────────────────────────────────────────────────
+// accept_cb
 // Called by libevent when a new TCP connection arrives.
 
 void http2_server::accept_cb(
@@ -996,11 +991,10 @@ void http2_server::accept_cb(
   server->add_connection(conn);
 }
 
-// ─── read_cb
-// ────────────────────────────────────────────────────────────────── Called
-// when data arrives on a connection's bufferevent. Feeds received bytes to
-// nghttp2, then flushes any protocol-level frames (SETTINGS_ACK, WINDOW_UPDATE,
-// RST_STREAM, etc.) generated during processing.
+// read_cb
+// Called when data arrives on a connection's bufferevent. Feeds received bytes
+// to nghttp2, then flushes any protocol-level frames (SETTINGS_ACK,
+// WINDOW_UPDATE, RST_STREAM, etc.) generated during processing.
 
 void http2_server::read_cb(struct bufferevent* bev, void* arg) {
   auto* conn             = static_cast<http2_connection*>(arg);
@@ -1081,7 +1075,7 @@ void http2_server::read_cb(struct bufferevent* bev, void* arg) {
   }
 }
 
-// ─── event_cb ────────────────────────────────────────────────────────────────
+// event_cb
 // Called on connection EOF, error, or timeout.
 
 void http2_server::event_cb(
@@ -1107,7 +1101,7 @@ void http2_server::event_cb(
   }
 }
 
-// ─── goaway_and_drain_cb ─────────────────────────────────────────────────────
+// goaway_and_drain_cb
 // Runs on the event loop thread (scheduled via event_base_once() in stop()).
 // Stops accepting new connections, sends GOAWAY to all active connections,
 // then starts a drain timer.
@@ -1157,7 +1151,7 @@ void http2_server::goaway_and_drain_cb(
   evtimer_add(server->drain_timer_, &tv);
 }
 
-// ─── drain_timer_cb ──────────────────────────────────────────────────────────
+// drain_timer_cb
 // Fires after shutdown_drain_timeout_sec.  Force-closes any remaining
 // connections and breaks the event loop, allowing start() to return.
 
@@ -1169,10 +1163,10 @@ void http2_server::drain_timer_cb(
   event_base_loopbreak(server->base_);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// § 7a  Deferred connection destruction
+// ---------------------------------------------------------------------------
+// 7a  Deferred connection destruction
 //       Safety-timeout callback + http2_connection::start_deferred_destruction
-// ═══════════════════════════════════════════════════════════════════════════
+// ---------------------------------------------------------------------------
 
 // Internal context passed to deferred_destruction_timeout_cb via
 // event_base_once().  Heap-allocated by start_deferred_destruction(); freed
@@ -1262,9 +1256,9 @@ void http2_connection::start_deferred_destruction(const char* reason) {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// § 8  Connection tracking helpers
-// ═══════════════════════════════════════════════════════════════════════════
+// ---------------------------------------------------------------------------
+// 8  Connection tracking helpers
+// ---------------------------------------------------------------------------
 
 void http2_server::add_connection(http2_connection* conn) {
   std::lock_guard<std::mutex> lock(connections_mutex_);

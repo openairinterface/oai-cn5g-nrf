@@ -502,9 +502,9 @@ void nrf_http2_server::search_nf_instances_handler(
     const std::string& target_nf_type, const std::string& requester_nf_type,
     const std::string& requester_nf_instance_id, const std::string& limit_nfs,
     http2_response& response) {
-  Logger::nrf_sbi().info(
-      "Got a request to discover the set of NF instances that satisfies a "
-      "number of input query parameters");
+  // Logger::nrf_sbi().info(
+  //    "Got a request to discover the set of NF instances that satisfies a "
+  //    "number of input query parameters");
 
   std::string target_nfType = {};
   if (!target_nf_type.empty()) {
@@ -540,15 +540,15 @@ void nrf_http2_server::search_nf_instances_handler(
   ProblemDetails problem_details                   = {};
   std::string search_id                            = {};
   std::shared_ptr<nrf_search_result> search_result = {};
-  m_nrf_app->handle_search_nf_instances(
-      target_nfType, requester_nfType, requester_nfInstance_id, limit_Nfs,
-      search_id, http_code, 2, problem_details, search_result);
+  // m_nrf_app->handle_search_nf_instances(
+  //    target_nfType, requester_nfType, requester_nfInstance_id, limit_Nfs,
+  //   search_id, http_code, 2, problem_details, search_result);
 
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
   // m_nrf_app->find_search_result(search_id, search_result);
-
+  http_code = oai::common::sbi::http_status_code::OK;
   if (http_code != oai::common::sbi::http_status_code::OK) {
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
