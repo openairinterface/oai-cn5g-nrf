@@ -1,6 +1,15 @@
-# RELEASE NOTES: #
+<!-- SPDX-License-Identifier: CC-BY-4.0 -->
 
-## v2.2.0 -- December 2025 ##
+# RELEASE NOTES:
+
+## v2.2.1 -- March 2026
+
+* Change of license from OAI Public License v1.1 to CSSL v1.0
+* Re-license documentation to the CC-BY-4.0 License
+* Re-license orchestration files (docker compose yaml files, health scripts, openshift build files)
+  and CI-scripts under the MIT License
+
+## v2.2.0 -- December 2025
 
 * Fixes
   - Update LTTNG to v0.15.0 to avoid building issue
@@ -9,7 +18,7 @@
   - Add support for RHEL 10, update container images to UBI 10
   - Fix build issue in non-containerized environment
 
-## v2.1.0 -- August 2024 ##
+## v2.1.0 -- August 2024
 
 * Features
   - Adding debug info
@@ -23,7 +32,7 @@
   - Move NRF SBI models to common src git submodule
   - HTTP client cpr library refactoring effort
 
-## v2.0.0 -- December 2023 ##
+## v2.0.0 -- December 2023
 
 * Features
   - Support YAML configuration file
@@ -38,7 +47,7 @@
   - Published image on Docker-Hub is using now Ubuntu-22 as base image
     * Ubuntu-18 is no longer supported
 
-## v1.5.1 -- May 2023 ##
+## v1.5.1 -- May 2023
 
 * Tentative fix for a failed assertion of Boost signal
 * HTTP2 fix for json response data formatting
@@ -49,7 +58,7 @@
 * Published image on Docker-Hub is using now Ubuntu-20 as base image
   * We will soon obsolete the build system for Ubuntu18.04
 
-## v1.5.0 -- January 2023 ##
+## v1.5.0 -- January 2023
 
 * Enhance UPF profile in NRF and fix bug in SBI when body is too long
 * Added Status change notification
@@ -58,7 +67,7 @@
 * release mode does not use libasan anymore --> allocation of 20T virtual memory is no longer done
 * Ubuntu22 and cgroup2 support
 
-## v1.4.0 -- July 2022 ##
+## v1.4.0 -- July 2022
 
 * Remove unused packages
 * Add NF profile handling for PCF
@@ -66,27 +75,27 @@
 * Official images produced by CI are pushed to `oaisoftwarealliance` Docker-Hub Team account
 * Reduce image size
 
-## v1.3.0 -- January 2022 ##
+## v1.3.0 -- January 2022
 
 * NF profile update
 * Docker optimization
 
-## v1.2.1 -- October 2021 ##
+## v1.2.1 -- October 2021
 
 * Fix build issue
 
-## v1.2.0 -- September 2021 ##
+## v1.2.0 -- September 2021
 
 * Added AUSF, UDR, UDM profiles
 * Updated UPF profile
 
-## v1.1.0 -- July 2021 ##
+## v1.1.0 -- July 2021
 
 * FQDN DNS resolution
 * Bug fixes
 * Full support for Ubuntu18 and RHEL8
 
-## v1.0.0 -- Jan 2021 ##
+## v1.0.0 -- Jan 2021
 
 * Initial release
 
