@@ -559,7 +559,7 @@ void http2_response::send(
   if (sent_) return;  // Guard against double-send
   sent_ = true;
 
-  // ── Threaded mode: capture data for response_post_cb (event loop thread)
+  // Threaded mode: capture data for response_post_cb (event loop thread)
   // Must NOT touch session_/bev_/stream_ — those are null in threaded mode and
   // would be unsafe to use from a worker thread anyway (nghttp2 not
   // thread-safe).
@@ -570,7 +570,7 @@ void http2_response::send(
     return;  // response_post_cb will call submit_response + session_send
   }
 
-  // ── Synchronous mode: submit directly to nghttp2 (event loop thread only) ──
+  // Synchronous mode: submit directly to nghttp2 (event loop thread only) ──
   // No NGHTTP2_NV_FLAG_NO_COPY_* — nghttp2 copies all name/value data during
   // nghttp2_submit_response(). Safe regardless of header string lifetimes
   // after this function returns (feedback C1).

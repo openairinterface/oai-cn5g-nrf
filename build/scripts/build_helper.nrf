@@ -159,7 +159,7 @@ check_install_nrf_deps() {
   install_nlohmann_from_git $1 $2
   ret=$?;[[ $ret -ne 0 ]] && return $ret
 
-  install_nghttp2_v168_from_git $1 $2
+  install_nghttp2_from_git $1 $2
   ret=$?;[[ $ret -ne 0 ]] && return $ret
 
   install_cpr_from_git $1 $2

@@ -56,13 +56,12 @@ struct response_body;
 
 // Public Request Type
 struct http2_request {
+  std::string method;  // GET, PUT, POST, DELETE, PATCH
+  std::string path;    // path component only (before '?')
   std::string
-      method;        // ":method" pseudo-header (GET, PUT, POST, DELETE, PATCH)
-  std::string path;  // ":path" pseudo-header — path component only (before '?')
-  std::string
-      raw_query;  // query string portion of :path (after '?', no leading '?')
-  std::string scheme;     // ":scheme" pseudo-header
-  std::string authority;  // ":authority" pseudo-header
+      raw_query;  // query string portion of path (after '?', no leading '?')
+  std::string scheme;     // scheme
+  std::string authority;  // authority
   std::map<std::string, std::string>
       headers;       // regular headers (all lowercase)
   std::string body;  // accumulated request body (all DATA chunks concatenated)
