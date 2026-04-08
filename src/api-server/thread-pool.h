@@ -10,7 +10,7 @@
 #include <thread>
 #include <vector>
 
-// ─── Standalone Thread Pool ──────────────────────────────────────────────────
+// Standalone Thread Pool 
 // A simple fixed-size thread pool with a bounded task queue.
 // No HTTP/2 or libevent dependencies — reusable across OAI NFs.
 //
