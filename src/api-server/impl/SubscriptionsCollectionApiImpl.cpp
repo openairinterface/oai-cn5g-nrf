@@ -24,8 +24,8 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::model::nrf;
-using namespace oai::model::common;
+using namespace oai::_3gpp::model;
+// removed: oai::model::common
 using namespace oai::nrf::app;
 
 SubscriptionsCollectionApiImpl::SubscriptionsCollectionApiImpl(
@@ -36,16 +36,15 @@ SubscriptionsCollectionApiImpl::SubscriptionsCollectionApiImpl(
       m_address(address) {}
 
 void SubscriptionsCollectionApiImpl::create_subscription(
-    const SubscriptionData& subscriptionData,
+    const nlohmann::json& subscriptionData,
     Pistache::Http::ResponseWriter& response) {
   Logger::nrf_sbi().info("Got a request to create a new subscription");
 
   int http_code                  = 0;
   ProblemDetails problem_details = {};
   std::string sub_id;
-  nlohmann::json json_sub = {};
-  to_json(json_sub, subscriptionData);
-  Logger::nrf_sbi().debug("Subscription data %s", json_sub.dump().c_str());
+  Logger::nrf_sbi().debug(
+      "Subscription data %s", subscriptionData.dump().c_str());
 
   m_nrf_app->handle_create_subscription(
       subscriptionData, sub_id, http_code, 1, problem_details);
@@ -57,7 +56,7 @@ void SubscriptionsCollectionApiImpl::create_subscription(
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {
-    to_json(json_data, subscriptionData);
+    json_data                   = subscriptionData;
     json_data["subscriptionId"] = sub_id;
     // Location header
     response.headers().add<Pistache::Http::Header::Location>(

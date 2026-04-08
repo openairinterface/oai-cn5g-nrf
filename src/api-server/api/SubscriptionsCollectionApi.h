@@ -25,13 +25,13 @@
 #include <pistache/optional.h>
 
 #include "ProblemDetails.h"
-#include "SubscriptionData.h"
+#include <nlohmann/json.hpp>
 
 namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::model::nrf;
+using namespace oai::_3gpp::model;
 
 class SubscriptionsCollectionApi {
  public:
@@ -61,7 +61,7 @@ class SubscriptionsCollectionApi {
   /// </remarks>
   /// <param name="subscriptionData"></param>
   virtual void create_subscription(
-      const SubscriptionData& subscriptionData,
+      const nlohmann::json& subscriptionData,
       Pistache::Http::ResponseWriter& response) = 0;
 };
 

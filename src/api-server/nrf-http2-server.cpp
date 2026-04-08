@@ -19,8 +19,8 @@
 
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
-using namespace oai::model::nrf;
-using namespace oai::model::common;
+using namespace oai::_3gpp::model;
+// removed: oai::model::common
 using namespace oai::nrf::api;
 
 extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
@@ -30,9 +30,9 @@ void nrf_http2_server::start() {
   boost::system::error_code ec;
 
   Logger::nrf_app().info("HTTP2 server being started");
-  std::string nfInstanceID          = {};
-  std::string subscriptionID        = {};
-  SubscriptionData subscriptionData = {};
+  std::string nfInstanceID        = {};
+  std::string subscriptionID      = {};
+  nlohmann::json subscriptionData = {};
 
   // NF Instances (Store)
   server.handle(
@@ -144,7 +144,7 @@ void nrf_http2_server::start() {
           try {
             // Create a new subscription
             if (request.method().compare("POST") == 0 && len > 0) {
-              nlohmann::json::parse(msg.c_str()).get_to(subscriptionData);
+              subscriptionData = nlohmann::json::parse(msg.c_str());
               this->create_subscription_handler(subscriptionData, response);
             }
             // Updates a subscription
@@ -453,16 +453,16 @@ void nrf_http2_server::deregister_nf_instance_handler(
 };
 
 void nrf_http2_server::create_subscription_handler(
-    const SubscriptionData& subscriptionData, const response& response) {
+    const nlohmann::json& subscriptionData, const response& response) {
   Logger::nrf_sbi().info("Got a request to create a new subscription");
   int http_code                  = 0;
   ProblemDetails problem_details = {};
   std::string sub_id;
-  nlohmann::json json_sub  = {};
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
-  Logger::nrf_sbi().debug("Subscription data %s", json_sub.dump().c_str());
+  Logger::nrf_sbi().debug(
+      "Subscription data %s", subscriptionData.dump().c_str());
   m_nrf_app->handle_create_subscription(
       subscriptionData, sub_id, http_code, 2, problem_details);
 
@@ -470,7 +470,7 @@ void nrf_http2_server::create_subscription_handler(
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {
-    to_json(json_data, subscriptionData);
+    json_data                   = subscriptionData;
     json_data["subscriptionId"] = sub_id;
   }
 
@@ -618,7 +618,7 @@ void nrf_http2_server::search_nf_instances_handler(
 }
 
 void nrf_http2_server::access_token_request_handler(
-    const SubscriptionData& subscriptionData, const response& response) {}
+    const nlohmann::json& subscriptionData, const response& response) {}
 
 //------------------------------------------------------------------------------
 void nrf_http2_server::stop() {

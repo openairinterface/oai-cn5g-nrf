@@ -79,7 +79,7 @@ class SubscriptionIDDocumentApi {
   /// update</param> <param name="patchItem"></param>
   virtual void update_subscription(
       const std::string& subscriptionID,
-      const std::vector<oai::model::common::PatchItem>& patchItem,
+      const std::vector<oai::_3gpp::model::PatchItem>& patchItem,
       Pistache::Http::ResponseWriter& response) = 0;
 };
 
