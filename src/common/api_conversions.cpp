@@ -669,12 +669,24 @@ bool api_conv::subscription_api_to_nrf_subscription(
         sub.get()->add_notif_event(NOTIFICATION_TYPE_UNKNOWN_EVENT);
       }
     }
+  } else {
+    sub.get()->set_notif_events(
+        {NOTIFICATION_TYPE_NF_REGISTERED, NOTIFICATION_TYPE_NF_DEREGISTERED,
+         NOTIFICATION_TYPE_NF_PROFILE_CHANGED});
   }
 
   if (api_sub.validityTimeIsSet()) {
     std::string str = api_sub.getValidityTime();
-    boost::posix_time::ptime p(boost::posix_time::from_iso_string(str));
-    sub.get()->set_validity_time(p);
+    try {
+      boost::posix_time::ptime p(boost::posix_time::from_iso_string(str));
+      sub.get()->set_validity_time(p);
+    } catch (std::exception& exp) {
+      Logger::nrf_app().error(
+          "error validityTime conversion: %s.\n", exp.what());
+      // return error or should assign NRF determined validityTime ?
+      // for now returning error
+      return false;
+    }
     Logger::nrf_app().debug("Validity Time: %s", str.c_str());
   }
   // TODO:

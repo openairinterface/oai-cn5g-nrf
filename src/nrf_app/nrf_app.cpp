@@ -450,7 +450,7 @@ void nrf_app::handle_deregister_nf_instance(
 //------------------------------------------------------------------------------
 void nrf_app::handle_create_subscription(
     const SubscriptionData& subscription_data, std::string& sub_id,
-    int& http_code, const uint8_t http_version,
+    std::string& validity_time, int& http_code, const uint8_t http_version,
     ProblemDetails& problem_details) {
   std::string evsub_id;
 
@@ -466,6 +466,9 @@ void nrf_app::handle_create_subscription(
       generate_ev_subscription_id(evsub_id);
       ss.get()->set_subscription_id(evsub_id);
       ss.get()->set_http_version(http_version);
+      // validity time
+      validity_time =
+          boost::posix_time::to_iso_string(ss.get()->get_validity_time());
       // subscribe to NF status registered
       // subscribe_nf_status(evsub_id);  // from nrf_app
       // subscribe to NF status

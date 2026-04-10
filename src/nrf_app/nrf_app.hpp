@@ -123,7 +123,8 @@ class nrf_app {
    */
   void handle_create_subscription(
       const oai::model::nrf::SubscriptionData& subscription_data,
-      std::string& sub_id, int& http_code, const uint8_t http_version,
+      std::string& sub_id, std::string& validity_time, int& http_code,
+      const uint8_t http_version,
       oai::model::common::ProblemDetails& problem_details);
 
   /*
