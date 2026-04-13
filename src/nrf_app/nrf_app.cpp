@@ -27,7 +27,6 @@
 
 using namespace oai::nrf::app;
 using namespace oai::_3gpp::model;
-// removed: oai::model::common
 using namespace std::chrono;
 using namespace boost::placeholders;
 
