@@ -35,7 +35,6 @@ extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 nrf_client* nrf_client_inst = nullptr;
 nrf_jwt* nrf_jwt_inst       = nullptr;
 
-
 //------------------------------------------------------------------------------
 nrf_app::nrf_app(const std::string& config_file, nrf_event& ev)
     : m_event_sub(ev),
