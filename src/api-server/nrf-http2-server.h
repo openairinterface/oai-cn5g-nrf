@@ -1,22 +1,5 @@
 /*
- * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The OpenAirInterface Software Alliance licenses this file to You under
- * the OAI Public License, Version 1.1  (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the
- * License at
- *
- *      http://www.openairinterface.org/?page_id=698
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *-------------------------------------------------------------------------------
- * For more information about the OpenAirInterface (OAI) Software Alliance:
- *      contact@openairinterface.org
+ * SPDX-License-Identifier: LicenseRef-CSSL-1.0
  */
 
 #ifndef FILE_NRF_HTTP2_SERVER_SEEN
@@ -30,7 +13,7 @@
 #include "nrf_app.hpp"
 #include "uint_generator.hpp"
 
-using namespace oai::model::nrf;
+using namespace oai::_3gpp::model;
 using namespace oai::nrf::app;
 
 class nrf_http2_server {
@@ -55,22 +38,22 @@ class nrf_http2_server {
       http2_response& response);
   void update_instance_handler(
       const std::string& nfInstanceID,
-      const std::vector<oai::model::common::PatchItem>& patchItem,
+      const std::vector<oai::_3gpp::model::PatchItem>& patchItem,
       http2_response& response);
   void create_subscription_handler(
-      const SubscriptionData& subscriptionData, http2_response& response);
+      const nlohmann::json& subscriptionData, http2_response& response);
   void update_subscription_handler(
       const std::string& subscriptionID,
-      const std::vector<oai::model::common::PatchItem>& patchItem,
+      const std::vector<oai::_3gpp::model::PatchItem>& patchItem,
       http2_response& response);
   void remove_subscription_handler(
       const std::string& subscriptionID, http2_response& response);
   void search_nf_instances_handler(
       const std::string& target_nf_type, const std::string& requester_nf_type,
-      const std::string& requester_nf_instance_id,
-      const std::string& limit_nfs, http2_response& response);
+      const std::string& requester_nf_instance_id, const std::string& limit_nfs,
+      http2_response& response);
   void access_token_request_handler(
-      const SubscriptionData& subscriptionData, http2_response& response);
+      const nlohmann::json& subscriptionData, http2_response& response);
 
  private:
   oai::utils::uint_generator<uint32_t> m_promise_id_generator;

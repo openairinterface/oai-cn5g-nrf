@@ -98,7 +98,7 @@ class NFInstanceIDDocumentApi {
   /// (optional, default to &quot;&quot;)</param>
   virtual void register_nf_instance(
       const std::string& nfInstanceID,
-      const oai::model::nrf::NFProfile& nFProfile,
+      const oai::_3gpp::model::NFProfile& nFProfile,
       const Pistache::Optional<Pistache::Http::Header::Raw>& contentEncoding,
       Pistache::Http::ResponseWriter& response) = 0;
 
@@ -112,7 +112,7 @@ class NFInstanceIDDocumentApi {
   /// <param name="patchItem"></param>
   virtual void update_nf_instance(
       const std::string& nfInstanceID,
-      const std::vector<oai::model::common::PatchItem>& patchItem,
+      const std::vector<oai::_3gpp::model::PatchItem>& patchItem,
       Pistache::Http::ResponseWriter& response) = 0;
 };
 

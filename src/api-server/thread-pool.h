@@ -1,3 +1,7 @@
+/*
+ * SPDX-License-Identifier: LicenseRef-CSSL-1.0
+ */
+
 #ifndef FILE_THREAD_POOL_SEEN
 #define FILE_THREAD_POOL_SEEN
 
@@ -10,14 +14,15 @@
 #include <thread>
 #include <vector>
 
-// Standalone Thread Pool 
+// Standalone Thread Pool
 // A simple fixed-size thread pool with a bounded task queue.
 // No HTTP/2 or libevent dependencies — reusable across OAI NFs.
 //
 // Usage:
 //   thread_pool pool(4, 1000);            // 4 workers, max 1000 queued tasks
-//   bool ok = pool.enqueue([](){ ... });  // submit work; false if full/shutdown
-//   pool.shutdown();                      // drain + join (destructor also calls)
+//   bool ok = pool.enqueue([](){ ... });  // submit work; false if
+//   full/shutdown pool.shutdown();                      // drain + join
+//   (destructor also calls)
 
 class thread_pool {
  public:
@@ -34,10 +39,10 @@ class thread_pool {
   ~thread_pool() { shutdown(); }
 
   // Non-copyable, non-movable
-  thread_pool(const thread_pool&)            = delete;
+  thread_pool(const thread_pool&) = delete;
   thread_pool& operator=(const thread_pool&) = delete;
   thread_pool(thread_pool&&)                 = delete;
-  thread_pool& operator=(thread_pool&&)      = delete;
+  thread_pool& operator=(thread_pool&&) = delete;
 
   // Enqueue a task for execution on a worker thread.
   // Returns false if the pool is shut down or the queue is full.
@@ -86,12 +91,12 @@ class thread_pool {
     }
   }
 
-  std::vector<std::thread>          workers_;
+  std::vector<std::thread> workers_;
   std::queue<std::function<void()>> tasks_;
-  std::mutex                        mutex_;
-  std::condition_variable           cv_;
-  std::atomic<bool>                 shutdown_;
-  size_t                            max_queue_size_;
+  std::mutex mutex_;
+  std::condition_variable cv_;
+  std::atomic<bool> shutdown_;
+  size_t max_queue_size_;
 };
 
 #endif  // FILE_THREAD_POOL_SEEN

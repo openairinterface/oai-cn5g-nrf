@@ -1,22 +1,5 @@
 /*
- * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The OpenAirInterface Software Alliance licenses this file to You under
- * the OAI Public License, Version 1.1  (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the
- * License at
- *
- *      http://www.openairinterface.org/?page_id=698
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *-------------------------------------------------------------------------------
- * For more information about the OpenAirInterface (OAI) Software Alliance:
- *      contact@openairinterface.org
+ * SPDX-License-Identifier: LicenseRef-CSSL-1.0
  */
 
 #ifndef FILE_NRF_APP_HPP_SEEN
@@ -28,7 +11,7 @@
 #include "NFProfile.h"
 #include "PatchItem.h"
 #include "ProblemDetails.h"
-#include "SubscriptionData.h"
+#include <nlohmann/json.hpp>
 #include "nrf_event.hpp"
 #include "nrf_profile.hpp"
 #include "nrf_search_result.hpp"
@@ -65,9 +48,9 @@ class nrf_app {
    */
   void handle_register_nf_instance(
       const std::string& nf_instance_id,
-      const oai::model::nrf::NFProfile& nf_profile, int& http_code,
+      const oai::_3gpp::model::NFProfile& nf_profile, int& http_code,
       const uint8_t http_version,
-      oai::model::common::ProblemDetails& problem_details);
+      oai::_3gpp::model::ProblemDetails& problem_details);
 
   /*
    * Handle a Get NF Instance Information
@@ -84,7 +67,7 @@ class nrf_app {
   void handle_get_nf_instances(
       const std::string& nf_type, std::vector<std::string>& uris,
       const uint32_t& limit_item, int& http_code, const uint8_t http_version,
-      oai::model::common::ProblemDetails& problem_details);
+      oai::_3gpp::model::ProblemDetails& problem_details);
 
   /*
    * Handle a Update NF Instance request
@@ -98,9 +81,9 @@ class nrf_app {
    */
   void handle_update_nf_instance(
       const std::string& nf_instance_id,
-      const std::vector<oai::model::common::PatchItem>& patchItem,
+      const std::vector<oai::_3gpp::model::PatchItem>& patchItem,
       int& http_code, const uint8_t http_version,
-      oai::model::common::ProblemDetails& problem_details);
+      oai::_3gpp::model::ProblemDetails& problem_details);
 
   /*
    * Handle a Get NF Instance request
@@ -114,7 +97,7 @@ class nrf_app {
   void handle_get_nf_instance(
       const std::string& nf_instance_id, std::shared_ptr<nrf_profile>& profile,
       int& http_code, const uint8_t http_version,
-      oai::model::common::ProblemDetails& problem_details);
+      oai::_3gpp::model::ProblemDetails& problem_details);
 
   /*
    * Handle De-register a given NF Instance
@@ -127,7 +110,7 @@ class nrf_app {
   void handle_deregister_nf_instance(
       const std::string& nf_instance_id, int& http_code,
       const uint8_t http_version,
-      oai::model::common::ProblemDetails& problem_details);
+      oai::_3gpp::model::ProblemDetails& problem_details);
 
   /*
    * Handle a Register NF Instance request
@@ -139,9 +122,9 @@ class nrf_app {
    * @return void
    */
   void handle_create_subscription(
-      const oai::model::nrf::SubscriptionData& subscription_data,
-      std::string& sub_id, int& http_code, const uint8_t http_version,
-      oai::model::common::ProblemDetails& problem_details);
+      const nlohmann::json& subscription_data, std::string& sub_id,
+      int& http_code, const uint8_t http_version,
+      oai::_3gpp::model::ProblemDetails& problem_details);
 
   /*
    * Handle a NFStatusUnSubscribe request (removes an existing subscription)
@@ -153,7 +136,7 @@ class nrf_app {
    */
   void handle_remove_subscription(
       const std::string& sub_id, int& http_code, const uint8_t http_version,
-      oai::model::common::ProblemDetails& problem_details);
+      oai::_3gpp::model::ProblemDetails& problem_details);
 
   /*
    * Handle a Update of Subscription to NF Instances
@@ -167,9 +150,9 @@ class nrf_app {
    */
   void handle_update_subscription(
       const std::string& sub_id,
-      const std::vector<oai::model::common::PatchItem>& patchItem,
+      const std::vector<oai::_3gpp::model::PatchItem>& patchItem,
       int& http_code, const uint8_t http_version,
-      oai::model::common::ProblemDetails& problem_details);
+      oai::_3gpp::model::ProblemDetails& problem_details);
 
   /*
    * Handle NFDiscover to discover the set of NF Instances
@@ -189,7 +172,7 @@ class nrf_app {
       const std::string& target_nf_type, const std::string& requester_nf_type,
       const std::string& requester_nf_instance_id, uint32_t& limit_nfs,
       std::string& search_id, int& http_code, const uint8_t http_version,
-      oai::model::common::ProblemDetails& problem_details,
+      oai::_3gpp::model::ProblemDetails& problem_details,
       std::shared_ptr<nrf_search_result>& search_result);
 
   /*
@@ -203,9 +186,9 @@ class nrf_app {
    */
   void handle_access_token_request(
       const std::string& request_body,
-      oai::model::nrf::AccessTokenRsp& access_token_rsp, int& http_code,
+      oai::_3gpp::model::AccessTokenRsp& access_token_rsp, int& http_code,
       const uint8_t http_version,
-      oai::model::common::ProblemDetails& problem_details);
+      oai::_3gpp::model::ProblemDetails& problem_details);
 
   /*
    * Insert a nrf profile

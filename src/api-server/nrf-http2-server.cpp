@@ -1,30 +1,5 @@
 /*
- * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The OpenAirInterface Software Alliance licenses this file to You under
- * the OAI Public License, Version 1.1  (the "License"); you may not use this
- * file except in compliance with the License. You may obtain a copy of the
- * License at
- *
- *      http://www.openairinterface.org/?page_id=698
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *-------------------------------------------------------------------------------
- * For more information about the OpenAirInterface (OAI) Software Alliance:
- *      contact@openairinterface.org
- */
-
-/*! \file nrf_http2-server.cpp
- \brief
- \author  Tien-Thinh NGUYEN
- \company Eurecom
- \date 2020
- \email: tien-thinh.nguyen@eurecom.fr
+ * SPDX-License-Identifier: LicenseRef-CSSL-1.0
  */
 
 #include "nrf-http2-server.h"
@@ -42,8 +17,7 @@
 #include "string.hpp"
 #include "nrf_sbi_helper.hpp"
 
-using namespace oai::model::nrf;
-using namespace oai::model::common;
+using namespace oai::_3gpp::model;
 using namespace oai::nrf::api;
 
 extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
@@ -51,6 +25,10 @@ extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 //------------------------------------------------------------------------------
 void nrf_http2_server::start() {
   Logger::nrf_app().info("HTTP2 server being started");
+
+  std::string nfInstanceID        = {};
+  std::string subscriptionID      = {};
+  nlohmann::json subscriptionData = {};
 
   // NF Instances collection
   server_.handle(
@@ -133,8 +111,7 @@ void nrf_http2_server::start() {
         try {
           // Create a new subscription
           if (request.method == "POST" && !request.body.empty()) {
-            SubscriptionData subscriptionData;
-            nlohmann::json::parse(request.body).get_to(subscriptionData);
+            subscriptionData = nlohmann::json::parse(request.body);
             this->create_subscription_handler(subscriptionData, response);
           }
           // Updates a subscription
@@ -412,16 +389,16 @@ void nrf_http2_server::deregister_nf_instance_handler(
 
 //------------------------------------------------------------------------------
 void nrf_http2_server::create_subscription_handler(
-    const SubscriptionData& subscriptionData, http2_response& response) {
+    const nlohmann::json& subscriptionData, http2_response& response) {
   Logger::nrf_sbi().info("Got a request to create a new subscription");
   int http_code                  = 0;
   ProblemDetails problem_details = {};
   std::string sub_id;
-  nlohmann::json json_sub  = {};
   nlohmann::json json_data = {};
   std::string content_type = "application/json";
 
-  Logger::nrf_sbi().debug("Subscription data %s", json_sub.dump().c_str());
+  Logger::nrf_sbi().debug(
+      "Subscription data %s", subscriptionData.dump().c_str());
   m_nrf_app->handle_create_subscription(
       subscriptionData, sub_id, http_code, 2, problem_details);
 
@@ -429,7 +406,7 @@ void nrf_http2_server::create_subscription_handler(
     to_json(json_data, problem_details);
     content_type = "application/problem+json";
   } else {
-    to_json(json_data, subscriptionData);
+    json_data                   = subscriptionData;
     json_data["subscriptionId"] = sub_id;
   }
 
@@ -572,7 +549,7 @@ void nrf_http2_server::search_nf_instances_handler(
 
 //------------------------------------------------------------------------------
 void nrf_http2_server::access_token_request_handler(
-    const SubscriptionData& subscriptionData, http2_response& response) {}
+    const nlohmann::json& subscriptionData, http2_response& response) {}
 
 //------------------------------------------------------------------------------
 void nrf_http2_server::stop() {

@@ -22,9 +22,8 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::model::common::helpers;
-using namespace oai::model::nrf;
-using namespace oai::model::common;
+using namespace oai::_3gpp::model::helpers;
+using namespace oai::_3gpp::model;
 
 NFInstanceIDDocumentApi::NFInstanceIDDocumentApi(
     std::shared_ptr<Pistache::Rest::Router> rtr) {
