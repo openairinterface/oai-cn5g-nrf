@@ -392,7 +392,7 @@ static int on_stream_close_callback(
     void* user_data) {
   auto* conn = static_cast<http2_connection*>(user_data);
 
-  // Rapid Reset detection (CVE-2023-44487, feedback M1).
+  // Rapid Reset detection (CVE-2023-44487).
   // The client uses NGHTTP2_CANCEL (= 8, RFC 7540 §7) in RST_STREAM frames
   // for this attack.  Do NOT check NGHTTP2_STREAM_CLOSED — that is an
   // nghttp2_error API return code, not a stream error code from the wire.
@@ -411,8 +411,7 @@ static int on_stream_close_callback(
 
   // Erase stream — unique_ptr<http2_stream> destructor runs:
   //   http2_stream::~http2_stream() → delete body_ptr
-  // This guarantees no response_body leak even on abnormal stream closure
-  // (feedback C2).
+  // This guarantees no response_body leak even on abnormal stream closure.
   //
   // Exception: if a worker thread is still processing this stream, defer
   // removal so that response_post_cb can still find the stream and either
@@ -506,7 +505,7 @@ static void initialize_nghttp2_session(
 // ---------------------------------------------------------------------------
 
 // Forward declaration — response_body_read_callback must be declared before
-// http2_response::send() references it as a function pointer (feedback N8).
+// http2_response::send() references it as a function pointer.
 // v2 API (nghttp2 v1.68.1): returns nghttp2_ssize.
 static nghttp2_ssize response_body_read_callback(
     nghttp2_session*, int32_t, uint8_t*, size_t, uint32_t*,
@@ -548,7 +547,7 @@ void http2_response::send(
   // Synchronous mode: submit directly to nghttp2 (event loop thread only) ──
   // No NGHTTP2_NV_FLAG_NO_COPY_* — nghttp2 copies all name/value data during
   // nghttp2_submit_response(). Safe regardless of header string lifetimes
-  // after this function returns (feedback C1).
+  // after this function returns.
   std::string status_str = std::to_string(status_code);
 
   std::vector<nghttp2_nv> nva;
@@ -577,7 +576,7 @@ void http2_response::send(
     }
   } else {
     // Allocate response_body on the heap; transfer ownership to http2_stream
-    // so it is freed even if the stream is reset before EOF (feedback C2).
+    // so it is freed even if the stream is reset before EOF.
     auto* body_data = new response_body{body, 0};
 
     if (stream_) {
@@ -601,7 +600,7 @@ void http2_response::send(
     }
   }
 
-  // Flush all pending frames immediately (feedback C1).
+  // Flush all pending frames immediately.
   // Calling nghttp2_session_send() HERE ensures:
   //   (a) HPACK encoding happens while status_str is still alive on the stack.
   //   (b) The DATA frame(s) are written to the bufferevent in the same
@@ -639,7 +638,7 @@ static nghttp2_ssize response_body_read_callback(
   if (body->offset >= body->data.size()) {
     *data_flags |= NGHTTP2_DATA_FLAG_EOF;
     // Do NOT delete body here.  Ownership belongs to http2_stream.
-    // http2_stream::~http2_stream() will delete body_ptr (feedback C2).
+    // http2_stream::~http2_stream() will delete body_ptr.
   }
 
   return static_cast<nghttp2_ssize>(nread);
@@ -908,7 +907,7 @@ void http2_server::stop() {
 // ---------------------------------------------------------------------------
 // 7  libevent callbacks
 //      NOTE: NO `static` keyword on these out-of-class definitions.
-//      `static` appears only in the in-class declarations (feedback M7).
+//      `static` appears only in the in-class declarations.
 // ---------------------------------------------------------------------------
 
 // accept_cb
@@ -920,7 +919,7 @@ void http2_server::accept_cb(
   auto* server            = static_cast<http2_server*>(arg);
   struct event_base* base = evconnlistener_get_base(listener);
 
-  // Enforce max_connections limit (feedback M4).
+  // Enforce max_connections limit.
   {
     std::lock_guard<std::mutex> lock(server->connections_mutex_);
     if (server->connections_.size() >=
@@ -935,7 +934,7 @@ void http2_server::accept_cb(
   // iteration rather than called from within bufferevent processing.  This
   // makes it safe to call bufferevent_free() (via `delete conn`) from inside
   // read_cb or event_cb — the callback is not on the bufferevent's internal
-  // call stack at that point (feedback C3).
+  // call stack at that point.
   struct bufferevent* bev = bufferevent_socket_new(
       base, fd, BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
   if (!bev) {
@@ -959,7 +958,7 @@ void http2_server::accept_cb(
 
   // Flush the server connection preface (SETTINGS frame submitted in
   // initialize_nghttp2_session).  This constitutes the complete h2c server
-  // preface as defined in RFC 7540 §3.5 (feedback M5: direct h2c — no
+  // preface as defined in RFC 7540 §3.5 (direct h2c — no
   // HTTP/1.1 Upgrade mechanism; clients must use --http2-prior-knowledge).
   nghttp2_session_send(conn->session);
 
@@ -981,7 +980,7 @@ void http2_server::read_cb(struct bufferevent* bev, void* arg) {
   // Linearise the input buffer into a contiguous region.
   // evbuffer_pullup() returns unsigned char*; nghttp2_session_mem_recv() takes
   // const uint8_t*. On all supported platforms these are identical, but the
-  // reinterpret_cast makes the conversion explicit (feedback S4).
+  // reinterpret_cast makes the conversion explicit.
   // Note: for large buffers evbuffer_pullup copies memory. For NRF workloads
   // (small SBI frames) this is negligible. Future optimisation:
   // evbuffer_peek().
@@ -996,7 +995,7 @@ void http2_server::read_cb(struct bufferevent* bev, void* arg) {
   if (readlen < 0) {
     // Fatal session error — close connection.
     // SAFE to call delete conn here: BEV_OPT_DEFER_CALLBACKS ensures we are
-    // NOT on the bufferevent's internal call stack (feedback C3).
+    // NOT on the bufferevent's internal call stack.
     if (conn->pending_destruction) {
       return;  // already in deferred state
     }
@@ -1020,7 +1019,7 @@ void http2_server::read_cb(struct bufferevent* bev, void* arg) {
   // NOTE: Response HEADERS + DATA frames are already flushed by the
   // nghttp2_session_send() call inside http2_response::send().  This call
   // handles only protocol-level frames queued by nghttp2 internally during
-  // mem_recv (feedback C1 — session_send inside send()).
+  // mem_recv (session_send inside send()).
   int rv = nghttp2_session_send(conn->session);
   if (rv != 0) {
     if (conn->pending_destruction) {
@@ -1060,7 +1059,7 @@ void http2_server::event_cb(
   if (events & (BEV_EVENT_EOF | BEV_EVENT_ERROR | BEV_EVENT_TIMEOUT)) {
     // BEV_EVENT_TIMEOUT fires when connection_idle_timeout_sec expires,
     // implementing slow loris / idle connection protection.
-    // SAFE to delete: BEV_OPT_DEFER_CALLBACKS is set (feedback C3).
+    // SAFE to delete: BEV_OPT_DEFER_CALLBACKS is set.
     if (conn->pending_destruction) {
       return;  // already in deferred state
     }
@@ -1103,7 +1102,7 @@ void http2_server::goaway_and_drain_cb(
   // Step 3: Send GOAWAY to every active connection.
   // The mutex is held briefly to iterate the map.  Since we are on the event
   // loop thread, no bufferevent callbacks can fire concurrently — libevent is
-  // single-threaded, so there is no deadlock risk (feedback S2).
+  // single-threaded, so there is no deadlock risk.
   {
     std::lock_guard<std::mutex> lock(server->connections_mutex_);
     for (auto& [id, conn] : server->connections_) {
