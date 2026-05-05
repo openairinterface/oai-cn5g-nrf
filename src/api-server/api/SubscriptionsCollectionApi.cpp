@@ -21,8 +21,8 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::model::common::helpers;
-using namespace oai::model::nrf;
+using namespace oai::_3gpp::model::helpers;
+using namespace oai::_3gpp::model;
 
 SubscriptionsCollectionApi::SubscriptionsCollectionApi(
     std::shared_ptr<Pistache::Rest::Router> rtr) {
@@ -53,10 +53,10 @@ void SubscriptionsCollectionApi::create_subscription_handler(
     Pistache::Http::ResponseWriter response) {
   // Getting the body param
 
-  SubscriptionData subscriptionData;
+  nlohmann::json subscriptionData;
 
   try {
-    nlohmann::json::parse(request.body()).get_to(subscriptionData);
+    subscriptionData = nlohmann::json::parse(request.body());
     this->create_subscription(subscriptionData, response);
   } catch (nlohmann::detail::exception& e) {
     // send a 400 error

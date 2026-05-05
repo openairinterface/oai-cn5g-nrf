@@ -25,8 +25,7 @@
 #include "nrf.h"
 #include "string.hpp"
 
-using namespace oai::model::nrf;
-using namespace oai::model::common;
+using namespace oai::_3gpp::model;
 using namespace oai::nrf::app;
 using namespace oai::nrf;
 using namespace oai::common::sbi;
@@ -43,7 +42,11 @@ bool api_conv::profile_api_to_nrf_profile(
   Logger::nrf_app().debug(
       "\tInstance name: %s", profile.get()->get_nf_instance_name().c_str());
 
-  profile.get()->set_nf_status(api_profile.getNfStatus());
+  {
+    nlohmann::json j_st;
+    to_json(j_st, api_profile.getNfStatus());
+    profile.get()->set_nf_status(j_st.get<std::string>());
+  }
   profile.get()->set_custom_info(api_profile.getCustomInfo());
   Logger::nrf_app().debug(
       "getCustomInfo -> %s", api_profile.getCustomInfo().dump().c_str());
@@ -57,7 +60,7 @@ bool api_conv::profile_api_to_nrf_profile(
   profile.get()->set_nf_capacity(api_profile.getCapacity());
   Logger::nrf_app().debug("\tCapacity: %d", profile.get()->get_nf_capacity());
   // SNSSAIs
-  std::vector<Snssai> snssai = api_profile.getSNssais();
+  std::vector<ExtSnssai> snssai = api_profile.getSNssais();
   for (auto s : snssai) {
     snssai_t sn = {};
     sn.sd       = s.getSd();
@@ -67,8 +70,8 @@ bool api_conv::profile_api_to_nrf_profile(
         "\tSNSSAI (SD, SST): %d, %s", sn.sst, sn.sd.c_str());
   }
   if (api_profile.plmnListIsSet()) {
-    NFProfile nf_profile        = api_profile;
-    std::vector<PlmnId>& plmnid = nf_profile.getPlmnList();
+    NFProfile nf_profile       = api_profile;
+    std::vector<PlmnId> plmnid = nf_profile.getPlmnList();
     for (auto s : plmnid) {
       plmn_t sn = {};
       sn.mcc    = s.getMcc();
@@ -121,7 +124,9 @@ bool api_conv::profile_api_to_nrf_profile(
   //   }
   // }
 
-  nf_type_t nf_type = string_to_nf_type(api_profile.getNfType());
+  nlohmann::json j_nf_t;
+  to_json(j_nf_t, api_profile.getNfType());
+  nf_type_t nf_type = string_to_nf_type(j_nf_t.get<std::string>());
 
   switch (nf_type) {
     case NF_TYPE_AMF: {
@@ -487,15 +492,27 @@ bool api_conv::profile_api_to_nrf_profile(
     for (auto service : nf_services) {
       nf_service_t ns        = {};
       ns.service_instance_id = service.getServiceInstanceId();
-      ns.service_name        = service.getServiceName();
-      ns.scheme              = service.getScheme();
+      {
+        nlohmann::json j_sn;
+        to_json(j_sn, service.getServiceName());
+        ns.service_name = j_sn.get<std::string>();
+      }
+      {
+        nlohmann::json j_sc;
+        to_json(j_sc, service.getScheme());
+        ns.scheme = j_sc.get<std::string>();
+      }
       for (auto v : service.getVersions()) {
         nf_service_version_t version = {};
         version.api_full_version     = v.getApiFullVersion();
         version.api_version_in_uri   = v.getApiVersionInUri();
         ns.versions.push_back(version);
       }
-      ns.nf_service_status = service.getNfServiceStatus();
+      {
+        nlohmann::json j_ss;
+        to_json(j_ss, service.getNfServiceStatus());
+        ns.nf_service_status = j_ss.get<std::string>();
+      }
       if (service.ipEndPointsIsSet()) {
         for (auto v : service.getIpEndPoints()) {
           ip_endpoint_t ip_end;
@@ -514,10 +531,10 @@ bool api_conv::profile_api_to_nrf_profile(
 
 //------------------------------------------------------------------------------
 bool api_conv::subscription_api_to_nrf_subscription(
-    const SubscriptionData& api_sub, std::shared_ptr<nrf_subscription>& sub) {
+    const nlohmann::json& api_sub, std::shared_ptr<nrf_subscription>& sub) {
   Logger::nrf_app().debug(
       "Convert a json-type Subscription data a NRF subscription data");
-  sub.get()->set_notification_uri(api_sub.getNfStatusNotificationUri());
+  sub.get()->set_notification_uri(api_sub.value("nfStatusNotificationUri", ""));
   subscription_condition_t sub_condition = {};
 
   /*
@@ -576,9 +593,8 @@ bool api_conv::subscription_api_to_nrf_subscription(
   }
   */
 
-  if (api_sub.subscrCondIsSet()) {
-    nlohmann::json sub_condition_api = {};
-    api_sub.getSubscrCond(sub_condition_api);
+  if (api_sub.contains("subscrCond")) {
+    nlohmann::json sub_condition_api = api_sub["subscrCond"];
 
     // TODO: should be removed
     if (sub_condition_api.find("NfInstanceIdCond") != sub_condition_api.end()) {
@@ -655,15 +671,16 @@ bool api_conv::subscription_api_to_nrf_subscription(
   }
 
   // NotificationEventType
-  if (api_sub.reqNotifEventsIsSet()) {
-    for (auto n : api_sub.getReqNotifEvents()) {
-      if (n.compare("NF_REGISTERED") == 0) {
+  if (api_sub.contains("reqNotifEvents")) {
+    for (auto n : api_sub["reqNotifEvents"]) {
+      std::string n_str = n.get<std::string>();
+      if (n_str.compare("NF_REGISTERED") == 0) {
         sub.get()->add_notif_event(NOTIFICATION_TYPE_NF_REGISTERED);
-        Logger::nrf_app().debug("ReqNotifEvents: %s", n.c_str());
-      } else if (n.compare("NF_DEREGISTERED") == 0) {
+        Logger::nrf_app().debug("ReqNotifEvents: %s", n_str.c_str());
+      } else if (n_str.compare("NF_DEREGISTERED") == 0) {
         sub.get()->add_notif_event(NOTIFICATION_TYPE_NF_DEREGISTERED);
-        Logger::nrf_app().debug("ReqNotifEvents: %s", n.c_str());
-      } else if (n.compare("NF_PROFILE_CHANGED") == 0) {
+        Logger::nrf_app().debug("ReqNotifEvents: %s", n_str.c_str());
+      } else if (n_str.compare("NF_PROFILE_CHANGED") == 0) {
         sub.get()->add_notif_event(NOTIFICATION_TYPE_NF_PROFILE_CHANGED);
       } else {
         sub.get()->add_notif_event(NOTIFICATION_TYPE_UNKNOWN_EVENT);
@@ -671,8 +688,8 @@ bool api_conv::subscription_api_to_nrf_subscription(
     }
   }
 
-  if (api_sub.validityTimeIsSet()) {
-    std::string str = api_sub.getValidityTime();
+  if (api_sub.contains("validityTime")) {
+    std::string str = api_sub["validityTime"].get<std::string>();
     boost::posix_time::ptime p(boost::posix_time::from_iso_string(str));
     sub.get()->set_validity_time(p);
     Logger::nrf_app().debug("Validity Time: %s", str.c_str());

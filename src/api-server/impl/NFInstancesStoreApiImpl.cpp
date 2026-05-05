@@ -19,8 +19,7 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::model::nrf;
-using namespace oai::model::common;
+using namespace oai::_3gpp::model;
 using namespace oai::nrf::app;
 
 NFInstancesStoreApiImpl::NFInstancesStoreApiImpl(

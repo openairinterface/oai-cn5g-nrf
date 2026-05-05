@@ -4,6 +4,7 @@
 
 #include "nrf_app.hpp"
 
+#include <nlohmann/json.hpp>
 #include <unistd.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
@@ -25,8 +26,7 @@
 #include "nrf_search_result.hpp"
 
 using namespace oai::nrf::app;
-using namespace oai::model::nrf;
-using namespace oai::model::common;
+using namespace oai::_3gpp::model;
 using namespace std::chrono;
 using namespace boost::placeholders;
 
@@ -101,11 +101,13 @@ void nrf_app::handle_register_nf_instance(
     return;
   }
 
-  nf_type_t type = api_conv::string_to_nf_type(nf_profile.getNfType());
+  nlohmann::json j_nf_type;
+  to_json(j_nf_type, nf_profile.getNfType());
+  nf_type_t type = api_conv::string_to_nf_type(j_nf_type.get<std::string>());
   // Create a new NF profile or Update an existing NF profile
   Logger::nrf_app().debug(
       "NF Profile with ID %s, NF type %s", nf_instance_id.c_str(),
-      nf_profile.getNfType().c_str());
+      j_nf_type.get<std::string>().c_str());
 
   std::shared_ptr<nrf_profile> sn = {};
   switch (type) {
@@ -207,8 +209,10 @@ void nrf_app::handle_update_nf_instance(
         "Handle Update NF Instance request, NF type %s (HTTP version %d)",
         api_conv::nf_type_to_string(sn->get_nf_type()), http_version);
     for (auto p : patchItem) {
+      nlohmann::json j_op1;
+      to_json(j_op1, p.getOp());
       patch_op_type_t op =
-          api_conv::string_to_patch_operation(p.getOp().getEnumString());
+          api_conv::string_to_patch_operation(j_op1.get<std::string>());
       // Verify Path
       if ((p.getPath().substr(0, 1).compare("/") != 0) or
           (p.getPath().length() < 2)) {
@@ -449,7 +453,7 @@ void nrf_app::handle_deregister_nf_instance(
 
 //------------------------------------------------------------------------------
 void nrf_app::handle_create_subscription(
-    const SubscriptionData& subscription_data, std::string& sub_id,
+    const nlohmann::json& subscription_data, std::string& sub_id,
     int& http_code, const uint8_t http_version,
     ProblemDetails& problem_details) {
   std::string evsub_id;
@@ -482,7 +486,7 @@ void nrf_app::handle_create_subscription(
       // Send notification (with the existed NFs which matches the
       // conditions)
       std::string notification_uri =
-          subscription_data.getNfStatusNotificationUri();
+          subscription_data.value("nfStatusNotificationUri", "");
 
       std::vector<uint8_t> ev_types;
       ss.get()->get_notif_events(ev_types);
@@ -567,8 +571,10 @@ void nrf_app::handle_update_subscription(
   if (ss.get() != nullptr) {
     // patchItem should contain only 1 element
     for (auto p : patchItem) {
+      nlohmann::json j_op2;
+      to_json(j_op2, p.getOp());
       patch_op_type_t op =
-          api_conv::string_to_patch_operation(p.getOp().getEnumString());
+          api_conv::string_to_patch_operation(j_op2.get<std::string>());
       // Verify Path
       if ((p.getPath().substr(0, 1).compare("/") != 0) or
           (p.getPath().length() < 2)) {
