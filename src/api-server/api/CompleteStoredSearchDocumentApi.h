@@ -31,7 +31,7 @@ namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::model::nrf;
+using namespace oai::_3gpp::model;
 
 class CompleteStoredSearchDocumentApi {
  public:

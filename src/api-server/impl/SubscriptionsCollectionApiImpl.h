@@ -30,14 +30,14 @@
 #include <pistache/optional.h>
 
 #include "ProblemDetails.h"
-#include "SubscriptionData.h"
+#include <nlohmann/json.hpp>
 #include "nrf_app.hpp"
 
 namespace oai {
 namespace nrf {
 namespace api {
 
-using namespace oai::model::nrf;
+using namespace oai::_3gpp::model;
 using namespace oai::nrf::app;
 
 class SubscriptionsCollectionApiImpl
@@ -49,7 +49,7 @@ class SubscriptionsCollectionApiImpl
   ~SubscriptionsCollectionApiImpl() {}
 
   void create_subscription(
-      const SubscriptionData& subscriptionData,
+      const nlohmann::json& subscriptionData,
       Pistache::Http::ResponseWriter& response);
 
  private:

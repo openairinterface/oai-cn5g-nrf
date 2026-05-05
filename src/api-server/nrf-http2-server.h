@@ -6,7 +6,7 @@
 #define FILE_NRF_HTTP2_SERVER_SEEN
 
 #include "conversions.hpp"
-
+#include <nlohmann/json.hpp>
 //#include "nrf.h"
 #include <nghttp2/asio_http2_server.h>
 
@@ -15,7 +15,7 @@
 
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
-using namespace oai::model::nrf;
+using namespace oai::_3gpp::model;
 using namespace oai::nrf::app;
 
 class nrf_http2_server {
@@ -35,13 +35,13 @@ class nrf_http2_server {
       const response& response);
   void update_instance_handler(
       const std::string& nfInstanceID,
-      const std::vector<oai::model::common::PatchItem>& patchItem,
+      const std::vector<oai::_3gpp::model::PatchItem>& patchItem,
       const response& response);
   void create_subscription_handler(
-      const SubscriptionData& subscriptionData, const response& response);
+      const nlohmann::json& subscriptionData, const response& response);
   void update_subscription_handler(
       const std::string& subscriptionID,
-      const std::vector<oai::model::common::PatchItem>& patchItem,
+      const std::vector<oai::_3gpp::model::PatchItem>& patchItem,
       const response& response);
   void remove_subscription_handler(
       const std::string& subscriptionID, const response& response);
@@ -51,7 +51,7 @@ class nrf_http2_server {
       const response& response);
 
   void access_token_request_handler(
-      const SubscriptionData& subscriptionData, const response& response);
+      const nlohmann::json& subscriptionData, const response& response);
   void stop();
 
  private:
