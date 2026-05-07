@@ -22,6 +22,7 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <atomic>
 
 #include "conversions.hpp"
 #include "http_client.hpp"
@@ -177,8 +178,16 @@ int main(int argc, char** argv) {
     nrf_api_server_2 = new nrf_http2_server(
         conv::toString(nrf_cfg->local().get_sbi().get_addr4()),
         nrf_cfg->local().get_sbi().get_port(), nrf_app_inst);
-    std::thread nrf_http2_manager(&nrf_http2_server::start, nrf_api_server_2);
+    std::atomic<bool> nrf_http2_start_ok{true};
+    std::thread nrf_http2_manager([&nrf_http2_start_ok]() {
+      nrf_http2_start_ok.store(
+          nrf_api_server_2->start(), std::memory_order_release);
+    });
     nrf_http2_manager.join();
+    if (!nrf_http2_start_ok.load(std::memory_order_acquire)) {
+      Logger::nrf_app().error("HTTP2 server startup failed. Exiting");
+      exit(1);
+    }
   }
 
   FILE* fp             = NULL;

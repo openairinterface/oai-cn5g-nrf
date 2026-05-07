@@ -23,18 +23,51 @@ using namespace oai::nrf::api;
 extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 
 //------------------------------------------------------------------------------
-void nrf_http2_server::start() {
+bool nrf_http2_server::start() {
   Logger::nrf_app().info("HTTP2 server being started");
 
-  std::string nfInstanceID        = {};
-  std::string subscriptionID      = {};
-  nlohmann::json subscriptionData = {};
+  auto nrf_http2_cfg = nrf_cfg->nrf();
+  server_.config().num_worker_threads =
+      nrf_http2_cfg->get_http2_worker_threads();
+  server_.config().max_pending_tasks =
+      nrf_http2_cfg->get_http2_max_pending_tasks();
+  server_.config().max_connections = nrf_http2_cfg->get_http2_max_connections();
+  server_.config().max_concurrent_streams =
+      nrf_http2_cfg->get_http2_max_concurrent_streams();
+  server_.config().initial_window_size =
+      nrf_http2_cfg->get_http2_initial_window_size();
+  server_.config().max_header_list_size =
+      nrf_http2_cfg->get_http2_max_header_list_size();
+  server_.config().max_request_body_size =
+      nrf_http2_cfg->get_http2_max_request_body_size();
+  server_.config().connection_idle_timeout_sec =
+      nrf_http2_cfg->get_http2_connection_idle_timeout_sec();
+  server_.config().shutdown_drain_timeout_sec =
+      nrf_http2_cfg->get_http2_shutdown_drain_timeout_sec();
+  server_.config().listener_backlog =
+      nrf_http2_cfg->get_http2_listener_backlog();
+
+  const auto& tls_cfg         = nrf_cfg->get_tls_config();
+  server_.config().enable_tls = tls_cfg.enable_tls();
+  if (tls_cfg.enable_tls()) {
+    server_.config().tls_cert_chain_path  = tls_cfg.get_cert_certificate_path();
+    server_.config().tls_private_key_path = tls_cfg.get_cert_key_path();
+    server_.config().tls_ca_path          = tls_cfg.get_cert_pem_path();
+  }
+
+  Logger::nrf_app().info(
+      "HTTP2 server config: workers=%u queue=%zu max_connections=%u "
+      "max_streams=%u max_body=%zu tls=%s",
+      server_.config().num_worker_threads, server_.config().max_pending_tasks,
+      server_.config().max_connections, server_.config().max_concurrent_streams,
+      server_.config().max_request_body_size,
+      server_.config().enable_tls ? "enabled" : "disabled");
 
   // NF Instances collection
   server_.handle(
       sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfNfmPathNfInstances,
-      [&](const http2_request& request, http2_response& response) {
+      [this](const http2_request& request, http2_response& response) {
         try {
           if (request.method == "GET") {
             std::string nfType =
@@ -60,7 +93,7 @@ void nrf_http2_server::start() {
   server_.handle(
       sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfNfmPathNfInstances + "/",
-      [&](const http2_request& request, http2_response& response) {
+      [this](const http2_request& request, http2_response& response) {
         try {
           // Register a new NF Instance
           if (request.method == "PUT" && !request.body.empty()) {
@@ -107,11 +140,12 @@ void nrf_http2_server::start() {
   server_.handle(
       sbi_helper::NrfNfmBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfNfmPathSubscriptions,
-      [&](const http2_request& request, http2_response& response) {
+      [this](const http2_request& request, http2_response& response) {
         try {
           // Create a new subscription
           if (request.method == "POST" && !request.body.empty()) {
-            subscriptionData = nlohmann::json::parse(request.body);
+            nlohmann::json subscriptionData =
+                nlohmann::json::parse(request.body);
             this->create_subscription_handler(subscriptionData, response);
           }
           // Updates a subscription
@@ -145,7 +179,7 @@ void nrf_http2_server::start() {
   server_.handle(
       sbi_helper::NrfDiscBase + nrf_cfg->local().get_sbi().get_api_version() +
           nrf_sbi_helper::NrfDiscPathNfInstances,
-      [&](const http2_request& request, http2_response& response) {
+      [this](const http2_request& request, http2_response& response) {
         try {
           // Search a collection of NF Instances
           if (request.method == "GET") {
@@ -179,12 +213,12 @@ void nrf_http2_server::start() {
         }
       });
 
-  // Configure thread pool (4 workers by default)
-  // TODO: get from configuration file
-  server_.config().num_worker_threads = 4;
-
   // Start the server (blocks until stop() is called)
-  server_.start();
+  if (!server_.start()) {
+    Logger::nrf_app().error("HTTP2 server failed to start");
+    return false;
+  }
+  return true;
 }
 
 //------------------------------------------------------------------------------

@@ -285,7 +285,7 @@ IF(STATIC_LINKING)
 ENDIF(STATIC_LINKING)   
 
 target_link_libraries (nrf ${ASAN} 
-    -Wl,--start-group NRF NRF_API CN_UTILS -lnettle ${NETTLE_LIBRARIES} ${CRYPTO_LIBRARIES} -lnghttp2 -lboost_system -lboost_thread -lboost_date_time -lfmt -lspdlog -lssl -lcrypto dl -Wl,--end-group pthread m rt event event_pthreads boost_system pistache curl -lyaml-cpp cpr::cpr)
+    -Wl,--start-group NRF NRF_API CN_UTILS -lnettle ${NETTLE_LIBRARIES} ${CRYPTO_LIBRARIES} -lnghttp2 -lboost_system -lboost_thread -lboost_date_time -lfmt -lspdlog -lssl -lcrypto dl -Wl,--end-group pthread m rt event event_pthreads event_openssl boost_system pistache curl -lyaml-cpp cpr::cpr)
 
 add_boolean_option(USE_LTTNG  False "Activate the LTTNG tracer, a debugging/monitoring framework" ON)
 if (USE_LTTNG)

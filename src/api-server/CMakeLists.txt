@@ -26,3 +26,31 @@ file(GLOB NRF_API_SERVER_src_files
  
 add_library(NRF_API STATIC
            ${NRF_API_SERVER_src_files})
+
+if(BUILD_TESTING)
+  add_executable(http2_server_smoke_test
+    ${NRF_API_SERVER_DIR}/http2-server.cpp
+    ${SRC_TOP_DIR}/../test/http2_server_smoke.cpp
+    ${SRC_TOP_DIR}/${MOUNTED_COMMON}/logger/nf-tp.cpp
+    ${SRC_TOP_DIR}/${MOUNTED_COMMON}/logger/lttng_logger_base.cpp
+    ${SRC_TOP_DIR}/${MOUNTED_COMMON}/logger/spd_logger_base.cpp
+    ${SRC_TOP_DIR}/${MOUNTED_COMMON}/logger/logger_base.cpp
+  )
+  target_link_libraries(http2_server_smoke_test
+    -Wl,--start-group
+    -lnghttp2
+    -lssl
+    -lcrypto
+    -lfmt
+    -lspdlog
+    -Wl,--end-group
+    event
+    event_pthreads
+    event_openssl
+    curl
+    pthread
+    m
+    rt
+  )
+  add_test(NAME http2_server_smoke_test COMMAND http2_server_smoke_test)
+endif()

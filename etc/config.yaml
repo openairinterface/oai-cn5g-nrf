@@ -16,6 +16,12 @@ register_nf:
 
 http_version: 2
 
+tls:
+  enable_tls: no
+  cert_certificate_path: ""
+  cert_key_path: ""
+  cert_pem_path: ""
+
 ############## SBI Interfaces
 ### Each NF takes its local SBI interfaces and remote interfaces from here, unless it gets them using NRF discovery mechanisms
 nfs:
@@ -188,6 +194,17 @@ dnns:
 nrf:
   heartbeat: 10 # in seconds
   suspended_nf_interval: 20 # in seconds
+  http2_server:
+    worker_threads: 4
+    max_pending_tasks: 10000
+    max_connections: 10000
+    max_concurrent_streams: 1000
+    initial_window_size: 65535
+    max_header_list_size: 65536
+    max_request_body_size: 1048576
+    connection_idle_timeout_sec: 60
+    shutdown_drain_timeout_sec: 5
+    listener_backlog: -1
 pcf:
   local_policy:
     policy_decisions_path: /openair-pcf/policies/policy_decisions

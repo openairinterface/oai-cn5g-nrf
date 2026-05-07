@@ -23,9 +23,10 @@ class nrf_http2_server {
         m_port(port),
         server_(addr, port),
         m_nrf_app(nrf_app_inst) {}
-  void start();
+  bool start();
   void init(size_t thr) {}
   void stop();
+  bool is_running() const { return server_.is_running(); }
 
   void register_nf_instance_handler(
       const NFProfile& NFProfiledata, http2_response& response);

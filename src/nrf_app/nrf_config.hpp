@@ -18,7 +18,7 @@ class nrf_config : public oai::config::config {
       : config(config_path, NRF_CONFIG_NAME, log_stdout, log_rot_file) {
     m_used_config_values = {
         LOG_LEVEL_CONFIG_NAME, NF_LIST_CONFIG_NAME, NF_CONFIG_HTTP_NAME,
-        NRF_CONFIG_NAME};
+        NF_CONFIG_TLS_NAME, NRF_CONFIG_NAME};
     m_used_sbi_values = {NRF_CONFIG_NAME};
 
     m_register_nrf_feature.unset_config();

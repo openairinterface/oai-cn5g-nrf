@@ -5,6 +5,7 @@
 #ifndef FILE_HTTP2_SERVER_SEEN
 #define FILE_HTTP2_SERVER_SEEN
 
+#include <array>
 #include <atomic>
 #include <cstdint>
 #include <functional>
@@ -23,7 +24,10 @@
 
 #include "thread-pool.h"
 
+typedef struct ssl_ctx_st SSL_CTX;
+
 // Forward declarations
+class http2_server;
 struct http2_connection;
 struct http2_stream;
 struct thread_pool_work_item;
@@ -66,7 +70,7 @@ class http2_response {
   // alive for the duration of send()).
   http2_response(
       nghttp2_session* session, int32_t stream_id, struct bufferevent* bev,
-      http2_stream* stream);
+      http2_stream* stream, http2_server* server = nullptr);
 
   // Threaded constructor — response data is captured into the work item and
   // submitted to nghttp2 on the event loop thread via response_post_cb.
@@ -77,6 +81,7 @@ class http2_response {
   int32_t stream_id_                = 0;
   struct bufferevent* bev_          = nullptr;
   http2_stream* stream_             = nullptr;  // for response_body ownership
+  http2_server* server_             = nullptr;
   bool sent_                        = false;    // guard against double-send
   thread_pool_work_item* work_item_ = nullptr;  // non-null in threaded mode
 };
@@ -84,6 +89,47 @@ class http2_response {
 // Handler callback type: receives a fully accumulated request + response writer
 using http2_handler =
     std::function<void(const http2_request&, http2_response&)>;
+
+constexpr size_t HTTP2_LATENCY_BUCKET_COUNT = 12;
+
+struct http2_latency_histogram_snapshot {
+  std::array<uint64_t, HTTP2_LATENCY_BUCKET_COUNT> buckets{};
+};
+
+struct http2_server_metrics_snapshot {
+  uint64_t total_requests_treated        = 0;
+  uint64_t total_requests_completed      = 0;
+  uint64_t total_streams_opened          = 0;
+  uint64_t active_streams                = 0;
+  uint64_t active_connections            = 0;
+  uint64_t rejected_connections          = 0;
+  uint64_t active_route_handlers         = 0;
+  uint64_t max_active_route_handlers     = 0;
+  uint64_t worker_enqueue_rejections     = 0;
+  uint64_t request_body_limit_rejections = 0;
+  uint64_t stream_resets                 = 0;
+  uint64_t goaway_submitted              = 0;
+  uint64_t response_submit_failures      = 0;
+  uint64_t event_loop_post_failures      = 0;
+  uint64_t tls_handshakes_started        = 0;
+  uint64_t tls_handshakes_succeeded      = 0;
+  uint64_t tls_handshakes_failed         = 0;
+  uint64_t tls_alpn_h2_selected          = 0;
+  uint64_t tls_alpn_missing_or_rejected  = 0;
+  uint64_t status_1xx                    = 0;
+  uint64_t status_2xx                    = 0;
+  uint64_t status_3xx                    = 0;
+  uint64_t status_4xx                    = 0;
+  uint64_t status_5xx                    = 0;
+  uint64_t status_other                  = 0;
+  size_t worker_queue_depth              = 0;
+  size_t worker_active_tasks             = 0;
+  size_t worker_queue_capacity           = 0;
+  http2_latency_histogram_snapshot request_total_us;
+  http2_latency_histogram_snapshot queue_wait_us;
+  http2_latency_histogram_snapshot handler_duration_us;
+  http2_latency_histogram_snapshot postback_delay_us;
+};
 
 // Server Configuration
 struct http2_server_config {
@@ -100,10 +146,52 @@ struct http2_server_config {
   // Timeouts (seconds)
   int connection_idle_timeout_sec = 60;
   int shutdown_drain_timeout_sec  = 5;
+  int listener_backlog            = -1;
 
   // Thread pool (0 = synchronous/event-loop-only mode)
   uint32_t num_worker_threads = 4;
   size_t max_pending_tasks    = 10000;
+
+  // TLS/HTTPS. Disabled by default to preserve existing h2c behavior.
+  bool enable_tls = false;
+  std::string tls_cert_chain_path;
+  std::string tls_private_key_path;
+  std::string tls_ca_path;
+};
+
+struct http2_server_metrics {
+  std::atomic<uint64_t> total_requests_treated{0};
+  std::atomic<uint64_t> total_requests_completed{0};
+  std::atomic<uint64_t> total_streams_opened{0};
+  std::atomic<uint64_t> active_streams{0};
+  std::atomic<uint64_t> active_connections{0};
+  std::atomic<uint64_t> rejected_connections{0};
+  std::atomic<uint64_t> active_route_handlers{0};
+  std::atomic<uint64_t> max_active_route_handlers{0};
+  std::atomic<uint64_t> worker_enqueue_rejections{0};
+  std::atomic<uint64_t> request_body_limit_rejections{0};
+  std::atomic<uint64_t> stream_resets{0};
+  std::atomic<uint64_t> goaway_submitted{0};
+  std::atomic<uint64_t> response_submit_failures{0};
+  std::atomic<uint64_t> event_loop_post_failures{0};
+  std::atomic<uint64_t> tls_handshakes_started{0};
+  std::atomic<uint64_t> tls_handshakes_succeeded{0};
+  std::atomic<uint64_t> tls_handshakes_failed{0};
+  std::atomic<uint64_t> tls_alpn_h2_selected{0};
+  std::atomic<uint64_t> tls_alpn_missing_or_rejected{0};
+  std::atomic<uint64_t> status_1xx{0};
+  std::atomic<uint64_t> status_2xx{0};
+  std::atomic<uint64_t> status_3xx{0};
+  std::atomic<uint64_t> status_4xx{0};
+  std::atomic<uint64_t> status_5xx{0};
+  std::atomic<uint64_t> status_other{0};
+  std::array<std::atomic<uint64_t>, HTTP2_LATENCY_BUCKET_COUNT>
+      request_total_us{};
+  std::array<std::atomic<uint64_t>, HTTP2_LATENCY_BUCKET_COUNT> queue_wait_us{};
+  std::array<std::atomic<uint64_t>, HTTP2_LATENCY_BUCKET_COUNT>
+      handler_duration_us{};
+  std::array<std::atomic<uint64_t>, HTTP2_LATENCY_BUCKET_COUNT>
+      postback_delay_us{};
 };
 
 // Server Class
@@ -123,9 +211,10 @@ class http2_server {
   // Semantics identical to nghttp2-asio server.handle().
   void handle(const std::string& path_prefix, http2_handler handler);
 
-  // Start the server.  Blocks until stop() is called from another thread
-  // (runs the libevent event loop internally).
-  void start();
+  // Start the server. Blocks until stop() is called from another thread
+  // (runs the libevent event loop internally). Returns false if startup fails
+  // before the listener is active.
+  bool start();
 
   // Graceful shutdown — thread-safe, may be called from any thread.
   // Flow: stop() → event_base_once(goaway_and_drain_cb)
@@ -145,9 +234,33 @@ class http2_server {
   bool has_thread_pool() const { return pool_ != nullptr; }
   thread_pool* get_thread_pool() { return pool_.get(); }
   bool is_shutting_down() const { return shutting_down_; }
+  bool is_running() const { return running_.load(std::memory_order_acquire); }
   struct event_base* base() const {
     return base_;
   }
+  http2_server_metrics_snapshot metrics_snapshot() const;
+
+  void record_request_treated();
+  void record_response_completed(int status_code);
+  void record_response_submit_failure();
+  void record_event_loop_post_failure();
+  uint64_t record_worker_enqueue_rejection();
+  void record_request_body_limit_rejection();
+  void record_stream_reset();
+  void record_goaway_submitted();
+  void record_stream_opened();
+  void record_stream_closed();
+  void record_connection_rejected();
+  void record_tls_handshake_started();
+  void record_tls_handshake_succeeded();
+  void record_tls_handshake_failed();
+  void record_tls_alpn_h2_selected();
+  void record_tls_alpn_missing_or_rejected();
+  void record_route_handler_started();
+  void record_route_handler_completed(uint64_t duration_us);
+  void record_request_total(uint64_t duration_us);
+  void record_queue_wait(uint64_t duration_us);
+  void record_postback_delay(uint64_t duration_us);
 
   // Static callback registered via event_base_once() by worker threads.
   // Must be public so lambdas in file-scope nghttp2 callbacks can reference it.
@@ -164,6 +277,7 @@ class http2_server {
   struct event_base* base_         = nullptr;
   struct evconnlistener* listener_ = nullptr;
   struct event* drain_timer_       = nullptr;
+  SSL_CTX* ssl_ctx_                = nullptr;
 
   // server state
   std::string address_;
@@ -203,6 +317,10 @@ class http2_server {
   std::unique_ptr<thread_pool> pool_;
   bool shutting_down_ = false;  // event-loop thread only
   std::atomic<uint64_t> next_conn_id_{1};
+  http2_server_metrics metrics_;
+
+  bool init_tls_context();
+  void free_tls_context();
 };
 
 #endif  // FILE_HTTP2_SERVER_SEEN

@@ -50,23 +50,37 @@ class thread_pool {
   bool enqueue(std::function<void()> task) {
     {
       std::lock_guard<std::mutex> lock(mutex_);
-      if (shutdown_) return false;
-      if (max_queue_size_ > 0 && tasks_.size() >= max_queue_size_) return false;
+      if (shutdown_) {
+        enqueue_rejections_.fetch_add(1, std::memory_order_relaxed);
+        return false;
+      }
+      if (max_queue_size_ > 0 && tasks_.size() >= max_queue_size_) {
+        enqueue_rejections_.fetch_add(1, std::memory_order_relaxed);
+        return false;
+      }
       tasks_.push(std::move(task));
+      queued_tasks_.fetch_add(1, std::memory_order_relaxed);
     }
     cv_.notify_one();
     return true;
   }
 
-  // Signal all workers to stop, drain remaining tasks, and join threads.
-  // Blocks until all workers have exited.  Safe to call multiple times.
-  void shutdown() {
+  // Signal workers to stop accepting new tasks and drain already queued work.
+  // Does not join worker threads; use shutdown() for the blocking join phase.
+  // Safe to call multiple times and from the event-loop thread.
+  void stop_accepting() {
     {
       std::lock_guard<std::mutex> lock(mutex_);
       if (shutdown_) return;
       shutdown_ = true;
     }
     cv_.notify_all();
+  }
+
+  // Signal all workers to stop, drain remaining tasks, and join threads.
+  // Blocks until all workers have exited.  Safe to call multiple times.
+  void shutdown() {
+    stop_accepting();
     for (auto& w : workers_) {
       if (w.joinable()) w.join();
     }
@@ -75,6 +89,20 @@ class thread_pool {
   // Returns true after shutdown() has been called.
   // Lock-free read — use as a hint; enqueue() is authoritative under mutex.
   bool is_shutdown() const { return shutdown_; }
+
+  size_t queued_tasks() const {
+    return queued_tasks_.load(std::memory_order_relaxed);
+  }
+
+  size_t active_tasks() const {
+    return active_tasks_.load(std::memory_order_relaxed);
+  }
+
+  size_t max_queue_size() const { return max_queue_size_; }
+
+  uint64_t enqueue_rejections() const {
+    return enqueue_rejections_.load(std::memory_order_relaxed);
+  }
 
  private:
   void worker_loop() {
@@ -86,8 +114,11 @@ class thread_pool {
         if (shutdown_ && tasks_.empty()) return;
         task = std::move(tasks_.front());
         tasks_.pop();
+        queued_tasks_.fetch_sub(1, std::memory_order_relaxed);
       }
+      active_tasks_.fetch_add(1, std::memory_order_relaxed);
       task();
+      active_tasks_.fetch_sub(1, std::memory_order_relaxed);
     }
   }
 
@@ -97,6 +128,9 @@ class thread_pool {
   std::condition_variable cv_;
   std::atomic<bool> shutdown_;
   size_t max_queue_size_;
+  std::atomic<size_t> queued_tasks_{0};
+  std::atomic<size_t> active_tasks_{0};
+  std::atomic<uint64_t> enqueue_rejections_{0};
 };
 
 #endif  // FILE_THREAD_POOL_SEEN

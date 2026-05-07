@@ -4,12 +4,29 @@
 
 #pragma once
 
+#include <cstddef>
+
 #include "config.hpp"
 
 constexpr auto NRF_CONFIG_HEARTBEAT                   = "heartbeat";
 constexpr auto NRF_CONFIG_HEARTBEAT_LABEL             = "Heartbeat";
 constexpr auto NRF_CONFIG_SUSPENDED_NF_INTERVAL       = "suspended_nf_interval";
 constexpr auto NRF_CONFIG_SUSPENDED_NF_INTERVAL_LABEL = "Suspended NF Interval";
+constexpr auto NRF_CONFIG_HTTP2_SERVER                = "http2_server";
+constexpr auto NRF_CONFIG_HTTP2_SERVER_LABEL          = "HTTP/2 Server";
+constexpr auto NRF_CONFIG_HTTP2_WORKER_THREADS        = "worker_threads";
+constexpr auto NRF_CONFIG_HTTP2_MAX_PENDING_TASKS     = "max_pending_tasks";
+constexpr auto NRF_CONFIG_HTTP2_MAX_CONNECTIONS       = "max_connections";
+constexpr auto NRF_CONFIG_HTTP2_MAX_CONCURRENT_STREAMS =
+    "max_concurrent_streams";
+constexpr auto NRF_CONFIG_HTTP2_INITIAL_WINDOW_SIZE   = "initial_window_size";
+constexpr auto NRF_CONFIG_HTTP2_MAX_HEADER_LIST_SIZE  = "max_header_list_size";
+constexpr auto NRF_CONFIG_HTTP2_MAX_REQUEST_BODY_SIZE = "max_request_body_size";
+constexpr auto NRF_CONFIG_HTTP2_IDLE_TIMEOUT_SEC =
+    "connection_idle_timeout_sec";
+constexpr auto NRF_CONFIG_HTTP2_SHUTDOWN_DRAIN_TIMEOUT_SEC =
+    "shutdown_drain_timeout_sec";
+constexpr auto NRF_CONFIG_HTTP2_LISTENER_BACKLOG = "listener_backlog";
 
 namespace oai::config::nrf {
 
@@ -19,6 +36,16 @@ class nrf_config_type : public oai::config::nf {
  private:
   int_config_value m_heartbeat;
   int_config_value m_suspended_nf_interval;
+  int_config_value m_http2_worker_threads;
+  int_config_value m_http2_max_pending_tasks;
+  int_config_value m_http2_max_connections;
+  int_config_value m_http2_max_concurrent_streams;
+  int_config_value m_http2_initial_window_size;
+  int_config_value m_http2_max_header_list_size;
+  int_config_value m_http2_max_request_body_size;
+  int_config_value m_http2_connection_idle_timeout_sec;
+  int_config_value m_http2_shutdown_drain_timeout_sec;
+  int_config_value m_http2_listener_backlog;
 
  public:
   explicit nrf_config_type(
@@ -37,6 +64,16 @@ class nrf_config_type : public oai::config::nf {
 
   [[nodiscard]] uint16_t get_suspended_nf_interval() const;
   void set_suspended_nf_interval(uint16_t);
+  [[nodiscard]] uint32_t get_http2_worker_threads() const;
+  [[nodiscard]] size_t get_http2_max_pending_tasks() const;
+  [[nodiscard]] uint32_t get_http2_max_connections() const;
+  [[nodiscard]] uint32_t get_http2_max_concurrent_streams() const;
+  [[nodiscard]] uint32_t get_http2_initial_window_size() const;
+  [[nodiscard]] uint32_t get_http2_max_header_list_size() const;
+  [[nodiscard]] size_t get_http2_max_request_body_size() const;
+  [[nodiscard]] int get_http2_connection_idle_timeout_sec() const;
+  [[nodiscard]] int get_http2_shutdown_drain_timeout_sec() const;
+  [[nodiscard]] int get_http2_listener_backlog() const;
 };
 
 }  // namespace oai::config::nrf
