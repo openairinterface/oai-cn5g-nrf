@@ -52,6 +52,11 @@ nrf_config_type::nrf_config_type(
   m_http2_listener_backlog =
       int_config_value(NRF_CONFIG_HTTP2_LISTENER_BACKLOG, -1);
   m_http2_listener_backlog.set_validation_interval(-1, INT32_MAX);
+  m_http2_enable_mtls =
+      option_config_value(NRF_CONFIG_HTTP2_ENABLE_MTLS, false);
+  m_http2_stats_log_interval_sec =
+      int_config_value(NRF_CONFIG_HTTP2_STATS_LOG_INTERVAL_SEC, 0);
+  m_http2_stats_log_interval_sec.set_validation_interval(0, INT32_MAX);
 }
 
 //------------------------------------------------------------------------------
@@ -91,6 +96,10 @@ void nrf_config_type::from_yaml(const YAML::Node& node) {
           m_http2_shutdown_drain_timeout_sec.from_yaml(http2_elem.second);
         } else if (http2_key == NRF_CONFIG_HTTP2_LISTENER_BACKLOG) {
           m_http2_listener_backlog.from_yaml(http2_elem.second);
+        } else if (http2_key == NRF_CONFIG_HTTP2_ENABLE_MTLS) {
+          m_http2_enable_mtls.from_yaml(http2_elem.second);
+        } else if (http2_key == NRF_CONFIG_HTTP2_STATS_LOG_INTERVAL_SEC) {
+          m_http2_stats_log_interval_sec.from_yaml(http2_elem.second);
         }
       }
     }
@@ -124,7 +133,10 @@ nlohmann::json nrf_config_type::to_json() {
       {m_http2_shutdown_drain_timeout_sec.get_config_name(),
        m_http2_shutdown_drain_timeout_sec.to_json()},
       {m_http2_listener_backlog.get_config_name(),
-       m_http2_listener_backlog.to_json()}};
+       m_http2_listener_backlog.to_json()},
+      {m_http2_enable_mtls.get_config_name(), m_http2_enable_mtls.to_json()},
+      {m_http2_stats_log_interval_sec.get_config_name(),
+       m_http2_stats_log_interval_sec.to_json()}};
   return json_data;
 }
 
@@ -193,6 +205,16 @@ bool nrf_config_type::from_json(const nlohmann::json& json_data) {
           http2_json.end()) {
         m_http2_listener_backlog.from_json(
             http2_json[m_http2_listener_backlog.get_config_name()]);
+      }
+      if (http2_json.find(m_http2_enable_mtls.get_config_name()) !=
+          http2_json.end()) {
+        m_http2_enable_mtls.from_json(
+            http2_json[m_http2_enable_mtls.get_config_name()]);
+      }
+      if (http2_json.find(m_http2_stats_log_interval_sec.get_config_name()) !=
+          http2_json.end()) {
+        m_http2_stats_log_interval_sec.from_json(
+            http2_json[m_http2_stats_log_interval_sec.get_config_name()]);
       }
     }
     return true;
@@ -275,6 +297,16 @@ std::string nrf_config_type::to_string(const std::string& indent) const {
           BASE_FORMATTER, OUTER_LIST_ELEM,
           m_http2_listener_backlog.get_config_name(), http2_width,
           m_http2_listener_backlog.get_value()));
+  out.append(http2_indent)
+      .append(fmt::format(
+          BASE_FORMATTER, OUTER_LIST_ELEM,
+          m_http2_enable_mtls.get_config_name(), http2_width,
+          m_http2_enable_mtls.get_value() ? "yes" : "no"));
+  out.append(http2_indent)
+      .append(fmt::format(
+          BASE_FORMATTER, OUTER_LIST_ELEM,
+          m_http2_stats_log_interval_sec.get_config_name(), http2_width,
+          m_http2_stats_log_interval_sec.get_value()));
 
   return out;
 }
@@ -294,6 +326,7 @@ void nrf_config_type::validate() {
   m_http2_connection_idle_timeout_sec.validate();
   m_http2_shutdown_drain_timeout_sec.validate();
   m_http2_listener_backlog.validate();
+  m_http2_stats_log_interval_sec.validate();
 }
 
 //------------------------------------------------------------------------------
@@ -354,4 +387,14 @@ int nrf_config_type::get_http2_shutdown_drain_timeout_sec() const {
 //------------------------------------------------------------------------------
 int nrf_config_type::get_http2_listener_backlog() const {
   return m_http2_listener_backlog.get_value();
+}
+
+//------------------------------------------------------------------------------
+bool nrf_config_type::get_http2_enable_mtls() const {
+  return m_http2_enable_mtls.get_value();
+}
+
+//------------------------------------------------------------------------------
+uint32_t nrf_config_type::get_http2_stats_log_interval_sec() const {
+  return static_cast<uint32_t>(m_http2_stats_log_interval_sec.get_value());
 }

@@ -157,6 +157,17 @@ struct http2_server_config {
   std::string tls_cert_chain_path;
   std::string tls_private_key_path;
   std::string tls_ca_path;
+
+  // Mutual TLS: when true, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT
+  // is enforced. Requires tls_ca_path to be set. Disabled by default.
+  bool enable_mtls = false;
+
+  // Periodic stats log interval in seconds (0 = disabled).
+  // When non-zero, a recurring timer fires on the event-loop thread every
+  // stats_log_interval_sec seconds and logs a counter snapshot identical to
+  // the shutdown summary.  Counters are read via metrics_snapshot() which
+  // accesses atomics — no additional locking needed.
+  uint32_t stats_log_interval_sec = 0;
 };
 
 struct http2_server_metrics {
@@ -214,7 +225,13 @@ class http2_server {
   // Start the server. Blocks until stop() is called from another thread
   // (runs the libevent event loop internally). Returns false if startup fails
   // before the listener is active.
-  bool start();
+  //
+  // on_ready (optional): if non-null, called with true once the listener socket
+  // is bound and the server is accepting connections, or with false if startup
+  // fails before event_base_dispatch() is entered.  The callback fires on the
+  // calling thread (before event_base_dispatch blocks), so callers can use a
+  // std::promise to get readiness notification without polling.
+  bool start(std::function<void(bool)> on_ready = nullptr);
 
   // Graceful shutdown — thread-safe, may be called from any thread.
   // Flow: stop() → event_base_once(goaway_and_drain_cb)
@@ -242,20 +259,20 @@ class http2_server {
 
   void record_request_treated();
   void record_response_completed(int status_code);
-  void record_response_submit_failure();
-  void record_event_loop_post_failure();
+  uint64_t record_response_submit_failure();
+  uint64_t record_event_loop_post_failure();
   uint64_t record_worker_enqueue_rejection();
   void record_request_body_limit_rejection();
   void record_stream_reset();
   void record_goaway_submitted();
   void record_stream_opened();
   void record_stream_closed();
-  void record_connection_rejected();
+  uint64_t record_connection_rejected();
   void record_tls_handshake_started();
   void record_tls_handshake_succeeded();
-  void record_tls_handshake_failed();
+  uint64_t record_tls_handshake_failed();
   void record_tls_alpn_h2_selected();
-  void record_tls_alpn_missing_or_rejected();
+  uint64_t record_tls_alpn_missing_or_rejected();
   void record_route_handler_started();
   void record_route_handler_completed(uint64_t duration_us);
   void record_request_total(uint64_t duration_us);
@@ -306,6 +323,7 @@ class http2_server {
   static void event_cb(struct bufferevent* bev, short events, void* arg);
   static void goaway_and_drain_cb(evutil_socket_t fd, short what, void* arg);
   static void drain_timer_cb(evutil_socket_t fd, short what, void* arg);
+  static void stats_log_timer_cb(evutil_socket_t fd, short what, void* arg);
 
   // Internal helpers
   void add_connection(http2_connection* conn);

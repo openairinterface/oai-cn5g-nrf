@@ -112,6 +112,19 @@ if (CMAKE_BUILD_TYPE STREQUAL "")
 endif()
 
 ################################################################
+# ThreadSanitizer build option
+# NOTE: TSAN is incompatible with AddressSanitizer (-fsanitize=address)
+# and Valgrind. Do not combine with Debug/RelWithDebInfo builds that
+# enable ASAN above. Default is OFF so normal builds are unaffected.
+################################################################
+option(ENABLE_TSAN "Build with ThreadSanitizer (mutually exclusive with ASAN/Valgrind)" OFF)
+if(ENABLE_TSAN)
+  message(STATUS "ThreadSanitizer enabled")
+  add_compile_options(-fsanitize=thread -g -O1)
+  add_link_options(-fsanitize=thread)
+endif()
+
+################################################################
 # Processor architecture
 ################################################################
 

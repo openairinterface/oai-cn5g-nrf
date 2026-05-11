@@ -2,6 +2,7 @@
 
 cmake_minimum_required (VERSION 3.0.2)
 project(oai-cn)
+include(CTest)
 
 # Override options for NRF
 set (  PACKAGE_NAME                    "NRF" )

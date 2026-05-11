@@ -205,6 +205,8 @@ nrf:
     connection_idle_timeout_sec: 60
     shutdown_drain_timeout_sec: 5
     listener_backlog: -1
+    enable_mtls: false
+    stats_log_interval_sec: 0  # 0 = disabled; set to e.g. 60 for a 60-second periodic stats log
 pcf:
   local_policy:
     policy_decisions_path: /openair-pcf/policies/policy_decisions

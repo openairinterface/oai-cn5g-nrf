@@ -12,6 +12,7 @@
 #include <string>
 
 #include "3gpp_29.500.h"
+#include "AccessTokenRsp.h"
 #include "logger.hpp"
 #include "nrf_config.hpp"
 #include "string.hpp"
@@ -23,7 +24,7 @@ using namespace oai::nrf::api;
 extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 
 //------------------------------------------------------------------------------
-bool nrf_http2_server::start() {
+bool nrf_http2_server::start(std::function<void(bool)> on_ready) {
   Logger::nrf_app().info("HTTP2 server being started");
 
   auto nrf_http2_cfg = nrf_cfg->nrf();
@@ -54,6 +55,9 @@ bool nrf_http2_server::start() {
     server_.config().tls_private_key_path = tls_cfg.get_cert_key_path();
     server_.config().tls_ca_path          = tls_cfg.get_cert_pem_path();
   }
+  server_.config().enable_mtls = nrf_http2_cfg->get_http2_enable_mtls();
+  server_.config().stats_log_interval_sec =
+      nrf_http2_cfg->get_http2_stats_log_interval_sec();
 
   Logger::nrf_app().info(
       "HTTP2 server config: workers=%u queue=%zu max_connections=%u "
@@ -213,8 +217,32 @@ bool nrf_http2_server::start() {
         }
       });
 
-  // Start the server (blocks until stop() is called)
-  if (!server_.start()) {
+  // OAuth2 Access Token (Token endpoint)
+  server_.handle(
+      sbi_helper::NrfOauthBase + nrf_cfg->local().get_sbi().get_api_version() +
+          sbi_helper::NrfOauthPathToken,
+      [this](const http2_request& request, http2_response& response) {
+        try {
+          if (request.method == "POST") {
+            this->access_token_request_handler(request.body, response);
+          } else {
+            response.send(
+                oai::common::sbi::http_status_code::METHOD_NOT_ALLOWED, {});
+          }
+        } catch (nlohmann::detail::exception& e) {
+          Logger::nrf_sbi().warn(
+              "Can not parse the json data (error: %s)!", e.what());
+          response.send(oai::common::sbi::http_status_code::BAD_REQUEST, {});
+        } catch (std::exception& e) {
+          Logger::nrf_sbi().warn("error: %s!", e.what());
+          response.send(oai::common::sbi::http_status_code::BAD_REQUEST, {});
+        }
+      });
+
+  // Start the server (blocks until stop() is called).
+  // Pass the on_ready callback through so the caller receives the readiness
+  // signal before event_base_dispatch() blocks.
+  if (!server_.start(std::move(on_ready))) {
     Logger::nrf_app().error("HTTP2 server failed to start");
     return false;
   }
@@ -226,7 +254,7 @@ void nrf_http2_server::register_nf_instance_handler(
     const NFProfile& NFProfiledata, http2_response& response) {
   std::string nfInstanceID = {};
   nfInstanceID             = NFProfiledata.getNfInstanceId();
-  Logger::nrf_sbi().info(
+  Logger::nrf_sbi().debug(
       "Got a request to register an NF instance/Update an NF instance, "
       "Instance ID: %s",
       nfInstanceID.c_str());
@@ -265,7 +293,7 @@ void nrf_http2_server::register_nf_instance_handler(
 //------------------------------------------------------------------------------
 void nrf_http2_server::get_nf_instance_handler(
     const std::string& nfInstanceID, http2_response& response) {
-  Logger::nrf_sbi().info(
+  Logger::nrf_sbi().debug(
       "Got a request to retrieve the profile of a given NF Instance, Instance "
       "ID: %s",
       nfInstanceID.c_str());
@@ -300,7 +328,7 @@ void nrf_http2_server::get_nf_instance_handler(
 void nrf_http2_server::get_nf_instances_handler(
     const std::string& nf_type, const std::string& limit_nfs,
     http2_response& response) {
-  Logger::nrf_sbi().info(
+  Logger::nrf_sbi().debug(
       "Got a request to retrieve  a collection of NF Instances");
 
   std::string nfType = {};
@@ -353,7 +381,7 @@ void nrf_http2_server::get_nf_instances_handler(
 void nrf_http2_server::update_instance_handler(
     const std::string& nfInstanceID, const std::vector<PatchItem>& patchItem,
     http2_response& response) {
-  Logger::nrf_sbi().info(
+  Logger::nrf_sbi().debug(
       "Got a request to update an NF instance, Instance ID: %s",
       nfInstanceID.c_str());
 
@@ -398,7 +426,7 @@ void nrf_http2_server::update_instance_handler(
 //------------------------------------------------------------------------------
 void nrf_http2_server::deregister_nf_instance_handler(
     const std::string& nfInstanceID, http2_response& response) {
-  Logger::nrf_sbi().info(
+  Logger::nrf_sbi().debug(
       "Got a request to de-register a given NF Instance, Instance ID: %s",
       nfInstanceID.c_str());
 
@@ -424,7 +452,7 @@ void nrf_http2_server::deregister_nf_instance_handler(
 //------------------------------------------------------------------------------
 void nrf_http2_server::create_subscription_handler(
     const nlohmann::json& subscriptionData, http2_response& response) {
-  Logger::nrf_sbi().info("Got a request to create a new subscription");
+  Logger::nrf_sbi().debug("Got a request to create a new subscription");
   int http_code                  = 0;
   ProblemDetails problem_details = {};
   std::string sub_id;
@@ -456,7 +484,7 @@ void nrf_http2_server::create_subscription_handler(
 void nrf_http2_server::update_subscription_handler(
     const std::string& subscriptionID, const std::vector<PatchItem>& patchItem,
     http2_response& response) {
-  Logger::nrf_sbi().info(
+  Logger::nrf_sbi().debug(
       "Got a request to update of subscription to NF instances, subscription "
       "ID %s",
       subscriptionID.c_str());
@@ -487,7 +515,7 @@ void nrf_http2_server::update_subscription_handler(
 //------------------------------------------------------------------------------
 void nrf_http2_server::remove_subscription_handler(
     const std::string& subscriptionID, http2_response& response) {
-  Logger::nrf_sbi().info(
+  Logger::nrf_sbi().debug(
       "Got a request to remove an existing subscription, subscription ID %s",
       subscriptionID.c_str());
   int http_code                  = 0;
@@ -513,7 +541,7 @@ void nrf_http2_server::search_nf_instances_handler(
     const std::string& target_nf_type, const std::string& requester_nf_type,
     const std::string& requester_nf_instance_id, const std::string& limit_nfs,
     http2_response& response) {
-  Logger::nrf_sbi().info(
+  Logger::nrf_sbi().debug(
       "Got a request to discover the set of NF instances that satisfies a "
       "number of input query parameters");
 
@@ -583,7 +611,33 @@ void nrf_http2_server::search_nf_instances_handler(
 
 //------------------------------------------------------------------------------
 void nrf_http2_server::access_token_request_handler(
-    const nlohmann::json& subscriptionData, http2_response& response) {}
+    const std::string& tokenRequest, http2_response& response) {
+  Logger::nrf_sbi().debug(
+      "Got a request to request an OAuth2 access token from the authorization "
+      "server (NRF)");
+  Logger::nrf_sbi().debug("Request body: %s", tokenRequest.c_str());
+
+  int http_code                   = 0;
+  ProblemDetails problem_details  = {};
+  AccessTokenRsp access_token_rsp = {};
+
+  m_nrf_app->handle_access_token_request(
+      tokenRequest, access_token_rsp, http_code, 2, problem_details);
+
+  nlohmann::json json_data = {};
+  std::string content_type = "application/json";
+
+  if (http_code != oai::common::sbi::http_status_code::OK) {
+    to_json(json_data, problem_details);
+    content_type = "application/problem+json";
+  } else {
+    to_json(json_data, access_token_rsp);
+  }
+
+  std::map<std::string, std::string> h;
+  h["content-type"] = content_type;
+  response.send(http_code, h, json_data.dump());
+}
 
 //------------------------------------------------------------------------------
 void nrf_http2_server::stop() {

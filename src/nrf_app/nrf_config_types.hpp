@@ -26,7 +26,11 @@ constexpr auto NRF_CONFIG_HTTP2_IDLE_TIMEOUT_SEC =
     "connection_idle_timeout_sec";
 constexpr auto NRF_CONFIG_HTTP2_SHUTDOWN_DRAIN_TIMEOUT_SEC =
     "shutdown_drain_timeout_sec";
-constexpr auto NRF_CONFIG_HTTP2_LISTENER_BACKLOG = "listener_backlog";
+constexpr auto NRF_CONFIG_HTTP2_LISTENER_BACKLOG  = "listener_backlog";
+constexpr auto NRF_CONFIG_HTTP2_ENABLE_MTLS       = "enable_mtls";
+constexpr auto NRF_CONFIG_HTTP2_ENABLE_MTLS_LABEL = "Enable mTLS";
+constexpr auto NRF_CONFIG_HTTP2_STATS_LOG_INTERVAL_SEC =
+    "stats_log_interval_sec";
 
 namespace oai::config::nrf {
 
@@ -46,6 +50,8 @@ class nrf_config_type : public oai::config::nf {
   int_config_value m_http2_connection_idle_timeout_sec;
   int_config_value m_http2_shutdown_drain_timeout_sec;
   int_config_value m_http2_listener_backlog;
+  option_config_value m_http2_enable_mtls;
+  int_config_value m_http2_stats_log_interval_sec;
 
  public:
   explicit nrf_config_type(
@@ -74,6 +80,8 @@ class nrf_config_type : public oai::config::nf {
   [[nodiscard]] int get_http2_connection_idle_timeout_sec() const;
   [[nodiscard]] int get_http2_shutdown_drain_timeout_sec() const;
   [[nodiscard]] int get_http2_listener_backlog() const;
+  [[nodiscard]] bool get_http2_enable_mtls() const;
+  [[nodiscard]] uint32_t get_http2_stats_log_interval_sec() const;
 };
 
 }  // namespace oai::config::nrf

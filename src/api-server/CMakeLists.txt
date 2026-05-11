@@ -52,5 +52,9 @@ if(BUILD_TESTING)
     m
     rt
   )
+  if(ENABLE_TSAN)
+    target_compile_options(http2_server_smoke_test PRIVATE -fsanitize=thread -g -O1)
+    target_link_options(http2_server_smoke_test PRIVATE -fsanitize=thread)
+  endif()
   add_test(NAME http2_server_smoke_test COMMAND http2_server_smoke_test)
 endif()

@@ -5,6 +5,7 @@
 #ifndef FILE_NRF_HTTP2_SERVER_SEEN
 #define FILE_NRF_HTTP2_SERVER_SEEN
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -23,7 +24,7 @@ class nrf_http2_server {
         m_port(port),
         server_(addr, port),
         m_nrf_app(nrf_app_inst) {}
-  bool start();
+  bool start(std::function<void(bool)> on_ready = nullptr);
   void init(size_t thr) {}
   void stop();
   bool is_running() const { return server_.is_running(); }
@@ -54,7 +55,7 @@ class nrf_http2_server {
       const std::string& requester_nf_instance_id, const std::string& limit_nfs,
       http2_response& response);
   void access_token_request_handler(
-      const nlohmann::json& subscriptionData, http2_response& response);
+      const std::string& tokenRequest, http2_response& response);
 
  private:
   oai::utils::uint_generator<uint32_t> m_promise_id_generator;

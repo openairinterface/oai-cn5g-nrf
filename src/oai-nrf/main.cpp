@@ -19,6 +19,7 @@
 #include <stdlib.h>  // srand
 #include <unistd.h>  // get_pid(), pause()
 
+#include <future>
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -178,13 +179,24 @@ int main(int argc, char** argv) {
     nrf_api_server_2 = new nrf_http2_server(
         conv::toString(nrf_cfg->local().get_sbi().get_addr4()),
         nrf_cfg->local().get_sbi().get_port(), nrf_app_inst);
-    std::atomic<bool> nrf_http2_start_ok{true};
-    std::thread nrf_http2_manager([&nrf_http2_start_ok]() {
-      nrf_http2_start_ok.store(
-          nrf_api_server_2->start(), std::memory_order_release);
+
+    // Use a promise/future pair so that STARTED is written only after the
+    // listener socket is bound and the server is actively accepting
+    // connections, not after event_base_dispatch() has exited (i.e. after
+    // shutdown).
+    std::promise<bool> start_promise;
+    auto start_future = start_promise.get_future();
+
+    std::thread nrf_http2_manager([&start_promise]() {
+      nrf_api_server_2->start(
+          [&start_promise](bool ok) { start_promise.set_value(ok); });
     });
-    nrf_http2_manager.join();
-    if (!nrf_http2_start_ok.load(std::memory_order_acquire)) {
+    // Detach so the event loop runs independently; STARTED is written below
+    // once the future signals readiness.
+    nrf_http2_manager.detach();
+
+    bool started_ok = start_future.get();
+    if (!started_ok) {
       Logger::nrf_app().error("HTTP2 server startup failed. Exiting");
       exit(1);
     }

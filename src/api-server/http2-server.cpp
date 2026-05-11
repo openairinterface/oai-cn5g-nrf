@@ -405,11 +405,11 @@ static int on_frame_recv_callback(
                   // cleanup cannot be performed from this worker thread —
                   // deferred-destruction timeout (if active) or server shutdown
                   // will be the last cleanup opportunity.
-                  Logger::nrf_app().error(
-                      "HTTP2 conn %llu stream %d: event_base_once failed,"
-                      " response discarded",
-                      (unsigned long long) item->conn_id, item->stream_id);
-                  srv->record_event_loop_post_failure();
+                  uint64_t n = srv->record_event_loop_post_failure();
+                  if ((n & (n - 1)) == 0)
+                    Logger::nrf_app().error(
+                        "HTTP2: event_base_once post failed: count=%llu",
+                        (unsigned long long) n);
                   delete item;  // prevent leak; client will get a timeout
                 }
               });
@@ -669,10 +669,14 @@ void http2_response::send(
     int rv = nghttp2_submit_response(
         session_, stream_id_, nva.data(), nva.size(), nullptr);
     if (rv != 0) {
-      Logger::nrf_app().error(
-          "HTTP2 send: nghttp2_submit_response failed for stream %d: %s",
-          stream_id_, nghttp2_strerror(rv));
-      if (server_) server_->record_response_submit_failure();
+      if (server_) {
+        uint64_t n = server_->record_response_submit_failure();
+        if ((n & (n - 1)) == 0)
+          Logger::nrf_app().error(
+              "HTTP2 send: nghttp2_submit_response failed for stream %d: %s"
+              " count=%llu",
+              stream_id_, nghttp2_strerror(rv), (unsigned long long) n);
+      }
       return;
     }
   } else {
@@ -693,10 +697,14 @@ void http2_response::send(
     int rv = nghttp2_submit_response(
         session_, stream_id_, nva.data(), nva.size(), &data_prd);
     if (rv != 0) {
-      Logger::nrf_app().error(
-          "HTTP2 send: nghttp2_submit_response failed for stream %d: %s",
-          stream_id_, nghttp2_strerror(rv));
-      if (server_) server_->record_response_submit_failure();
+      if (server_) {
+        uint64_t n = server_->record_response_submit_failure();
+        if ((n & (n - 1)) == 0)
+          Logger::nrf_app().error(
+              "HTTP2 send: nghttp2_submit_response failed for stream %d: %s"
+              " count=%llu",
+              stream_id_, nghttp2_strerror(rv), (unsigned long long) n);
+      }
       return;
     }
   }
@@ -710,10 +718,14 @@ void http2_response::send(
   // sends everything in one shot without waiting for the next read_cb cycle.
   int rv_send = nghttp2_session_send(session_);
   if (rv_send != 0) {
-    Logger::nrf_app().error(
-        "HTTP2 send: nghttp2_session_send failed for stream %d: %s", stream_id_,
-        nghttp2_strerror(rv_send));
-    if (server_) server_->record_response_submit_failure();
+    if (server_) {
+      uint64_t n = server_->record_response_submit_failure();
+      if ((n & (n - 1)) == 0)
+        Logger::nrf_app().error(
+            "HTTP2 send: nghttp2_session_send failed for stream %d: %s"
+            " count=%llu",
+            stream_id_, nghttp2_strerror(rv_send), (unsigned long long) n);
+    }
     return;
   }
   if (server_) {
@@ -969,12 +981,16 @@ void http2_server::record_response_completed(int status_code) {
   }
 }
 
-void http2_server::record_response_submit_failure() {
-  metrics_.response_submit_failures.fetch_add(1, std::memory_order_relaxed);
+uint64_t http2_server::record_response_submit_failure() {
+  return metrics_.response_submit_failures.fetch_add(
+             1, std::memory_order_relaxed) +
+         1;
 }
 
-void http2_server::record_event_loop_post_failure() {
-  metrics_.event_loop_post_failures.fetch_add(1, std::memory_order_relaxed);
+uint64_t http2_server::record_event_loop_post_failure() {
+  return metrics_.event_loop_post_failures.fetch_add(
+             1, std::memory_order_relaxed) +
+         1;
 }
 
 uint64_t http2_server::record_worker_enqueue_rejection() {
@@ -1008,8 +1024,9 @@ void http2_server::record_stream_closed() {
   }
 }
 
-void http2_server::record_connection_rejected() {
-  metrics_.rejected_connections.fetch_add(1, std::memory_order_relaxed);
+uint64_t http2_server::record_connection_rejected() {
+  return metrics_.rejected_connections.fetch_add(1, std::memory_order_relaxed) +
+         1;
 }
 
 void http2_server::record_tls_handshake_started() {
@@ -1020,16 +1037,20 @@ void http2_server::record_tls_handshake_succeeded() {
   metrics_.tls_handshakes_succeeded.fetch_add(1, std::memory_order_relaxed);
 }
 
-void http2_server::record_tls_handshake_failed() {
-  metrics_.tls_handshakes_failed.fetch_add(1, std::memory_order_relaxed);
+uint64_t http2_server::record_tls_handshake_failed() {
+  return metrics_.tls_handshakes_failed.fetch_add(
+             1, std::memory_order_relaxed) +
+         1;
 }
 
 void http2_server::record_tls_alpn_h2_selected() {
   metrics_.tls_alpn_h2_selected.fetch_add(1, std::memory_order_relaxed);
 }
 
-void http2_server::record_tls_alpn_missing_or_rejected() {
-  metrics_.tls_alpn_missing_or_rejected.fetch_add(1, std::memory_order_relaxed);
+uint64_t http2_server::record_tls_alpn_missing_or_rejected() {
+  return metrics_.tls_alpn_missing_or_rejected.fetch_add(
+             1, std::memory_order_relaxed) +
+         1;
 }
 
 void http2_server::record_route_handler_started() {
@@ -1116,6 +1137,15 @@ bool http2_server::init_tls_context() {
     return false;
   }
 
+  if (config_.enable_mtls) {
+    SSL_CTX_set_verify(
+        ssl_ctx_, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, nullptr);
+  } else if (!config_.tls_ca_path.empty()) {
+    Logger::nrf_app().warn(
+        "HTTP2 TLS: CA path loaded but mTLS (SSL_VERIFY_PEER) is not enabled "
+        "(set enable_mtls: true to enforce client cert verification)");
+  }
+
   Logger::nrf_app().info(
       "HTTP2 TLS enabled with ALPN h2 (cert=%s)",
       config_.tls_cert_chain_path.c_str());
@@ -1153,7 +1183,7 @@ http2_handler* http2_server::find_handler(const std::string& path) {
 // 6  Server lifecycle — start / stop
 // ---------------------------------------------------------------------------
 
-bool http2_server::start() {
+bool http2_server::start(std::function<void(bool)> on_ready) {
   // Sort routes longest-prefix-first so find_handler() returns the most
   // specific match without needing further disambiguation.
   std::sort(routes_.begin(), routes_.end(), [](const Route& a, const Route& b) {
@@ -1169,12 +1199,14 @@ bool http2_server::start() {
   base_ = event_base_new();
   if (!base_) {
     Logger::nrf_app().error("HTTP2 server: failed to create event_base");
+    if (on_ready) on_ready(false);
     return false;
   }
 
   if (!init_tls_context()) {
     event_base_free(base_);
     base_ = nullptr;
+    if (on_ready) on_ready(false);
     return false;
   }
 
@@ -1194,6 +1226,7 @@ bool http2_server::start() {
       free_tls_context();
       event_base_free(base_);
       base_ = nullptr;
+      if (on_ready) on_ready(false);
       return false;
     }
   }
@@ -1209,10 +1242,23 @@ bool http2_server::start() {
     free_tls_context();
     event_base_free(base_);
     base_ = nullptr;
+    if (on_ready) on_ready(false);
     return false;
   }
 
   running_.store(true, std::memory_order_release);
+
+  // Schedule the first periodic stats-log timer if configured.
+  // event_base_once timers are automatically cancelled when the event base is
+  // freed (after event_base_dispatch returns), so no explicit cancellation is
+  // needed.  stats_log_timer_cb re-schedules itself on each firing, so a single
+  // event_base_once call here is all that is required to start the chain.
+  if (config_.stats_log_interval_sec > 0) {
+    struct timeval stats_tv;
+    stats_tv.tv_sec  = static_cast<long>(config_.stats_log_interval_sec);
+    stats_tv.tv_usec = 0;
+    event_base_once(base_, -1, EV_TIMEOUT, stats_log_timer_cb, this, &stats_tv);
+  }
 
   // Create thread pool if configured (0 = synchronous mode).
   if (config_.num_worker_threads > 0) {
@@ -1229,6 +1275,12 @@ bool http2_server::start() {
       address_.c_str(), port_, config_.enable_tls ? "TLS/ALPN h2" : "h2c",
       config_.max_connections, config_.max_concurrent_streams,
       config_.listener_backlog);
+
+  // Signal readiness: listener is bound and active; server is ready to accept
+  // connections.  Fire the callback BEFORE event_base_dispatch() blocks so the
+  // caller (e.g. main.cpp via std::promise) can write STARTED while the server
+  // is actively running.
+  if (on_ready) on_ready(true);
 
   // Blocks until drain_timer_cb calls event_base_loopbreak().
   int dispatch_ret = event_base_dispatch(base_);
@@ -1257,7 +1309,9 @@ bool http2_server::start() {
       "body_limit_rejections=%llu stream_resets=%llu goaway=%llu "
       "response_submit_failures=%llu post_failures=%llu tls_started=%llu "
       "tls_ok=%llu tls_failed=%llu alpn_h2=%llu alpn_rejected=%llu "
-      "status_2xx=%llu status_4xx=%llu status_5xx=%llu",
+      "status_2xx=%llu status_4xx=%llu status_5xx=%llu "
+      "status_1xx=%llu status_3xx=%llu other_status=%llu "
+      "total_streams=%llu rejected_connections=%llu",
       (unsigned long long) snapshot.total_requests_treated,
       (unsigned long long) snapshot.total_requests_completed,
       (unsigned long long) snapshot.max_active_route_handlers,
@@ -1277,7 +1331,12 @@ bool http2_server::start() {
       (unsigned long long) snapshot.tls_alpn_missing_or_rejected,
       (unsigned long long) snapshot.status_2xx,
       (unsigned long long) snapshot.status_4xx,
-      (unsigned long long) snapshot.status_5xx);
+      (unsigned long long) snapshot.status_5xx,
+      (unsigned long long) snapshot.status_1xx,
+      (unsigned long long) snapshot.status_3xx,
+      (unsigned long long) snapshot.status_other,
+      (unsigned long long) snapshot.total_streams_opened,
+      (unsigned long long) snapshot.rejected_connections);
   Logger::nrf_app().info("HTTP2 server fully stopped");
   return dispatch_ret >= 0;
 }
@@ -1317,7 +1376,11 @@ void http2_server::accept_cb(
     std::lock_guard<std::mutex> lock(server->connections_mutex_);
     if (server->connections_.size() >=
         static_cast<size_t>(server->config_.max_connections)) {
-      server->record_connection_rejected();
+      uint64_t n = server->record_connection_rejected();
+      if ((n & (n - 1)) == 0)
+        Logger::nrf_app().warn(
+            "HTTP2: connection limit reached (%u), rejecting: count=%llu",
+            server->config_.max_connections, (unsigned long long) n);
       close(fd);  // reject — POSIX close() requires <unistd.h>
       return;
     }
@@ -1334,7 +1397,10 @@ void http2_server::accept_cb(
   if (server->config_.enable_tls) {
     ssl = SSL_new(server->ssl_ctx_);
     if (!ssl) {
-      server->record_tls_handshake_failed();
+      uint64_t n = server->record_tls_handshake_failed();
+      if ((n & (n - 1)) == 0)
+        Logger::nrf_app().warn(
+            "HTTP2 TLS: SSL_new failed: count=%llu", (unsigned long long) n);
       close(fd);
       return;
     }
@@ -1348,7 +1414,11 @@ void http2_server::accept_cb(
   }
   if (!bev) {
     if (server->config_.enable_tls) {
-      server->record_tls_handshake_failed();
+      uint64_t n = server->record_tls_handshake_failed();
+      if ((n & (n - 1)) == 0)
+        Logger::nrf_app().warn(
+            "HTTP2 TLS: bufferevent_openssl_socket_new failed: count=%llu",
+            (unsigned long long) n);
       if (ssl) SSL_free(ssl);
     }
     close(fd);
@@ -1476,7 +1546,11 @@ void http2_server::event_cb(struct bufferevent* bev, short events, void* arg) {
       }
       if (selected_proto == nullptr || selected_proto_len != 2 ||
           memcmp(selected_proto, "h2", 2) != 0) {
-        conn->server->record_tls_alpn_missing_or_rejected();
+        uint64_t n = conn->server->record_tls_alpn_missing_or_rejected();
+        if ((n & (n - 1)) == 0)
+          Logger::nrf_app().warn(
+              "HTTP2 TLS: ALPN mismatch (not h2): conn=%llu count=%llu",
+              (unsigned long long) conn->conn_id, (unsigned long long) n);
         conn->server->remove_connection(conn);
         delete conn;
         return;
@@ -1490,7 +1564,11 @@ void http2_server::event_cb(struct bufferevent* bev, short events, void* arg) {
   if (events & (BEV_EVENT_EOF | BEV_EVENT_ERROR | BEV_EVENT_TIMEOUT)) {
     if (conn->server->config().enable_tls && !conn->tls_handshake_complete &&
         (events & BEV_EVENT_ERROR)) {
-      conn->server->record_tls_handshake_failed();
+      uint64_t n = conn->server->record_tls_handshake_failed();
+      if ((n & (n - 1)) == 0)
+        Logger::nrf_app().warn(
+            "HTTP2 TLS: handshake error: conn=%llu count=%llu",
+            (unsigned long long) conn->conn_id, (unsigned long long) n);
     }
     // BEV_EVENT_TIMEOUT fires when connection_idle_timeout_sec expires,
     // implementing slow loris / idle connection protection.
@@ -1571,6 +1649,38 @@ void http2_server::drain_timer_cb(
 
   server->close_all_connections();
   event_base_loopbreak(server->base_);
+}
+
+// stats_log_timer_cb
+// Fires on the event-loop thread (scheduled via event_base_once() in start()).
+// Logs a counter snapshot and immediately re-schedules itself.  The chain stops
+// naturally when event_base_dispatch() returns — no pending event_base_once
+// timers will fire after the loop exits, and they are freed with the event
+// base.
+
+void http2_server::stats_log_timer_cb(
+    evutil_socket_t /*fd*/, short /*what*/, void* arg) {
+  auto* server = static_cast<http2_server*>(arg);
+
+  // Re-schedule before logging so the interval is measured from fire to fire.
+  struct timeval tv;
+  tv.tv_sec  = static_cast<long>(server->config_.stats_log_interval_sec);
+  tv.tv_usec = 0;
+  event_base_once(
+      server->base_, -1, EV_TIMEOUT, stats_log_timer_cb, server, &tv);
+
+  auto s = server->metrics_snapshot();
+  Logger::nrf_app().info(
+      "HTTP2 stats (periodic): treated=%llu completed=%llu "
+      "status_2xx=%llu status_4xx=%llu status_5xx=%llu "
+      "active_connections=%llu rejected_connections=%llu "
+      "worker_queue_depth=%zu",
+      (unsigned long long) s.total_requests_treated,
+      (unsigned long long) s.total_requests_completed,
+      (unsigned long long) s.status_2xx, (unsigned long long) s.status_4xx,
+      (unsigned long long) s.status_5xx,
+      (unsigned long long) s.active_connections,
+      (unsigned long long) s.rejected_connections, s.worker_queue_depth);
 }
 
 // ---------------------------------------------------------------------------
