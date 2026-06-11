@@ -31,7 +31,7 @@
 
 #include <DiscNFInstancesStoreApi.h>
 
-#include <pistache/optional.h>
+#include <optional>
 
 #include "AccessType.h"
 #include "AtsssCapability.h"

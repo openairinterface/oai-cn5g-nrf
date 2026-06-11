@@ -84,13 +84,13 @@ COPY --from=yq-source /usr/bin/yq /usr/bin
 
 COPY --from=oai-nrf-builder \
 # Copying only the packages built from source
-    /usr/local/lib64/libpistache.so.0 \
+    /usr/local/lib/libpistache.so* \
     /usr/local/lib/libnghttp2_asio.so \
     /usr/local/lib/libnghttp2_asio.so.1 \
     /usr/local/lib64/libyaml-cpp.so.0.* \
     /usr/local/lib64/libspdlog.so \
     /usr/local/lib64/libfmt.so \
-    /usr/local/lib64/libcpr.so.1 \  
+    /usr/local/lib64/libcpr.so.1 \
     /usr/lib64/
 
 RUN ldconfig && \

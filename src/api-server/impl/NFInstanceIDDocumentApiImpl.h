@@ -27,7 +27,7 @@
 
 #include <NFInstanceIDDocumentApi.h>
 
-#include <pistache/optional.h>
+#include <optional>
 
 #include "NFProfile.h"
 #include "PatchItem.h"
