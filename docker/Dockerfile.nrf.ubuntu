@@ -6,7 +6,8 @@
 #
 # Dockerfile for the Open-Air-Interface NRF service
 #   Valid for Ubuntu-20.04 (focal),
-#             Ubuntu-22.04 (jammy)
+#             Ubuntu-22.04 (jammy),
+#             Ubuntu-24.04 (noble)
 #
 # The port exposed by container are 8080/tcp , 8080/tcp change it according to your setup
 #
@@ -15,7 +16,7 @@
 #---------------------------------------------------------------------
 # BASE IMAGE
 #---------------------------------------------------------------------
-ARG BASE_IMAGE=ubuntu:jammy
+ARG BASE_IMAGE=ubuntu:noble
 FROM $BASE_IMAGE AS oai-nrf-base
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -131,9 +132,9 @@ COPY --from=oai-nrf-builder \
     /usr/local/lib/libnghttp2.so.14 \
     /usr/local/lib/libnghttp2_asio.so.1 \
     /usr/local/lib/libyaml-cpp.so.0.? \
-    /usr/local/lib/libpistache.so \
+    /usr/local/lib/libpistache.so* \
     /usr/local/lib/libfmt.so \
-    /usr/local/lib/libcpr.so.1 \
+    /usr/local/lib/libcpr.so.1* \
     /usr/local/lib/
 
 RUN ldconfig && \
@@ -147,7 +148,7 @@ WORKDIR /openair-nrf
 
 ARG GIT_COMMIT
 
-LABEL org.opencontainers.image.authors="OpenAirInterface <contact@openairinterface.org>" \
+LABEL org.opencontainers.image.authors="OpenAirInterface <oaicicdteam@openairinterface.org>" \
       org.opencontainers.image.vendor="OpenAirInterface Software Alliance" \
       org.opencontainers.image.licenses="Collaborative Standards Software License v1.0" \
       org.opencontainers.image.title="OAI NRF" \

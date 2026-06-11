@@ -27,21 +27,21 @@ NFInstancesStoreApiImpl::NFInstancesStoreApiImpl(
     std::string address)
     : NFInstancesStoreApi(rtr), m_nrf_app(nrf_app_inst), m_address(address) {}
 void NFInstancesStoreApiImpl::get_nf_instances(
-    const Pistache::Optional<std::string>& nfType,
-    const Pistache::Optional<int32_t>& limit,
+    const std::optional<std::string>& nfType,
+    const std::optional<int32_t>& limit,
     Pistache::Http::ResponseWriter& response) {
   Logger::nrf_sbi().info(
       "Got a request to retrieve  a collection of NF Instances");
 
   std::string nf_type = {};
-  if (!nfType.isEmpty()) {
-    nf_type = nfType.get();
+  if (nfType.has_value()) {
+    nf_type = nfType.value();
     Logger::nrf_sbi().debug("\tNF type:  %s", nf_type.c_str());
   }
 
   uint32_t limit_item = 0;
-  if (!limit.isEmpty()) {
-    limit_item = limit.get();
+  if (limit.has_value()) {
+    limit_item = limit.value();
     Logger::nrf_sbi().debug("\tLimit number of items: %d", limit_item);
   }
 

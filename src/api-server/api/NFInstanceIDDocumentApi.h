@@ -22,7 +22,7 @@
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <pistache/http_headers.h>
-#include <pistache/optional.h>
+#include <optional>
 
 #include "NFProfile.h"
 #include "PatchItem.h"
@@ -99,7 +99,7 @@ class NFInstanceIDDocumentApi {
   virtual void register_nf_instance(
       const std::string& nfInstanceID,
       const oai::_3gpp::model::NFProfile& nFProfile,
-      const Pistache::Optional<Pistache::Http::Header::Raw>& contentEncoding,
+      const std::optional<Pistache::Http::Header::Raw>& contentEncoding,
       Pistache::Http::ResponseWriter& response) = 0;
 
   /// <summary>
