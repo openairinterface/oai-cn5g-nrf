@@ -83,8 +83,8 @@ class NFInstancesStoreApi {
   /// <param name="limit">How many items to return at one time (optional,
   /// default to 0)</param>
   virtual void get_nf_instances(
-      const Pistache::Optional<std::string>& nfType,
-      const Pistache::Optional<int32_t>& limit,
+      const std::optional<std::string>& nfType,
+      const std::optional<int32_t>& limit,
       Pistache::Http::ResponseWriter& response) = 0;
 
   /// <summary>

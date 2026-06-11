@@ -59,7 +59,7 @@ class NFInstanceIDDocumentApiImpl
       Pistache::Http::ResponseWriter& response);
   void register_nf_instance(
       const std::string& nfInstanceID, const NFProfile& nFProfile,
-      const Pistache::Optional<Pistache::Http::Header::Raw>& contentEncoding,
+      const std::optional<Pistache::Http::Header::Raw>& contentEncoding,
       Pistache::Http::ResponseWriter& response);
   void update_nf_instance(
       const std::string& nfInstanceID,
