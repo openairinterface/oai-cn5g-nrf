@@ -1072,6 +1072,78 @@ class pcf_profile : public nrf_profile {
   pcf_info_t pcf_info;
 };
 
+class sepp_profile : public nrf_profile {
+ public:
+  sepp_profile(nrf_event& ev) : nrf_profile(ev, NF_TYPE_SEPP) {
+    sepp_info = {};
+  }
+
+  sepp_profile(nrf_event& ev, const std::string& id) : nrf_profile(ev, id) {
+    nf_type   = NF_TYPE_SEPP;
+    sepp_info = {};
+  }
+
+  sepp_profile(sepp_profile& b) = delete;
+
+  ~sepp_profile() {}
+
+  /*
+   * Add SEPP info
+   * @param [const sepp_info_t &] info: SEPP info
+   * @return void
+   */
+  void add_sepp_info(const sepp_info_t& info);
+
+  /*
+   * Get SEPP info
+   * @param [sepp_info_t &] info: SEPP info
+   * @return void
+   */
+  void get_sepp_info(sepp_info_t& info) const;
+
+  /*
+   * Print related-information for a SEPP profile
+   * @param void
+   * @return void
+   */
+  void display() override;
+
+  /*
+   * Update a new value for a member of SEPP profile
+   * @param [const std::string &] path: member name
+   * @param [const std::string &] value: new value
+   * @return true if success, otherwise false
+   */
+  bool replace_profile_info(
+      const std::string& path, const std::string& value) override;
+
+  /*
+   * Add a new value for a member of SEPP profile
+   * @param [const std::string &] path: member name
+   * @param [const std::string &] value: new value
+   * @return true if success, otherwise false
+   */
+  bool add_profile_info(
+      const std::string& path, const std::string& value) override;
+
+  /*
+   * Remove value of a member of SEPP profile
+   * @param [const std::string &] path: member name
+   * @return true if success, otherwise false
+   */
+  bool remove_profile_info(const std::string& path) override;
+
+  /*
+   * Represent SEPP profile as json object
+   * @param [nlohmann::json &] data: Json data
+   * @return void
+   */
+  void to_json(nlohmann::json& data) const override;
+
+ private:
+  sepp_info_t sepp_info;
+};
+
 }  // namespace app
 }  // namespace nrf
 }  // namespace oai

@@ -1686,7 +1686,7 @@ void pcf_profile::get_pcf_info(pcf_info_t& infos) const {
 //------------------------------------------------------------------------------
 void pcf_profile::display() {
   nrf_profile::display();
-  Logger::nrf_app().debug("\tUDR Info");
+  Logger::nrf_app().debug("\tPCF Info");
   Logger::nrf_app().debug("\t\tGroupId: %s", pcf_info.groupid.c_str());
   for (auto dnn : pcf_info.dnn_list) {
     Logger::nrf_app().debug("\t\t DNN: %s", dnn.c_str());
@@ -1790,7 +1790,7 @@ bool pcf_profile::remove_profile_info(const std::string& path) {
 //------------------------------------------------------------------------------
 void pcf_profile::to_json(nlohmann::json& data) const {
   nrf_profile::to_json(data);
-  // UDR Info
+  // PCF Info
   data["pcfInfo"]["groupId"]    = pcf_info.groupid;
   data["pcfInfo"]["dnnList"]    = nlohmann::json::array();
   data["pcfInfo"]["supiRanges"] = nlohmann::json::array();
@@ -1812,5 +1812,174 @@ void pcf_profile::to_json(nlohmann::json& data) const {
   }
   for (auto dnn : pcf_info.dnn_list) {
     data["pcfInfo"]["dnnList"].push_back(dnn);
+  }
+}
+
+// SEPP INFO
+// SEPP INFO
+// ------------------------------------------------------------------------------
+void sepp_profile::add_sepp_info(const sepp_info_t& info) {
+  sepp_info = info;
+}
+
+//------------------------------------------------------------------------------
+void sepp_profile::get_sepp_info(sepp_info_t& infos) const {
+  infos = sepp_info;
+}
+
+//------------------------------------------------------------------------------
+void sepp_profile::display() {
+  nrf_profile::display();
+  Logger::nrf_app().debug("\tSEPP Info");
+  if (!sepp_info.sepp_prefix.empty()) {
+    Logger::nrf_app().debug(
+        "\t\tSEPP Prefix: %s", sepp_info.sepp_prefix.c_str());
+  }
+  if (!sepp_info.sepp_ports.empty()) {
+    Logger::nrf_app().debug("\t\tSEPP Ports:");
+    for (const auto& port_entry : sepp_info.sepp_ports) {
+      Logger::nrf_app().debug(
+          "\t\t\tInterface: %s - Port: %d", port_entry.first.c_str(),
+          port_entry.second);
+    }
+  }
+  if (!sepp_info.remote_plmn_list.empty()) {
+    Logger::nrf_app().debug("\t\tRemote PLMN List:");
+    for (const auto& plmn : sepp_info.remote_plmn_list) {
+      Logger::nrf_app().debug(
+          "\t\t\tPLMN (MCC: %s, MNC: %s)", plmn.mcc.c_str(), plmn.mnc.c_str());
+    }
+  }
+  if (!sepp_info.remote_snpn_list.empty()) {
+    Logger::nrf_app().debug("\t\tRemote SNPN List:");
+    for (const auto& snpn : sepp_info.remote_snpn_list) {
+      Logger::nrf_app().debug(
+          "\t\t\tSNPN (PLMN - MCC: %s, MNC: %s, NID: %s)",
+          snpn.plmn_id.mcc.c_str(), snpn.plmn_id.mnc.c_str(), snpn.nid.c_str());
+    }
+  }
+  if (!sepp_info.n32_purposes.empty()) {
+    Logger::nrf_app().debug("\t\tN32 Purposes:");
+    for (const auto& purpose : sepp_info.n32_purposes) {
+      Logger::nrf_app().debug("\t\t\tPurpose: %s", purpose.c_str());
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+bool sepp_profile::add_profile_info(
+    const std::string& path, const std::string& value) {
+  bool result = nrf_profile::add_profile_info(path, value);
+  if (result) return true;
+
+  // add an element to a list of json object
+  if (path.compare("seppInfo") == 0) {
+    Logger::nrf_app().info("Does not support this operation for seppInfo");
+    return false;
+  }
+
+  if ((path.compare("nfInstanceId") != 0) and
+      (path.compare("nfInstanceName") != 0) and
+      (path.compare("nfType") != 0) and (path.compare("nfStatus") != 0) and
+      (path.compare("heartBeatTimer") != 0) and (path.compare("fqdn") != 0) and
+      (path.compare("plmnList") != 0) and
+      (path.compare("ipv4Addresses") != 0) and
+      (path.compare("priority") != 0) and (path.compare("capacity") != 0) and
+      (path.compare("nfServices") != 0) and (path.compare("seppInfo") != 0)) {
+    Logger::nrf_app().debug("Add new member: %s", path.c_str());
+    // add new member
+    json_data[path] = value;
+    return true;
+  }
+  return false;
+}
+
+//------------------------------------------------------------------------------
+bool sepp_profile::replace_profile_info(
+    const std::string& path, const std::string& value) {
+  bool result = nrf_profile::replace_profile_info(path, value);
+  if (result) return true;
+
+  if (path.compare("seppInfo") == 0) {
+    Logger::nrf_app().debug("Does not support this operation for seppInfo");
+    return false;
+  }
+
+  if ((path.compare("nfInstanceId") != 0) and
+      (path.compare("nfInstanceName") != 0) and
+      (path.compare("nfType") != 0) and (path.compare("nfStatus") != 0) and
+      (path.compare("heartBeatTimer") != 0) and (path.compare("fqdn") != 0) and
+      (path.compare("plmnList") != 0) and
+      (path.compare("ipv4Addresses") != 0) and
+      (path.compare("priority") != 0) and (path.compare("capacity") != 0) and
+      (path.compare("nfServices") != 0) and (path.compare("seppInfo") != 0)) {
+    Logger::nrf_app().debug("Member (%s) not found!", path.c_str());
+    return false;
+  }
+
+  return false;
+}
+
+//------------------------------------------------------------------------------
+bool sepp_profile::remove_profile_info(const std::string& path) {
+  bool result = nrf_profile::remove_profile_info(path);
+  if (result) return true;
+
+  if (path.compare("seppInfo") == 0) {
+    Logger::nrf_app().debug("Do not support this operation for seppInfo");
+    return false;
+  }
+
+  if ((path.compare("nfInstanceId") != 0) and
+      (path.compare("nfInstanceName") != 0) and
+      (path.compare("nfType") != 0) and (path.compare("nfStatus") != 0) and
+      (path.compare("heartBeatTimer") != 0) and (path.compare("fqdn") != 0) and
+      (path.compare("plmnList") != 0) and
+      (path.compare("ipv4Addresses") != 0) and
+      (path.compare("priority") != 0) and (path.compare("capacity") != 0) and
+      (path.compare("nfServices") != 0) and (path.compare("seppInfo") != 0)) {
+    Logger::nrf_app().debug("Member (%s) not found!", path.c_str());
+    return false;
+  }
+  return false;
+}
+
+//------------------------------------------------------------------------------
+void sepp_profile::to_json(nlohmann::json& data) const {
+  nrf_profile::to_json(data);
+
+  if (!sepp_info.sepp_prefix.empty()) {
+    data["seppInfo"]["seppPrefix"] = sepp_info.sepp_prefix;
+  }
+
+  if (!sepp_info.sepp_ports.empty()) {
+    data["seppInfo"]["seppPorts"] = nlohmann::json::object();
+    for (const auto& port_entry : sepp_info.sepp_ports) {
+      data["seppInfo"]["seppPorts"][port_entry.first] = port_entry.second;
+    }
+  }
+
+  if (!sepp_info.remote_plmn_list.empty()) {
+    data["seppInfo"]["remotePlmnList"] = nlohmann::json::array();
+    for (const auto& plmn : sepp_info.remote_plmn_list) {
+      nlohmann::json plmn_json;
+      plmn_json["mcc"] = plmn.mcc;
+      plmn_json["mnc"] = plmn.mnc;
+      data["seppInfo"]["remotePlmnList"].push_back(plmn_json);
+    }
+  }
+
+  if (!sepp_info.remote_snpn_list.empty()) {
+    data["seppInfo"]["remoteSnpnList"] = nlohmann::json::array();
+    for (const auto& snpn : sepp_info.remote_snpn_list) {
+      nlohmann::json snpn_json;
+      snpn_json["plmnId"]["mcc"] = snpn.plmn_id.mcc;
+      snpn_json["plmnId"]["mnc"] = snpn.plmn_id.mnc;
+      snpn_json["nid"]           = snpn.nid;
+      data["seppInfo"]["remoteSnpnList"].push_back(snpn_json);
+    }
+  }
+  if (!sepp_info.n32_purposes.empty()) {
+    data["seppInfo"]["n32Purposes"] = sepp_info.n32_purposes;
   }
 }
