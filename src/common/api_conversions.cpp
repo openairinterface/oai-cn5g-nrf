@@ -482,6 +482,63 @@ bool api_conv::profile_api_to_nrf_profile(
           .get()
           ->add_pcf_info(info);
     } break;
+    case NF_TYPE_SEPP: {
+      Logger::nrf_app().debug("\tSEPP profile, SEPP Info");
+      profile.get()->set_nf_type(NF_TYPE_SEPP);
+      sepp_info_t info       = {};
+      SeppInfo sepp_info_api = api_profile.getSeppInfo();
+      // SEPP Prefix
+      if (sepp_info_api.seppPrefixIsSet()) {
+        info.sepp_prefix = sepp_info_api.getSeppPrefix();
+        Logger::nrf_app().debug(
+            "\t\tSEPP Prefix: %s", info.sepp_prefix.c_str());
+      }
+      // SEPP Ports
+      if (sepp_info_api.seppPortsIsSet()) {
+        for (const auto& port_entry : sepp_info_api.getSeppPorts()) {
+          info.sepp_ports[port_entry.first] = port_entry.second;
+          Logger::nrf_app().debug(
+              "\t\tInterface: %s - Port: %d", port_entry.first.c_str(),
+              port_entry.second);
+        }
+      }
+      // Remote PLMN List
+      if (sepp_info_api.remotePlmnListIsSet()) {
+        for (const auto& plmn_api : sepp_info_api.getRemotePlmnList()) {
+          plmn_t plmn = {};
+          plmn.mcc    = plmn_api.getMcc();
+          plmn.mnc    = plmn_api.getMnc();
+          info.remote_plmn_list.push_back(plmn);
+          Logger::nrf_app().debug(
+              "\t\tRemote PLMN (MCC: %s, MNC: %s)", plmn.mcc.c_str(),
+              plmn.mnc.c_str());
+        }
+      }
+      // Remote SNPN List
+      if (sepp_info_api.remoteSnpnListIsSet()) {
+        for (const auto& snpn_api : sepp_info_api.getRemoteSnpnList()) {
+          snpn_id_t snpn   = {};
+          snpn.plmn_id.mcc = snpn_api.getMcc();
+          snpn.plmn_id.mnc = snpn_api.getMnc();
+          snpn.nid         = snpn_api.getNid();
+          info.remote_snpn_list.push_back(snpn);
+          Logger::nrf_app().debug(
+              "\t\tRemote SNPN (PLMN - MCC: %s, MNC: %s, NID: %s)",
+              snpn.plmn_id.mcc.c_str(), snpn.plmn_id.mnc.c_str(),
+              snpn.nid.c_str());
+        }
+      }
+      // ToDo: N32 Purposes currently not implemented in the model
+      //  if (sepp_info_api.n32PurposesIsSet()) {
+      //    for (const auto& purpose : sepp_info_api.getN32Purposes()) {
+      //      info.n32_purposes.push_back(purpose);
+      //      Logger::nrf_app().debug("\t\tPurpose: %s", purpose.c_str());
+      //    }
+      //  }
+      (std::static_pointer_cast<sepp_profile>(profile))
+          .get()
+          ->add_sepp_info(info);
+    } break;
     default: {
     }
   }
