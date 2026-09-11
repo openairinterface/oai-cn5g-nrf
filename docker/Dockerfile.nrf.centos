@@ -1,11 +1,11 @@
-# /*
+#/*
 # * SPDX-License-Identifier: LicenseRef-CSSL-1.0
 # */
 
 #---------------------------------------------------------------------
 #
-# Dockerfile for the Open-Air-Interface NRF service
-#   Valid for Rocky Linux 9.+
+# Dockerfile for the OpenAirInterface NRF service
+#   Valid for CentOS Stream 10
 #
 #---------------------------------------------------------------------
 
@@ -13,68 +13,71 @@
 # BUILDER IMAGE
 #---------------------------------------------------------------------
 
-FROM docker.io/rockylinux:9 AS oai-nrf-builder
+FROM quay.io/centos/centos:stream10 AS oai-nrf-builder
 
 ENV IS_DOCKERFILE=1
 
-RUN dnf install 'dnf-command(config-manager)' -y && \
-    dnf install epel-release -y && crb enable && \
+# meson and ninja-build come from CRB; EPEL is enabled for the packages
+# build_helper.nrf pulls from it. The rest are in BaseOS/AppStream.
+RUN dnf config-manager --set-enabled crb && \
+    dnf install epel-release -y && \
     dnf update -y && \
-    # here just to display the current version
+    # Log the exact OS release used for the build.
     cat /etc/os-release && \
     dnf install -y \
-      psmisc \
-      git \
+        psmisc \
+        git \
         diffutils \
         libasan \
         wget \
         file && \
+    # Libraries built from source are installed under /usr/local, which is not
+    # on the default loader path on EL. This is also needed for the ldd check.
     echo "/usr/local/lib" > /etc/ld.so.conf.d/local-lib.conf && \
     echo "/usr/local/lib64" >> /etc/ld.so.conf.d/local-lib.conf
 
-# Some GIT configuration command quite useful
+# Git configuration
 RUN git config --global https.postBuffer 123289600 && \
     git config --global http.sslverify false
 
-# Copying source code
+# Copy source code
 WORKDIR /openair-nrf
 COPY . /openair-nrf
 
-# Installing and Building nrf
+# Install and Build NRF
 WORKDIR /openair-nrf/build/scripts
 RUN ./build_nrf --install-deps --force
 RUN ./build_nrf --clean --Verbose --build-type Release --jobs && \
     ldd /openair-nrf/build/nrf/build/nrf && \
     mv /openair-nrf/build/nrf/build/nrf /openair-nrf/build/nrf/build/oai_nrf
 
-FROM mikefarah/yq:latest as yq-source
+FROM mikefarah/yq:latest AS yq-source
 
 #---------------------------------------------------------------------
 # TARGET IMAGE
 #---------------------------------------------------------------------
-FROM docker.io/rockylinux:9-minimal as oai-nrf
+FROM quay.io/centos/centos:stream10-minimal AS oai-nrf
 ENV TZ=Europe/Paris
 
-# We install some debug tools for the moment in addition of mandatory libraries
 RUN microdnf update -y && \
     microdnf install -y \
-# Debug Tools that are not mandatory
+# Timezone data, and debugging/networking utilities
       tzdata \
       procps-ng \
       psmisc \
       net-tools \
       iputils \
       tcpdump \
-# Mandatory packages for the NF to run
-#      libasan \
+# Runtime dependencies of oai_nrf
       libicu \
       boost \
       libevent \
+      nettle \
       findutils && \
     microdnf clean all -y && \
     rm -rf /var/cache/yum /var/cache/dnf
 
-# Copying executable and generated libraries
+# Copy executable and generated libraries
 WORKDIR /openair-nrf/bin
 COPY --from=oai-nrf-builder \
     /openair-nrf/build/nrf/build/oai_nrf \
@@ -82,30 +85,35 @@ COPY --from=oai-nrf-builder \
     ./
 COPY --from=yq-source /usr/bin/yq /usr/bin
 
+# Only the libraries built from source; the rest come from the packages above.
+# pistache (meson) and nghttp2 (autotools) install into lib, the CMake-built
+# spdlog, fmt, yaml-cpp and cpr into lib64.
 COPY --from=oai-nrf-builder \
-# Copying only the packages built from source
     /usr/local/lib/libpistache.so* \
     /usr/local/lib/libnghttp2_asio.so \
     /usr/local/lib/libnghttp2_asio.so.1 \
-    /usr/local/lib64/libyaml-cpp.so.0.* \
     /usr/local/lib64/libspdlog.so \
     /usr/local/lib64/libfmt.so \
-    /usr/local/lib64/libcpr.so.1 \
+    /usr/local/lib64/libyaml-cpp.so.0.* \
+    /usr/local/lib64/libcpr.so.1* \
     /usr/lib64/
 
 RUN ldconfig && \
-    ldd /openair-nrf/bin/oai_nrf
+    ldd /openair-nrf/bin/oai_nrf && \
+    # ldd exits 0 even when a library is missing, so check its output
+    ! ldd /openair-nrf/bin/oai_nrf | grep -q 'not found'
 
-# Copying template configuration files
-# The configuration folder will be flat
+# Copy template configuration files; the configuration folder will be flat
 WORKDIR /openair-nrf/etc
-COPY --from=oai-nrf-builder /openair-nrf/etc/config.yaml .
+COPY --from=oai-nrf-builder \
+    /openair-nrf/etc/config.yaml ./
 
 WORKDIR /openair-nrf
 
-# expose ports
+# Expose ports
 EXPOSE 80/tcp 8080/tcp
-# healthcheck
+
+# Configure healthcheck
 HEALTHCHECK --interval=10s \
             --timeout=15s \
             --retries=6 \
