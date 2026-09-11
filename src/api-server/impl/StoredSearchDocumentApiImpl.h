@@ -27,7 +27,7 @@
 
 #include <StoredSearchDocumentApi.h>
 
-#include <pistache/optional.h>
+#include <optional>
 
 #include "StoredSearchResult.h"
 #include "nrf_app.hpp"

@@ -55,19 +55,19 @@ void NFInstancesStoreApi::get_nf_instances_handler(
     Pistache::Http::ResponseWriter response) {
   // Getting the query params
   auto nfTypeQuery = request.query().get("nf-type");
-  Pistache::Optional<std::string> nfType;
-  if (!nfTypeQuery.isEmpty()) {
+  std::optional<std::string> nfType;
+  if (nfTypeQuery.has_value()) {
     std::string valueQuery_instance;
-    if (helpers::fromStringValue(nfTypeQuery.get(), valueQuery_instance)) {
-      nfType = Pistache::Some(valueQuery_instance);
+    if (helpers::fromStringValue(nfTypeQuery.value(), valueQuery_instance)) {
+      nfType = valueQuery_instance;
     }
   }
   auto limitQuery = request.query().get("limit");
-  Pistache::Optional<int32_t> limit;
-  if (!limitQuery.isEmpty()) {
+  std::optional<int32_t> limit;
+  if (limitQuery.has_value()) {
     int32_t valueQuery_instance;
-    if (helpers::fromStringValue(limitQuery.get(), valueQuery_instance)) {
-      limit = Pistache::Some(valueQuery_instance);
+    if (helpers::fromStringValue(limitQuery.value(), valueQuery_instance)) {
+      limit = valueQuery_instance;
     }
   }
 
