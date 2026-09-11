@@ -36,7 +36,7 @@
 #include "EventId.h"
 #include "Guami.h"
 #include "Ipv6Prefix.h"
-//#include "NFType.h"
+// #include "NFType.h"
 #include "NwdafEvent.h"
 #include "PduSessionType.h"
 #include "PlmnId.h"

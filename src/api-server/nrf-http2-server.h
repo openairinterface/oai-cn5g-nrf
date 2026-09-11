@@ -7,7 +7,7 @@
 
 #include "conversions.hpp"
 #include <nlohmann/json.hpp>
-//#include "nrf.h"
+// #include "nrf.h"
 #include <nghttp2/asio_http2_server.h>
 
 #include "nrf_app.hpp"

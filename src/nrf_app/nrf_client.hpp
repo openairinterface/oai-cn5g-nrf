@@ -16,7 +16,7 @@ class nrf_client {
   nrf_client();
   virtual ~nrf_client();
 
-  nrf_client(nrf_client const&) = delete;
+  nrf_client(nrf_client const&)     = delete;
   void operator=(nrf_client const&) = delete;
 
   /*

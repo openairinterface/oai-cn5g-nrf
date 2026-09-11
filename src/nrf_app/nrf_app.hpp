@@ -25,7 +25,7 @@ namespace app {
 class nrf_app {
  public:
   explicit nrf_app(const std::string& config_file, nrf_event& ev);
-  nrf_app(nrf_app const&) = delete;
+  nrf_app(nrf_app const&)        = delete;
   void operator=(nrf_app const&) = delete;
 
   virtual ~nrf_app();
