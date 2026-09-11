@@ -21,8 +21,8 @@ class task_manager;
 
 class nrf_event {
  public:
-  nrf_event(){};
-  nrf_event(nrf_event const&) = delete;
+  nrf_event() {};
+  nrf_event(nrf_event const&)      = delete;
   void operator=(nrf_event const&) = delete;
 
   static nrf_event& get_instance() {

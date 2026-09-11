@@ -35,81 +35,79 @@ DiscNFInstancesStoreApiImpl::DiscNFInstancesStoreApiImpl(
       m_address(address) {}
 
 void DiscNFInstancesStoreApiImpl::search_nf_instances(
-    const Pistache::Optional<std::string>& targetNfType,
-    const Pistache::Optional<std::string>& requesterNfType,
-    const Pistache::Optional<std::string>& requesterNfInstanceId,
-    const Pistache::Optional<std::vector<ServiceName>>& serviceNames,
-    const Pistache::Optional<std::string>& requesterNfInstanceFqdn,
-    const Pistache::Optional<std::vector<PlmnId>>& targetPlmnList,
-    const Pistache::Optional<std::vector<PlmnId>>& requesterPlmnList,
-    const Pistache::Optional<std::string>& targetNfInstanceId,
-    const Pistache::Optional<std::string>& targetNfFqdn,
-    const Pistache::Optional<std::string>& hnrfUri,
-    const Pistache::Optional<std::vector<Snssai>>& snssais,
-    const Pistache::Optional<std::vector<Snssai>>& requesterSnssais,
-    const Pistache::Optional<std::vector<PlmnSnssai>>& plmnSpecificSnssaiList,
-    const Pistache::Optional<std::string>& dnn,
-    const Pistache::Optional<std::vector<std::string>>& nsiList,
-    const Pistache::Optional<std::string>& smfServingArea,
-    const Pistache::Optional<Tai>& tai,
-    const Pistache::Optional<std::string>& amfRegionId,
-    const Pistache::Optional<std::string>& amfSetId,
-    const Pistache::Optional<Guami>& guami,
-    const Pistache::Optional<std::string>& supi,
-    const Pistache::Optional<std::string>& ueIpv4Address,
-    const Pistache::Optional<std::string>& ipDomain,
-    const Pistache::Optional<Ipv6Prefix>& ueIpv6Prefix,
-    const Pistache::Optional<bool>& pgwInd,
-    const Pistache::Optional<std::string>& pgw,
-    const Pistache::Optional<std::string>& gpsi,
-    const Pistache::Optional<std::string>& externalGroupIdentity,
-    const Pistache::Optional<DataSetId>& dataSet,
-    const Pistache::Optional<std::string>& routingIndicator,
-    const Pistache::Optional<std::vector<std::string>>& groupIdList,
-    const Pistache::Optional<std::vector<std::string>>& dnaiList,
-    const Pistache::Optional<std::vector<PduSessionType>>& pduSessionTypes,
-    const Pistache::Optional<std::vector<EventId>>& eventIdList,
-    const Pistache::Optional<std::vector<NwdafEvent>>& nwdafEventList,
-    const Pistache::Optional<std::string>& supportedFeatures,
-    const Pistache::Optional<bool>& upfIwkEpsInd,
-    const Pistache::Optional<PlmnId>& chfSupportedPlmn,
-    const Pistache::Optional<std::string>& preferredLocality,
-    const Pistache::Optional<AccessType>& accessType,
-    const Pistache::Optional<int32_t>& limit,
-    const Pistache::Optional<std::vector<std::string>>& requiredFeatures,
-    const Pistache::Optional<ComplexQuery>& complexQuery,
-    const Pistache::Optional<int32_t>& maxPayloadSize,
-    const Pistache::Optional<AtsssCapability>& atsssCapability,
-    const Pistache::Optional<bool>& upfUeIpAddrInd,
-    const Pistache::Optional<Pistache::Http::Header::Raw>& ifNoneMatch,
+    const std::optional<std::string>& targetNfType,
+    const std::optional<std::string>& requesterNfType,
+    const std::optional<std::string>& requesterNfInstanceId,
+    const std::optional<std::vector<ServiceName>>& serviceNames,
+    const std::optional<std::string>& requesterNfInstanceFqdn,
+    const std::optional<std::vector<PlmnId>>& targetPlmnList,
+    const std::optional<std::vector<PlmnId>>& requesterPlmnList,
+    const std::optional<std::string>& targetNfInstanceId,
+    const std::optional<std::string>& targetNfFqdn,
+    const std::optional<std::string>& hnrfUri,
+    const std::optional<std::vector<Snssai>>& snssais,
+    const std::optional<std::vector<Snssai>>& requesterSnssais,
+    const std::optional<std::vector<PlmnSnssai>>& plmnSpecificSnssaiList,
+    const std::optional<std::string>& dnn,
+    const std::optional<std::vector<std::string>>& nsiList,
+    const std::optional<std::string>& smfServingArea,
+    const std::optional<Tai>& tai,
+    const std::optional<std::string>& amfRegionId,
+    const std::optional<std::string>& amfSetId,
+    const std::optional<Guami>& guami, const std::optional<std::string>& supi,
+    const std::optional<std::string>& ueIpv4Address,
+    const std::optional<std::string>& ipDomain,
+    const std::optional<Ipv6Prefix>& ueIpv6Prefix,
+    const std::optional<bool>& pgwInd, const std::optional<std::string>& pgw,
+    const std::optional<std::string>& gpsi,
+    const std::optional<std::string>& externalGroupIdentity,
+    const std::optional<DataSetId>& dataSet,
+    const std::optional<std::string>& routingIndicator,
+    const std::optional<std::vector<std::string>>& groupIdList,
+    const std::optional<std::vector<std::string>>& dnaiList,
+    const std::optional<std::vector<PduSessionType>>& pduSessionTypes,
+    const std::optional<std::vector<EventId>>& eventIdList,
+    const std::optional<std::vector<NwdafEvent>>& nwdafEventList,
+    const std::optional<std::string>& supportedFeatures,
+    const std::optional<bool>& upfIwkEpsInd,
+    const std::optional<PlmnId>& chfSupportedPlmn,
+    const std::optional<std::string>& preferredLocality,
+    const std::optional<AccessType>& accessType,
+    const std::optional<int32_t>& limit,
+    const std::optional<std::vector<std::string>>& requiredFeatures,
+    const std::optional<ComplexQuery>& complexQuery,
+    const std::optional<int32_t>& maxPayloadSize,
+    const std::optional<AtsssCapability>& atsssCapability,
+    const std::optional<bool>& upfUeIpAddrInd,
+    const std::optional<Pistache::Http::Header::Raw>& ifNoneMatch,
     Pistache::Http::ResponseWriter& response) {
   Logger::nrf_sbi().info(
       "Got a request to discover the set of NF instances that satisfies a "
       "number of input query parameters");
 
   std::string target_nf_type = {};
-  if (!targetNfType.isEmpty()) {
-    target_nf_type = targetNfType.get();
+  if (targetNfType.has_value()) {
+    target_nf_type = targetNfType.value();
     Logger::nrf_sbi().debug("\tTarget NF type:  %s", target_nf_type.c_str());
   }
 
   std::string requester_nf_type = {};
-  if (!requesterNfType.isEmpty()) {
-    requester_nf_type = requesterNfType.get();
+  if (requesterNfType.has_value()) {
+    requester_nf_type = requesterNfType.value();
     Logger::nrf_sbi().debug(
         "\tRequested NF type:  %s", requester_nf_type.c_str());
   }
 
   std::string requester_nf_instance_id = {};
-  if (!requesterNfInstanceId.isEmpty()) {
-    requester_nf_instance_id = requesterNfInstanceId.get();
+  if (requesterNfInstanceId.has_value()) {
+    requester_nf_instance_id = requesterNfInstanceId.value();
     Logger::nrf_sbi().debug(
         "\tRequested NF instance id:  %s", requester_nf_instance_id.c_str());
   }
 
   uint32_t limit_nfs = 0;
-  if (!limit.isEmpty()) {
-    limit_nfs = limit.get();
+  if (limit.has_value()) {
+    limit_nfs = limit.value();
     Logger::nrf_sbi().debug(
         "\tMaximum number of NFProfiles to be returned in the response: %d",
         limit_nfs);
