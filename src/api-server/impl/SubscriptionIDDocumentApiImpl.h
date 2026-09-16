@@ -27,7 +27,7 @@
 
 #include <SubscriptionIDDocumentApi.h>
 
-#include <pistache/optional.h>
+#include <optional>
 
 #include "PatchItem.h"
 #include "ProblemDetails.h"

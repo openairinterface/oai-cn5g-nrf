@@ -22,7 +22,7 @@
 #include <pistache/http.h>
 #include <pistache/router.h>
 #include <pistache/http_headers.h>
-#include <pistache/optional.h>
+#include <optional>
 
 #include "AccessType.h"
 #include "AtsssCapability.h"
@@ -60,7 +60,7 @@ class DiscNFInstancesStoreApi {
   void setupRoutes();
 
   template<class T>
-  Pistache::Optional<T> model_from_query_string(
+  std::optional<T> model_from_query_string(
       const Pistache::Rest::Request& request, const std::string& query_param,
       bool make_json_array = false);
 
@@ -160,62 +160,59 @@ class DiscNFInstancesStoreApi {
   /// <param name="ifNoneMatch">Validator for conditional requests, as described
   /// in IETF RFC 7232, 3.2 (optional, default to &quot;&quot;)</param>
   virtual void search_nf_instances(
-      const Pistache::Optional<std::string>& targetNfType,
-      const Pistache::Optional<std::string>& requesterNfType,
-      const Pistache::Optional<std::string>& requesterNfInstanceId,
-      const Pistache::Optional<std::vector<oai::_3gpp::model::ServiceName>>&
+      const std::optional<std::string>& targetNfType,
+      const std::optional<std::string>& requesterNfType,
+      const std::optional<std::string>& requesterNfInstanceId,
+      const std::optional<std::vector<oai::_3gpp::model::ServiceName>>&
           serviceNames,
-      const Pistache::Optional<std::string>& requesterNfInstanceFqdn,
-      const Pistache::Optional<std::vector<oai::_3gpp::model::PlmnId>>&
+      const std::optional<std::string>& requesterNfInstanceFqdn,
+      const std::optional<std::vector<oai::_3gpp::model::PlmnId>>&
           targetPlmnList,
-      const Pistache::Optional<std::vector<oai::_3gpp::model::PlmnId>>&
+      const std::optional<std::vector<oai::_3gpp::model::PlmnId>>&
           requesterPlmnList,
-      const Pistache::Optional<std::string>& targetNfInstanceId,
-      const Pistache::Optional<std::string>& targetNfFqdn,
-      const Pistache::Optional<std::string>& hnrfUri,
-      const Pistache::Optional<std::vector<oai::_3gpp::model::Snssai>>& snssais,
-      const Pistache::Optional<std::vector<oai::_3gpp::model::Snssai>>&
+      const std::optional<std::string>& targetNfInstanceId,
+      const std::optional<std::string>& targetNfFqdn,
+      const std::optional<std::string>& hnrfUri,
+      const std::optional<std::vector<oai::_3gpp::model::Snssai>>& snssais,
+      const std::optional<std::vector<oai::_3gpp::model::Snssai>>&
           requesterSnssais,
-      const Pistache::Optional<std::vector<oai::_3gpp::model::PlmnSnssai>>&
+      const std::optional<std::vector<oai::_3gpp::model::PlmnSnssai>>&
           plmnSpecificSnssaiList,
-      const Pistache::Optional<std::string>& dnn,
-      const Pistache::Optional<std::vector<std::string>>& nsiList,
-      const Pistache::Optional<std::string>& smfServingArea,
-      const Pistache::Optional<oai::_3gpp::model::Tai>& tai,
-      const Pistache::Optional<std::string>& amfRegionId,
-      const Pistache::Optional<std::string>& amfSetId,
-      const Pistache::Optional<oai::_3gpp::model::Guami>& guami,
-      const Pistache::Optional<std::string>& supi,
-      const Pistache::Optional<std::string>& ueIpv4Address,
-      const Pistache::Optional<std::string>& ipDomain,
-      const Pistache::Optional<oai::_3gpp::model::Ipv6Prefix>& ueIpv6Prefix,
-      const Pistache::Optional<bool>& pgwInd,
-      const Pistache::Optional<std::string>& pgw,
-      const Pistache::Optional<std::string>& gpsi,
-      const Pistache::Optional<std::string>& externalGroupIdentity,
-      const Pistache::Optional<oai::_3gpp::model::DataSetId>& dataSet,
-      const Pistache::Optional<std::string>& routingIndicator,
-      const Pistache::Optional<std::vector<std::string>>& groupIdList,
-      const Pistache::Optional<std::vector<std::string>>& dnaiList,
-      const Pistache::Optional<std::vector<oai::_3gpp::model::PduSessionType>>&
+      const std::optional<std::string>& dnn,
+      const std::optional<std::vector<std::string>>& nsiList,
+      const std::optional<std::string>& smfServingArea,
+      const std::optional<oai::_3gpp::model::Tai>& tai,
+      const std::optional<std::string>& amfRegionId,
+      const std::optional<std::string>& amfSetId,
+      const std::optional<oai::_3gpp::model::Guami>& guami,
+      const std::optional<std::string>& supi,
+      const std::optional<std::string>& ueIpv4Address,
+      const std::optional<std::string>& ipDomain,
+      const std::optional<oai::_3gpp::model::Ipv6Prefix>& ueIpv6Prefix,
+      const std::optional<bool>& pgwInd, const std::optional<std::string>& pgw,
+      const std::optional<std::string>& gpsi,
+      const std::optional<std::string>& externalGroupIdentity,
+      const std::optional<oai::_3gpp::model::DataSetId>& dataSet,
+      const std::optional<std::string>& routingIndicator,
+      const std::optional<std::vector<std::string>>& groupIdList,
+      const std::optional<std::vector<std::string>>& dnaiList,
+      const std::optional<std::vector<oai::_3gpp::model::PduSessionType>>&
           pduSessionTypes,
-      const Pistache::Optional<std::vector<oai::_3gpp::model::EventId>>&
-          eventIdList,
-      const Pistache::Optional<std::vector<oai::_3gpp::model::NwdafEvent>>&
+      const std::optional<std::vector<oai::_3gpp::model::EventId>>& eventIdList,
+      const std::optional<std::vector<oai::_3gpp::model::NwdafEvent>>&
           nwdafEventList,
-      const Pistache::Optional<std::string>& supportedFeatures,
-      const Pistache::Optional<bool>& upfIwkEpsInd,
-      const Pistache::Optional<oai::_3gpp::model::PlmnId>& chfSupportedPlmn,
-      const Pistache::Optional<std::string>& preferredLocality,
-      const Pistache::Optional<oai::_3gpp::model::AccessType>& accessType,
-      const Pistache::Optional<int32_t>& limit,
-      const Pistache::Optional<std::vector<std::string>>& requiredFeatures,
-      const Pistache::Optional<oai::_3gpp::model::ComplexQuery>& complexQuery,
-      const Pistache::Optional<int32_t>& maxPayloadSize,
-      const Pistache::Optional<oai::_3gpp::model::AtsssCapability>&
-          atsssCapability,
-      const Pistache::Optional<bool>& upfUeIpAddrInd,
-      const Pistache::Optional<Pistache::Http::Header::Raw>& ifNoneMatch,
+      const std::optional<std::string>& supportedFeatures,
+      const std::optional<bool>& upfIwkEpsInd,
+      const std::optional<oai::_3gpp::model::PlmnId>& chfSupportedPlmn,
+      const std::optional<std::string>& preferredLocality,
+      const std::optional<oai::_3gpp::model::AccessType>& accessType,
+      const std::optional<int32_t>& limit,
+      const std::optional<std::vector<std::string>>& requiredFeatures,
+      const std::optional<oai::_3gpp::model::ComplexQuery>& complexQuery,
+      const std::optional<int32_t>& maxPayloadSize,
+      const std::optional<oai::_3gpp::model::AtsssCapability>& atsssCapability,
+      const std::optional<bool>& upfUeIpAddrInd,
+      const std::optional<Pistache::Http::Header::Raw>& ifNoneMatch,
       Pistache::Http::ResponseWriter& response) = 0;
 };
 

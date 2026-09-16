@@ -31,7 +31,7 @@
 
 #include <AccessTokenRequestApi.h>
 
-#include <pistache/optional.h>
+#include <optional>
 
 #include "AccessTokenErr.h"
 #include "AccessTokenRsp.h"
