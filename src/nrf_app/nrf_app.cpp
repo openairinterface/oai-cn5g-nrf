@@ -3,6 +3,8 @@
  */
 
 #include "nrf_app.hpp"
+#include "http_client.hpp"
+#include <curl/curl.h>
 
 #include <nlohmann/json.hpp>
 #include <unistd.h>
@@ -30,6 +32,7 @@ using namespace oai::_3gpp::model;
 using namespace std::chrono;
 using namespace boost::placeholders;
 
+extern std::shared_ptr<oai::http::http_client> http_client_inst;
 extern nrf_app* nrf_app_inst;
 extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 nrf_client* nrf_client_inst = nullptr;
@@ -1391,5 +1394,118 @@ bool nrf_app::find_search_result(
     Logger::nrf_app().info(
         "Search result (ID %s) not found", search_id.c_str());
     return false;
+  }
+}
+
+// Service discovery in a different PLMN (3GPP TS 29.510 clause 5.3.2.2.3,
+// 3GPP TS 23.502 clause 4.17.5): the consumer contacts its local NRF, which
+// queries the NRF of the target PLMN through the SEPPs. The foreign NRF API
+// root is operator configuration, never an arbitrary query URI.
+bool nrf_app::route_roaming_discovery(
+    const std::string& raw_query, nlohmann::json& result, int& status) {
+  const auto query =
+      raw_query.substr(!raw_query.empty() && raw_query.front() == '?' ? 1 : 0);
+  bool forwarded = false;
+  auto fail      = [&](int code, const std::string& cause) {
+    status = code;
+    result = {{"status", code}, {"cause", cause}};
+    return true;
+  };
+  try {
+    std::map<std::string, std::string> params;
+    std::size_t pos = 0;
+    while (pos < query.size()) {
+      auto end  = query.find('&', pos);
+      auto item = query.substr(pos, end == std::string::npos ? end : end - pos);
+      auto eq   = item.find('=');
+      if (eq == std::string::npos) return fail(400, "INVALID_QUERY_PARAM");
+      auto decode = [](const std::string& value) {
+        int size = 0;
+        char* decoded =
+            curl_easy_unescape(nullptr, value.c_str(), value.size(), &size);
+        if (!decoded) throw std::runtime_error("Cannot decode query");
+        std::string output(decoded, size);
+        curl_free(decoded);
+        return output;
+      };
+      if (!params
+               .emplace(decode(item.substr(0, eq)), decode(item.substr(eq + 1)))
+               .second)
+        return fail(400, "INVALID_QUERY_PARAM");
+      if (end == std::string::npos) break;
+      pos = end + 1;
+    }
+    if (!params.count("target-plmn-list")) return false;
+    auto parse_plmn = [](const std::string& value) {
+      const auto list = nlohmann::json::parse(value);
+      if (!list.is_array() || list.size() != 1)
+        throw std::invalid_argument("Inter-PLMN discovery requires one PLMN");
+      const auto mcc = list[0].at("mcc").get<std::string>();
+      const auto mnc = list[0].at("mnc").get<std::string>();
+      if (!std::regex_match(mcc, std::regex("[0-9]{3}")) ||
+          !std::regex_match(mnc, std::regex("[0-9]{2,3}")))
+        throw std::invalid_argument("Invalid PLMN");
+      return std::make_pair(mcc, mnc);
+    };
+    const auto target = parse_plmn(params.at("target-plmn-list"));
+    if (nrf_cfg->local_plmns.empty())
+      return fail(503, "LOCAL_PLMN_NOT_CONFIGURED");
+    auto local = [&](const auto& plmn) {
+      return std::find(
+                 nrf_cfg->local_plmns.begin(), nrf_cfg->local_plmns.end(),
+                 plmn) != nrf_cfg->local_plmns.end();
+    };
+    if (!params.count("requester-plmn-list")) {
+      if (local(target)) return false;
+      return fail(400, "MANDATORY_QUERY_PARAM_MISSING");
+    }
+    const auto requester = parse_plmn(params.at("requester-plmn-list"));
+    if (local(target)) {
+      if (!local(requester) && (!nrf_cfg->roaming_enabled ||
+                                !nrf_cfg->roaming_nrf_roots.count(requester)))
+        return fail(403, "ROAMING_NOT_ALLOWED");
+      return false;
+    }
+    if (!local(requester) || !nrf_cfg->roaming_enabled ||
+        !nrf_cfg->roaming_nrf_roots.count(target))
+      return fail(403, "ROAMING_NOT_ALLOWED");
+    const auto& remote = nrf_cfg->roaming_nrf_roots.at(target);
+    if (remote.empty() || nrf_cfg->local_sepp_root.empty())
+      return fail(503, "ROAMING_ROUTE_NOT_CONFIGURED");
+    if (!params.count("target-nf-type") || !params.count("requester-nf-type"))
+      return fail(400, "MANDATORY_QUERY_PARAM_MISSING");
+    // Preserve discovery criteria and query encoding across the SEPP hop. The
+    // local SEPP routes on 3gpp-Sbi-Target-apiRoot (3GPP TS 29.500 clauses
+    // 5.2.3.2.4 and 6.1.4.3.3).
+    const auto path = "/nnrf-disc/" +
+                      nrf_cfg->local().get_sbi().get_api_version() +
+                      "/nf-instances?" + query;
+    oai::http::request request;
+    request.uri = nrf_cfg->local_sepp_root + path;
+    request.headers["3gpp-Sbi-Target-apiRoot"] = remote;
+    request.headers["accept"]                  = "application/json";
+    Logger::nrf_app().info(
+        "Roaming discovery through local SEPP %s to NRF %s",
+        nrf_cfg->local_sepp_root.c_str(), remote.c_str());
+    forwarded           = true;
+    const auto response = http_client_inst->send_http_request(
+        oai::common::sbi::method_e::GET, request);
+    if (response.status_code == 0) return fail(504, "REMOTE_NRF_UNREACHABLE");
+    status = response.status_code;
+    result =
+        response.body.empty() ? nlohmann::json::object() : response.get_json();
+    if (status == 200 &&
+        (!result.contains("nfInstances") || !result["nfInstances"].is_array()))
+      return fail(502, "INVALID_REMOTE_NRF_RESPONSE");
+    return true;
+  } catch (const nlohmann::json::exception&) {
+    return fail(
+        forwarded ? 502 : 400,
+        forwarded ? "INVALID_REMOTE_NRF_RESPONSE" : "INVALID_QUERY_PARAM");
+  } catch (const std::invalid_argument&) {
+    return fail(400, "INVALID_QUERY_PARAM");
+  } catch (const std::exception& e) {
+    Logger::nrf_app().warn("Roaming discovery failed: %s", e.what());
+    return fail(502, "REMOTE_NRF_FAILURE");
   }
 }

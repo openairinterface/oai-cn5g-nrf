@@ -17,6 +17,8 @@
 #include "Helpers.h"
 #include "nrf_config.hpp"
 #include "logger.hpp"
+#include "nrf_app.hpp"
+extern oai::nrf::app::nrf_app* nrf_app_inst;
 
 extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 
@@ -53,6 +55,19 @@ void DiscNFInstancesStoreApi::setupRoutes() {
 void DiscNFInstancesStoreApi::search_nf_instances_handler(
     const Pistache::Rest::Request& request,
     Pistache::Http::ResponseWriter response) {
+  nlohmann::json roaming_result;
+  int roaming_status = 0;
+  if (nrf_app_inst->route_roaming_discovery(
+          request.query().as_str(), roaming_result, roaming_status)) {
+    response.headers().add<Pistache::Http::Header::ContentType>(
+        Pistache::Http::Mime::MediaType(
+            roaming_status == 200 ? "application/json" :
+                                    "application/problem+json"));
+    response.send(
+        static_cast<Pistache::Http::Code>(roaming_status),
+        roaming_result.dump());
+    return;
+  }
   // Getting the query params
   // TODO Stefan: We should use the model values everywhere and then to_json,
   // e.g. NFType, so we can use the enum and we are typesafe

@@ -194,6 +194,20 @@ void nrf_http2_server::start() {
             if (request.method().compare("GET") == 0) {
               std::string split_query = request.uri().raw_query;
 
+              nlohmann::json roaming_result;
+              int roaming_status = 0;
+              if (m_nrf_app->route_roaming_discovery(
+                      split_query, roaming_result, roaming_status)) {
+                response.write_head(
+                    roaming_status,
+                    {{"content-type",
+                      {roaming_status == 200 ? "application/json" :
+                                               "application/problem+json",
+                       false}}});
+                response.end(roaming_result.dump());
+                return;
+              }
+
               // Parse query paramaters
               std::string nfTypeTarget =
                   oai::utils::get_query_param(split_query, "target-nf-type");

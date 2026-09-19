@@ -24,6 +24,10 @@ namespace app {
 
 class nrf_app {
  public:
+  // Returns true when an inter-PLMN query was forwarded or rejected.
+  bool route_roaming_discovery(
+      const std::string& query, nlohmann::json& result, int& status);
+
   explicit nrf_app(const std::string& config_file, nrf_event& ev);
   nrf_app(nrf_app const&)        = delete;
   void operator=(nrf_app const&) = delete;
