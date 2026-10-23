@@ -8,8 +8,10 @@
 #include "http_client.hpp"
 #include "logger.hpp"
 #include "nrf_config.hpp"
+#include "sbi_helper.hpp"
 
 extern std::shared_ptr<oai::http::http_client> http_client_inst;
+extern std::unique_ptr<oai::config::nrf::nrf_config> nrf_cfg;
 
 //------------------------------------------------------------------------------
 nrf_client::nrf_client() {}
@@ -33,11 +35,12 @@ void nrf_client::notify_subscribed_event(
   nlohmann::json json_data = {};
   json_data["event"]       = notification_event_type_e2str[event_type];
 
-  std::vector<struct in_addr> instance_addrs = {};
-  profile.get()->get_nf_ipv4_addresses(instance_addrs);
-  // TODO: use the first IPv4 addr for now
+  // nfInstanceUri identifies the NF instance resource at the NRF.  It must not
+  // depend on optional addressing information in the NF profile.
   std::string instance_uri =
-      std::string(inet_ntoa(*((struct in_addr*) &(instance_addrs[0]))));
+      oai::common::sbi::sbi_helper::get_nrf_nf_instance_uri(
+          nrf_cfg->local().get_sbi(), nrf_cfg->enable_tls(),
+          profile->get_nf_instance_id());
   Logger::nrf_app().debug("NF instance URI: %s", instance_uri.c_str());
   json_data["nfInstanceUri"] = instance_uri;
 
