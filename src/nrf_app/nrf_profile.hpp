@@ -16,6 +16,7 @@
 
 #include "3gpp_29.510.h"
 #include "logger.hpp"
+#include "nf_profile.hpp"
 #include "nrf.h"
 #include "nrf_event.hpp"
 
@@ -26,406 +27,41 @@ namespace app {
 using namespace std;
 using namespace oai::common::sbi;
 
-class nrf_profile : public std::enable_shared_from_this<nrf_profile> {
+class nrf_profile : public oai::sba::nf_profile {
  public:
   nrf_profile(nrf_event& ev)
-      : m_event_sub(ev),
-        nf_type(NF_TYPE_UNKNOWN),
-        heartBeat_timer(0),
-        snssais(),
-        fqdn(),
-        plmn_list(),
-        ipv4_addresses(),
-        ipv6_addresses(),
-        priority(0),
-        capacity(0),
-        nf_services(),
+      : oai::sba::nf_profile(),
+        m_event_sub(ev),
         hb_mutex(),
-        nf_profile_mutex() {
-    nf_instance_name = "";
-    nf_status        = "";
-    json_data        = {};
-    custom_info      = {};
-    first_update     = true;
-    is_updated       = false;
+        first_update(true) {
+    set_nf_type(NF_TYPE_UNKNOWN);
   }
-  nrf_profile(nrf_event& ev, const nf_type_t type)
-      : m_event_sub(ev),
-        nf_type(type),
-        heartBeat_timer(0),
-        snssais(),
-        fqdn(),
-        plmn_list(),
-        ipv4_addresses(),
-        ipv6_addresses(),
-        priority(0),
-        capacity(0),
-        nf_services(),
-        hb_mutex(),
-        nf_profile_mutex() {
-    nf_instance_name = "";
-    nf_status        = "";
-    json_data        = {};
-    first_update     = true;
-    is_updated       = false;
+
+  nrf_profile(nrf_event& ev, const nf_type_t type) : nrf_profile(ev) {
+    set_nf_type(type);
   }
 
   nrf_profile(nrf_event& ev, const std::string& id)
-      : m_event_sub(ev),
-        nf_instance_id(id),
-        heartBeat_timer(0),
-        snssais(),
-        fqdn(),
-        plmn_list(),
-        ipv4_addresses(),
-        ipv6_addresses(),
-        priority(0),
-        capacity(0),
-        nf_services(),
-        nf_type(NF_TYPE_UNKNOWN),
+      : oai::sba::nf_profile(id),
+        m_event_sub(ev),
         hb_mutex(),
-        nf_profile_mutex() {
-    nf_instance_name = "";
-    nf_status        = "";
-    json_data        = {};
-    first_update     = true;
-    is_updated       = false;
+        first_update(true) {
+    set_nf_type(NF_TYPE_UNKNOWN);
   }
 
   nrf_profile(nrf_profile& b) = delete;
 
-  virtual ~nrf_profile() {
+  ~nrf_profile() override {
     Logger::nrf_app().debug("Delete NRF Profile instance...");
     if (hb_update_connection.connected()) hb_update_connection.disconnect();
     if (first_hb_connection.connected()) first_hb_connection.disconnect();
   }
 
-  /*
-   * Set NF instance ID
-   * @param [const std::string &] instance_id: instance id
-   * @return void
-   */
-  void set_nf_instance_id(const std::string& instance_id);
-
-  /*
-   * Get NF instance ID
-   * @param [std::string &] instance_id: store instance id
-   * @return void:
-   */
-  void get_nf_instance_id(std::string& instance_id) const;
-
-  /*
-   * Get NF instance ID
-   * @param [std::string &] instance_id: store instance id
-   * @return void:
-   */
-  std::string get_nf_instance_id() const;
-
-  /*
-   * Set NF instance name
-   * @param [const std::string &] instance_name: instance name
-   * @return void
-   */
-  void set_nf_instance_name(const std::string& instance_name);
-
-  /*
-   * Get NF instance ID
-   * @param [std::string &] instance_name: store instance name
-   * @return void:
-   */
-  void get_nf_instance_name(std::string& instance_name) const;
-
-  /*
-   * Get NF instance name
-   * @param
-   * @return [std::string] instance name
-   */
-  std::string get_nf_instance_name() const;
-
-  /*
-   * Set NF instance status
-   * @param [const std::string &] status: instance status
-   * @return void
-   */
-  bool set_nf_status(const std::string& status);
-
-  /*
-   * Get NF instance status
-   * @param [std::string &] status: store instance status
-   * @return void:
-   */
-  void get_nf_status(std::string& status) const;
-
-  /*
-   * Get NF status
-   * @param
-   * @return [std::string] instance status
-   */
-  std::string get_nf_status() const;
-
-  /*
-   * Verify NF status
-   * @param
-   * @return true if NF status is REGISTERED, otherwise return false
-   */
-  bool is_nf_active() const;
-
-  /*
-   * Get NF type
-   * @param
-   * @return [std::string] nf type
-   */
-  nf_type_t get_nf_type() const;
-
-  /*
-   * Set NF type
-   * @param [const nf_type_t &] type: nf type
-   * @return void
-   */
+  // The shared profile owns all generic NFProfile fields and operations.
+  // NRF keeps only the enum/string adapter used by its matching logic.
+  nf_type_t get_nf_type_enum() const;
   void set_nf_type(const nf_type_t& type);
-
-  /*
-   * Set NF instance heartBeat_timer
-   * @param [const std::string &] timer: heartBeat_timer
-   * @return void
-   */
-  void set_nf_heartBeat_timer(const int32_t& timer);
-
-  /*
-   * Get NF instance heartBeat_timer
-   * @param [std::string &] timer: store heartBeat_timer
-   * @return void:
-   */
-  void get_nf_heartBeat_timer(int32_t& timer) const;
-
-  /*
-   * Get NF heartBeat_timer
-   * @param void
-   * @return heartBeat_timer
-   */
-  int32_t get_nf_heartBeat_timer() const;
-
-  /*
-   * Set NF instance priority
-   * @param [const uint16_t] p: instance priority
-   * @return void
-   */
-  void set_nf_priority(const uint16_t& p);
-
-  /*
-   * Get NF instance priority
-   * @param [uint16_t] p: store instance priority
-   * @return void:
-   */
-  void get_nf_priority(uint16_t& p) const;
-
-  /*
-   * Get NF instance priority
-   * @param void
-   * @return [uint16_t] instance priority
-   */
-  uint16_t get_nf_priority() const;
-
-  /*
-   * Set NF instance capacity
-   * @param [const uint16_t] c: instance capacity
-   * @return void
-   */
-  void set_nf_capacity(const uint16_t& c);
-
-  /*
-   * Get NF instance priority
-   * @param [uint16_t ] c: store instance capacity
-   * @return void:
-   */
-  void get_nf_capacity(uint16_t& c) const;
-
-  /*
-   * Get NF instance priority
-   * @param void
-   * @return [uint16_t ] instance capacity
-   */
-  uint16_t get_nf_capacity() const;
-
-  /*
-   * Set NF instance SNSSAIs
-   * @param [std::vector<snssai_t> &] s: SNSSAIs
-   * @return void
-   */
-  void set_nf_snssais(const std::vector<snssai_t>& s);
-
-  /*
-   * Add SNSSAI
-   * @param [snssai_t &] s: SNSSAI
-   * @return void
-   */
-  void add_snssai(const snssai_t& s);
-
-  /*
-   * Get NF instance SNSSAIs
-   * @param [std::vector<snssai_t> &] s: store instance's SNSSAIs
-   * @return void:
-   */
-  void get_nf_snssais(std::vector<snssai_t>& s) const;
-
-  /*
-   * Get NF fqdn
-   * @param
-   * @return [std::string] nf fqdn
-   */
-  std::string get_fqdn() const;
-
-  /*
-   * Set NF fqdn
-   * @param [const fqdn_t &] fqdn: nf fqdn
-   * @return void
-   */
-  void set_fqdn(const std::string& fqdn);
-
-  /*
-   * Set NF instance plmnList
-   * @param [std::vector<plmn_t> &] s: plmn (mcc, mnc)
-   * @return void
-   */
-  void set_plmn_list(const std::vector<plmn_t>& s);
-
-  /*
-   * Add plmnList
-   * @param [plmn_t &] s: plmn (mcc, mnc)
-   * @return void
-   */
-  void add_plmn_list(const plmn_t& s);
-
-  /*
-   * Get NF instance plmnList
-   * @param [std::vector<plmn_t> &] s: store plmnList
-   * @return void:
-   */
-  void get_plmn_list(std::vector<plmn_t>& s) const;
-
-  /*
-   * Set NF instance ipv4_addresses
-   * @param [std::vector<struct in_addr> &] a: ipv4_addresses
-   * @return void
-   */
-  void set_nf_ipv4_addresses(const std::vector<struct in_addr>& a);
-
-  /*
-   * Add an IPv4 address to the list of addresses
-   * @param [const struct in_addr &] a: ipv4_address
-   * @return void
-   */
-  void add_nf_ipv4_addresses(const struct in_addr& a);
-
-  /*
-   * Set NF instance ipv6_addresses
-   * @param [std::vector<struct in6_addr> &] a: ipv6_addresses
-   * @return void
-   */
-  void set_nf_ipv6_addresses(const std::vector<struct in6_addr>& a);
-
-  /*
-   * Add an IPv6 address to the list of addresses
-   * @param [const struct in_addr &] a: ipv6_address
-   * @return void
-   */
-  void add_nf_ipv6_addresses(const struct in6_addr& a);
-
-  /*
-   * Get NF instance ipv4_addresses
-   * @param [std::vector<struct in_addr> &] a: store instance's ipv4_addresses
-   * @return void:
-   */
-  void get_nf_ipv4_addresses(std::vector<struct in_addr>& a) const;
-
-  /*
-   * Set json data
-   * @param [const nlohmann::json &] data: Json data to be set
-   * @return void
-   */
-  void set_json_data(const nlohmann::json& data);
-
-  /*
-   * Get json data
-   * @param [nlohmann::json &] data: Store json data
-   * @return void
-   */
-  void get_json_data(nlohmann::json& data) const;
-
-  /*
-   * Set custom info
-   * @param [const nlohmann::json &] c: custom info to be set
-   * @return void
-   */
-  void set_custom_info(const nlohmann::json& c);
-
-  /*
-   * Get custom info
-   * @param [nlohmann::json &] c: Store custom info
-   * @return void
-   */
-  void get_custom_info(nlohmann::json& c) const;
-
-  /*
-   * Set NF instance services
-   * @param [std::vector<nf_service_t> &] n: nf_service
-   * @return void
-   */
-  void set_nf_services(const std::vector<nf_service_t>& n);
-
-  /*
-   * Add nf service
-   * @param [snssai_t &] n: nf service
-   * @return void
-   */
-  void add_nf_service(const nf_service_t& n);
-
-  /*
-   * Get NF services
-   * @param [std::vector<snssai_t> &] n: store instance's nf services
-   * @return void:
-   */
-  void get_nf_services(std::vector<nf_service_t>& n) const;
-
-  /*
-   * Print related-information for NF profile
-   * @param void
-   * @return void:
-   */
-  virtual void display();
-
-  /*
-   * Update a new value for a member of NF profile
-   * @param [const std::string &] path: member name
-   * @param [const std::string &] value: new value
-   * @return true if success, otherwise false
-   */
-  virtual bool replace_profile_info(
-      const std::string& path, const std::string& value);
-
-  /*
-   * Add a new value for a member of NF profile
-   * @param [const std::string &] path: member name
-   * @param [const std::string &] value: new value
-   * @return true if success, otherwise false
-   */
-  virtual bool add_profile_info(
-      const std::string& path, const std::string& value);
-
-  /*
-   * Remove value of a member of NF profile
-   * @param [const std::string &] path: member name
-   * @param [const std::string &] value: new value
-   * @return true if success, otherwise false
-   */
-  virtual bool remove_profile_info(const std::string& path);
-
-  /*
-   * Represent NF profile as json object
-   * @param [nlohmann::json &] data: Json data
-   * @return void
-   */
-  virtual void to_json(nlohmann::json& data) const;
+  using oai::sba::nf_profile::set_nf_type;
 
   /*
    * Subscribe to the HBT timeout event (after receiving NF Update)
@@ -483,27 +119,6 @@ class nrf_profile : public std::enable_shared_from_this<nrf_profile> {
    */
   bool is_heartbeat_timeout_nfupdate_active();
 
-  /*
-   * Set status updated to true
-   * @param void
-   * @return void
-   */
-  void set_status_updated(bool status);
-
-  /*
-   * Get status updated
-   * @param void
-   * @return status
-   */
-  bool get_status_updated();
-
-  /*
-   * Get status updated
-   * @param status
-   * @return void
-   */
-  void get_status_updated(bool& status);
-
  protected:
   nrf_event& m_event_sub;
   bs2::connection
@@ -512,91 +127,6 @@ class nrf_profile : public std::enable_shared_from_this<nrf_profile> {
                                         // (after NF Registration)
   mutable std::shared_mutex hb_mutex;
   bool first_update;
-  bool is_updated;
-  mutable std::shared_mutex nf_profile_mutex;
-
-  // From NFProfile (Section 6.1.6.2.2@3GPP TS 29.510 V16.0.0 (2019-06))
-  std::string nf_instance_id;
-  std::string nf_instance_name;
-  nf_type_t nf_type;
-  std::string nf_status;
-  int32_t heartBeat_timer;
-  std::vector<plmn_t> plmn_list;
-  std::vector<snssai_t> snssais;
-  std::string fqdn;
-  std::vector<struct in_addr> ipv4_addresses;
-  std::vector<struct in6_addr> ipv6_addresses;
-  uint16_t priority;
-  uint16_t capacity;
-  nlohmann::json json_data;  // store extra json data
-  std::vector<nf_service_t> nf_services;
-  nlohmann::json custom_info;  // store extra json data
-
-  /*
-   std::vector<PlmnId> m_PlmnList;
-   bool m_PlmnListIsSet;
-   std::vector<Snssai> m_SNssais;
-   bool m_SNssaisIsSet;
-   std::vector<PlmnSnssai> m_PerPlmnSnssaiList;
-   bool m_PerPlmnSnssaiListIsSet;
-   std::vector<std::string> m_NsiList;
-   bool m_NsiListIsSet;
-   std::string m_Fqdn;
-   bool m_FqdnIsSet;
-   std::vector<Ipv6Addr> m_Ipv6Addresses;
-   bool m_Ipv6AddressesIsSet;
-   int32_t m_Load;
-   bool m_LoadIsSet;
-   std::string m_Locality;
-   bool m_LocalityIsSet;
-   UdrInfo m_UdrInfo;
-   bool m_UdrInfoIsSet;
-   std::vector<UdrInfo> m_UdrInfoExt;
-   bool m_UdrInfoExtIsSet;
-   UdmInfo m_UdmInfo;
-   bool m_UdmInfoIsSet;
-   std::vector<UdmInfo> m_UdmInfoExt;
-   bool m_UdmInfoExtIsSet;
-   AusfInfo m_AusfInfo;
-   bool m_AusfInfoIsSet;
-   std::vector<AusfInfo> m_AusfInfoExt;
-   bool m_AusfInfoExtIsSet;
-   AmfInfo m_AmfInfo;
-   bool m_AmfInfoIsSet;
-   std::vector<AmfInfo> m_AmfInfoExt;
-   bool m_AmfInfoExtIsSet;
-   SmfInfo m_SmfInfo;
-   bool m_SmfInfoIsSet;
-   std::vector<SmfInfo> m_SmfInfoExt;
-   bool m_SmfInfoExtIsSet;
-   UpfInfo m_UpfInfo;
-   bool m_UpfInfoIsSet;
-   std::vector<UpfInfo> m_UpfInfoExt;
-   bool m_UpfInfoExtIsSet;
-   PcfInfo m_PcfInfo;
-   bool m_PcfInfoIsSet;
-   std::vector<PcfInfo> m_PcfInfoExt;
-   bool m_PcfInfoExtIsSet;
-   BsfInfo m_BsfInfo;
-   bool m_BsfInfoIsSet;
-   std::vector<BsfInfo> m_BsfInfoExt;
-   bool m_BsfInfoExtIsSet;
-   ChfInfo m_ChfInfo;
-   bool m_ChfInfoIsSet;
-   std::vector<ChfInfo> m_ChfInfoExt;
-   bool m_ChfInfoExtIsSet;
-   NwdafInfo m_NwdafInfo;
-   bool m_NwdafInfoIsSet;
-   std::string m_RecoveryTime;
-   bool m_RecoveryTimeIsSet;
-   bool m_NfServicePersistence;
-   bool m_NfServicePersistenceIsSet;
-   std::vector<NFService> m_NfServices;
-   bool m_NfServicesIsSet;
-   std::vector<DefaultNotificationSubscription>
-   m_DefaultNotificationSubscriptions; bool
-   m_DefaultNotificationSubscriptionsIsSet;
-   */
 };
 
 class amf_profile : public nrf_profile {
@@ -604,7 +134,7 @@ class amf_profile : public nrf_profile {
   amf_profile(nrf_event& ev) : nrf_profile(ev, NF_TYPE_AMF) { amf_info = {}; }
 
   amf_profile(nrf_event& ev, const std::string& id) : nrf_profile(ev, id) {
-    nf_type  = NF_TYPE_AMF;
+    set_nf_type(NF_TYPE_AMF);
     amf_info = {};
   }
 
@@ -673,7 +203,7 @@ class smf_profile : public nrf_profile {
   smf_profile(nrf_event& ev) : nrf_profile(ev, NF_TYPE_SMF) { smf_info = {}; }
 
   smf_profile(nrf_event& ev, const std::string& id) : nrf_profile(ev, id) {
-    nf_type  = NF_TYPE_SMF;
+    set_nf_type(NF_TYPE_SMF);
     smf_info = {};
   }
 
@@ -740,7 +270,7 @@ class upf_profile : public nrf_profile {
   upf_profile(nrf_event& ev) : nrf_profile(ev, NF_TYPE_UPF) { upf_info = {}; }
 
   upf_profile(nrf_event& ev, const std::string& id) : nrf_profile(ev, id) {
-    nf_type  = NF_TYPE_UPF;
+    set_nf_type(NF_TYPE_UPF);
     upf_info = {};
   }
 
@@ -809,7 +339,7 @@ class ausf_profile : public nrf_profile {
   }
 
   ausf_profile(nrf_event& ev, const std::string& id) : nrf_profile(ev, id) {
-    nf_type   = NF_TYPE_AUSF;
+    set_nf_type(NF_TYPE_AUSF);
     ausf_info = {};
   }
 
@@ -876,7 +406,7 @@ class udm_profile : public nrf_profile {
   udm_profile(nrf_event& ev) : nrf_profile(ev, NF_TYPE_UDM) { udm_info = {}; }
 
   udm_profile(nrf_event& ev, const std::string& id) : nrf_profile(ev, id) {
-    nf_type  = NF_TYPE_UDM;
+    set_nf_type(NF_TYPE_UDM);
     udm_info = {};
   }
 
@@ -943,7 +473,7 @@ class udr_profile : public nrf_profile {
   udr_profile(nrf_event& ev) : nrf_profile(ev, NF_TYPE_UDR) { udr_info = {}; }
 
   udr_profile(nrf_event& ev, const std::string& id) : nrf_profile(ev, id) {
-    nf_type  = NF_TYPE_UDR;
+    set_nf_type(NF_TYPE_UDR);
     udr_info = {};
   }
 
@@ -1010,7 +540,7 @@ class pcf_profile : public nrf_profile {
   pcf_profile(nrf_event& ev) : nrf_profile(ev, NF_TYPE_PCF) { pcf_info = {}; }
 
   pcf_profile(nrf_event& ev, const std::string& id) : nrf_profile(ev, id) {
-    nf_type  = NF_TYPE_PCF;
+    set_nf_type(NF_TYPE_PCF);
     pcf_info = {};
   }
 

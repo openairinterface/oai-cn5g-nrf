@@ -9,6 +9,8 @@
 #include "logger.hpp"
 #include "nrf_config.hpp"
 
+using namespace oai::nrf::app;
+
 extern std::shared_ptr<oai::http::http_client> http_client_inst;
 
 //------------------------------------------------------------------------------
@@ -45,7 +47,7 @@ void nrf_client::notify_subscribed_event(
   if ((event_type == NOTIFICATION_TYPE_NF_REGISTERED) or
       (event_type == NOTIFICATION_TYPE_NF_PROFILE_CHANGED)) {
     nlohmann::json json_profile = {};
-    switch (profile.get()->get_nf_type()) {
+    switch (profile.get()->get_nf_type_enum()) {
       case NF_TYPE_AMF: {
         std::static_pointer_cast<amf_profile>(profile).get()->to_json(
             json_profile);

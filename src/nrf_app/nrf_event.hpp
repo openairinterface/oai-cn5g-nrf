@@ -8,20 +8,19 @@
 #include <boost/signals2.hpp>
 namespace bs2 = boost::signals2;
 
+#include "nf_event.hpp"
 #include "nrf.h"
 #include "nrf_event_sig.hpp"
-#include "task_manager.hpp"
 
 namespace oai {
 namespace nrf {
 namespace app {
 
-class task_manager;
 // class nrf_profile;
 
-class nrf_event {
+class nrf_event : public oai::sba::nf_event {
  public:
-  nrf_event() {};
+  nrf_event()                      = default;
   nrf_event(nrf_event const&)      = delete;
   void operator=(nrf_event const&) = delete;
 
@@ -32,36 +31,12 @@ class nrf_event {
 
   // class register/handle event
   friend class nrf_app;
-  friend class task_manager;
   friend class nrf_profile;
 
   /*
-   * Subscribe to the task tick event
-   * @param [const task_sig_t::slot_type &] sig
-   * @param [uint64_t] period: interval between two events
-   * @param [uint64_t] start:
-   * @return void
-   */
-  bs2::connection subscribe_task_tick(
-      const task_sig_t::slot_type& sig, uint64_t period, uint64_t start = 0);
-
-  /*
-   * Subscribe to the extended task tick event
-   * @param [const task_sig_t::slot_type &] sig
-   * @param [uint64_t] period: interval between two events
-   * @param [uint64_t] start:
-   * @return void
-   */
-  bs2::connection subscribe_task_tick_extended(
-      const task_sig_t::extended_slot_type& sig, uint64_t period,
-      uint64_t start = 0);
-
-  /*
    * Subscribe to the nf status change event
-   * @param [const task_sig_t::slot_type &] sig
-   * @param [uint64_t] period: interval between two events
-   * @param [uint64_t] start:
-   * @return void
+   * @param [const nf_status_change_sig_t::slot_type &] sig
+   * @return boost::signals2::connection
    */
   bs2::connection subscribe_nf_status_change(
       const nf_status_change_sig_t::slot_type& sig);
@@ -76,7 +51,6 @@ class nrf_event {
       const nf_status_sig_t::slot_type& sig);
 
  private:
-  task_sig_t task_tick;
   nf_status_change_sig_t nf_status_change;
   nf_status_sig_t nf_status_registered;
   nf_deregistered_sig_t nf_status_deregistered;
