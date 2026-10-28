@@ -15,9 +15,6 @@ namespace app {
 
 class nrf_profile;
 
-typedef bs2::signal_type<
-    void(uint64_t), bs2::keywords::mutex_type<bs2::mutex>>::type task_sig_t;
-
 // Signal for NF Status
 // Subscription ID, NF Status
 typedef bs2::signal_type<

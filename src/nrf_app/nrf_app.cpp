@@ -207,7 +207,7 @@ void nrf_app::handle_update_nf_instance(
   if (sn.get() != nullptr) {
     Logger::nrf_app().info(
         "Handle Update NF Instance request, NF type %s (HTTP version %d)",
-        api_conv::nf_type_to_string(sn->get_nf_type()), http_version);
+        api_conv::nf_type_to_string(sn->get_nf_type_enum()), http_version);
     for (auto p : patchItem) {
       nlohmann::json j_op1;
       to_json(j_op1, p.getOp());
@@ -419,7 +419,7 @@ void nrf_app::handle_deregister_nf_instance(
   if (profile.get() != nullptr) {
     Logger::nrf_app().info(
         "Handle Deregister NF Instance request, NF type %s (HTTP version %d)",
-        api_conv::nf_type_to_string(profile->get_nf_type()), http_version);
+        api_conv::nf_type_to_string(profile->get_nf_type_enum()), http_version);
 
     // TODO: notify NF status changed event
     // Notify NF status deregistered event
@@ -870,7 +870,7 @@ void nrf_app::find_nf_profiles(
     std::vector<std::shared_ptr<nrf_profile>>& profiles) const {
   std::shared_lock lock(m_instance_id2nrf_profile);
   for (auto profile : instance_id2nrf_profile) {
-    if ((profile.second.get()->get_nf_type() == nf_type) and
+    if ((profile.second.get()->get_nf_type_enum() == nf_type) and
         profile.second->is_nf_active()) {
       profiles.push_back(profile.second);
     }
@@ -890,7 +890,7 @@ void nrf_app::find_nf_profiles(
       nf_type_t nf_type = api_conv::string_to_nf_type(sub_condition.nf_type);
 
       for (auto profile : instance_id2nrf_profile) {
-        if ((profile.second.get()->get_nf_type() == nf_type) and
+        if ((profile.second.get()->get_nf_type_enum() == nf_type) and
             profile.second->is_nf_active()) {
           profiles.push_back(profile.second);
         }
@@ -1032,7 +1032,7 @@ void nrf_app::subscribe_suspended_nf_management(uint64_t ms) {
 
   Logger::nrf_app().debug("Subscribe to the remove_suspended_nf expire event");
 
-  m_event_sub.subscribe_task_tick(
+  m_event_sub.subscribe_task_nf_heartbeat(
       boost::bind(&nrf_app::handle_remove_suspended_nf, this, _1), interval,
       ms + interval);
 }
@@ -1300,7 +1300,7 @@ void nrf_app::get_subscription_list(
       } break;
       case NF_TYPE_COND: {
         std::string nf_type =
-            api_conv::nf_type_to_string(profile.get()->get_nf_type());
+            api_conv::nf_type_to_string(profile.get()->get_nf_type_enum());
         if (nf_type.compare(condition.nf_type) == 0) {
           uris.push_back(uri);
           Logger::nrf_app().info(
@@ -1320,7 +1320,7 @@ void nrf_app::get_subscription_list(
       } break;
       case AMF_COND: {
         std::string nf_type =
-            api_conv::nf_type_to_string(profile.get()->get_nf_type());
+            api_conv::nf_type_to_string(profile.get()->get_nf_type_enum());
         if (nf_type.compare("AMF") == 0) {
           amf_info_t info = {};
           std::static_pointer_cast<amf_profile>(profile).get()->get_amf_info(

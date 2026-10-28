@@ -32,6 +32,7 @@
 #include "nrf_client.hpp"
 #include "nrf_config.hpp"
 #include "sbi_helper.hpp"
+#include "task_manager.hpp"
 #include "options.hpp"
 #include "pid_file.hpp"
 #include "pistache/endpoint.h"
@@ -42,12 +43,12 @@ using namespace oai::nrf::app;
 using namespace oai::utils;
 using namespace oai::config::nrf;
 
-nrf_app* nrf_app_inst = nullptr;
-std::unique_ptr<nrf_config> nrf_cfg;
+nrf_app* nrf_app_inst                                    = nullptr;
+std::unique_ptr<nrf_config> nrf_cfg                      = nullptr;
 std::shared_ptr<oai::http::http_client> http_client_inst = nullptr;
 NRFApiServer* api_server                                 = nullptr;
 nrf_http2_server* nrf_api_server_2                       = nullptr;
-task_manager* tm_inst                                    = nullptr;
+oai::sba::task_manager* tm_inst                          = nullptr;
 std::unique_ptr<oai::config::lttng_configuration> lttng_config_yaml;
 //------------------------------------------------------------------------------
 void my_app_signal_handler(int s) {
@@ -122,6 +123,7 @@ int main(int argc, char** argv) {
   Logger::set_lttng(static_cast<bool>(lttng_config_yaml->is_lttng_active()));
 
   Logger::init("nrf", Options::getlogStdout(), Options::getlogRotFilelog());
+  oai::sba::set_sba_logger(NRF_APP);
   Logger::nrf_app().startup("Options parsed");
 
   std::signal(SIGTERM, my_app_signal_handler);
@@ -144,14 +146,14 @@ int main(int argc, char** argv) {
       nrf_cfg->local().get_sbi().get_if_name(), nrf_cfg->get_http_version());
 
   // Event subsystem
-  nrf_event ev;
+  auto ev = std::make_shared<nrf_event>();
 
   // NRF application layer
-  nrf_app_inst = new nrf_app(Options::getlibconfigConfig(), ev);
+  nrf_app_inst = new nrf_app(Options::getlibconfigConfig(), *ev);
 
   // Task Manager
-  tm_inst = new task_manager(ev);
-  std::thread task_manager_thread(&task_manager::run, tm_inst);
+  tm_inst = new oai::sba::task_manager(ev);
+  std::thread task_manager_thread(&oai::sba::task_manager::run, tm_inst);
 
   // PID file
   // Currently hard-coded value. TODO: add as config option.
